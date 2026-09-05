@@ -29,7 +29,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState<TipoEvaluacion>('PARCIAL');
   const [fecha, setFecha] = useState(() => new Date().toISOString().slice(0, 10));
-  const [horario, setHorario] = useState('19:00 hs');
+  const [horario, setHorario] = useState('19:00');
   const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +54,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
         titulo: titulo.trim(),
         tipo,
         fecha,
-        horario: horario.trim() || '19:00 hs',
+        horario: horario.trim() || '19:00',
         aula: aula.trim() || 'A confirmar',
         modalidad,
         peso: 35
@@ -192,11 +192,11 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
               </div>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input
-                  type="text"
+                  type="time"
                   className={styles.fieldInput}
                   value={horario}
                   onChange={(e) => setHorario(e.target.value)}
-                  placeholder="19:00 hs"
+                  required
                   style={{ flex: 1 }}
                 />
                 <input

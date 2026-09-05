@@ -22,7 +22,8 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
         day: 'numeric',
         month: 'long'
       });
-      return `${formatted.charAt(0).toUpperCase() + formatted.slice(1)}, ${horario || '19:00 hs'}`;
+      const cleanHorario = horario ? (horario.endsWith('hs') ? horario : `${horario} hs`) : '19:00 hs';
+      return `${formatted.charAt(0).toUpperCase() + formatted.slice(1)}, ${cleanHorario}`;
     } catch {
       return dateStr;
     }

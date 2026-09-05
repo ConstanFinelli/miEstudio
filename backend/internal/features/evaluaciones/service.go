@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -66,9 +67,19 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 	if tipo == "" {
 		tipo = "PARCIAL"
 	}
-	horario := dto.Horario
+
+	horario := strings.TrimSpace(dto.Horario)
+	horario = strings.TrimSuffix(horario, " hs")
+	horario = strings.TrimSuffix(horario, "hs")
+	horario = strings.TrimSpace(horario)
+
 	if horario == "" {
 		horario = "09:00"
+	} else {
+		// Validar que sea un formato de hora válido de 24hs (HH:mm)
+		if _, err := time.Parse("15:04", horario); err != nil {
+			return nil, errors.New("formato de horario inválido, debe ser una hora válida HH:mm (ej: 19:00)")
+		}
 	}
 	peso := dto.Peso
 	if peso <= 0 {
