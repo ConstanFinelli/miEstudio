@@ -8,6 +8,7 @@ import {
   BookOpen,
   Download,
   Share2,
+  Trash2,
 } from "lucide-react";
 import type { ApunteNota } from "../../../types/academic";
 
@@ -17,6 +18,7 @@ interface NoteEditorHeaderProps {
   onViewModeChange: (mode: "render" | "markdown" | "split") => void;
   showPdfSplit: boolean;
   onToggleSplit: () => void;
+  onDeleteNote?: (id: string, titulo: string) => void;
 }
 
 export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
@@ -25,6 +27,7 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
   onViewModeChange,
   showPdfSplit,
   onToggleSplit,
+  onDeleteNote,
 }) => {
   return (
     <header className={styles.editorTopBar}>
@@ -111,6 +114,18 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
           <Share2 size={12} />
           <span>Compartir</span>
         </button>
+
+        {activeNote && onDeleteNote && (
+          <button
+            className={`${styles.btnNewFolder} ${styles.btnDangerAction}`}
+            style={{ width: "auto", padding: "4px 8px" }}
+            onClick={() => onDeleteNote(activeNote.id, activeNote.titulo)}
+            title={`Eliminar "${activeNote.titulo}"`}
+          >
+            <Trash2 size={12} />
+            <span>Eliminar</span>
+          </button>
+        )}
       </div>
     </header>
   );

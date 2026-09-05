@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from '../ApuntesView.module.css';
-import { BookOpen, ChevronLeft, Search, Plus } from 'lucide-react';
+import { BookOpen, ChevronLeft, Search, Plus, Trash2 } from 'lucide-react';
 import type { ApunteNota } from '../../../types/academic';
 
 interface NotesListSidebarProps {
@@ -12,6 +12,7 @@ interface NotesListSidebarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onOpenNoteModal: () => void;
+  onDeleteNote?: (id: string, titulo: string) => void;
 }
 
 export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
@@ -22,7 +23,8 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
   onSelectNote,
   searchQuery,
   onSearchChange,
-  onOpenNoteModal
+  onOpenNoteModal,
+  onDeleteNote
 }) => {
   if (isCollapsed) {
     return (
@@ -102,7 +104,22 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
               >
                 <div className={styles.noteCardTop}>
                   <h4 className={styles.noteCardTitle}>{note.titulo}</h4>
-                  {isActive && <span className={styles.activeTag}>ACTIVO</span>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                    {isActive && <span className={styles.activeTag}>ACTIVO</span>}
+                    {onDeleteNote && (
+                      <button
+                        type="button"
+                        className={styles.noteDeleteBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteNote(note.id, note.titulo);
+                        }}
+                        title={`Eliminar "${note.titulo}"`}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <p className={styles.noteCardExcerpt}>{note.resumen}</p>

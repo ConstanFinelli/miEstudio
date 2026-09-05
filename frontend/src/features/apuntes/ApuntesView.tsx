@@ -10,7 +10,7 @@ import {
   NoteReaderContent,
   SplitPdfViewerPane,
 } from "./components";
-import { UploadMaterialModal } from "../../components/modals";
+import { UploadMaterialModal, DeleteConfirmModal } from "../../components/modals";
 
 interface ApuntesViewProps {
   onOpenNoteModal: () => void;
@@ -19,7 +19,7 @@ interface ApuntesViewProps {
 export const ApuntesView: React.FC<ApuntesViewProps> = ({
   onOpenNoteModal,
 }) => {
-  const { apuntes, selectedApunte, setSelectedApunte, updateApunte } = useApuntes();
+  const { apuntes, selectedApunte, setSelectedApunte, updateApunte, deleteApunte } = useApuntes();
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"render" | "markdown" | "split">("split");
@@ -28,6 +28,8 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const [isNotesListCollapsed, setIsNotesListCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isUploadPdfModalOpen, setIsUploadPdfModalOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<{ id: string; titulo: string } | null>(null);
+  const [isDeletingNote, setIsDeletingNote] = useState(false);
 
   // Auto-collapse sidebars when activating split mode for a spacious study layout
   const handleToggleSplit = () => {
@@ -120,6 +122,25 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
     await updateApunte(activeNote.id, { tags: updatedTags });
   };
 
+  // Note deletion handlers
+  const handleDeleteRequest = (id: string, titulo: string) => {
+    setNoteToDelete({ id, titulo });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!noteToDelete) return;
+    try {
+      setIsDeletingNote(true);
+      await deleteApunte(noteToDelete.id);
+      setNoteToDelete(null);
+    } catch (err) {
+      console.error("Error al eliminar apunte:", err);
+      alert("Ocurrió un error al eliminar el apunte.");
+    } finally {
+      setIsDeletingNote(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       {/* 1. Left Folders Column (Collapsible) */}
@@ -147,6 +168,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onOpenNoteModal={onOpenNoteModal}
+        onDeleteNote={handleDeleteRequest}
       />
 
       {/* 3. Right Editor / Visualizer Column */}
@@ -158,6 +180,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
           onViewModeChange={setViewMode}
           showPdfSplit={showPdfSplit}
           onToggleSplit={handleToggleSplit}
+          onDeleteNote={handleDeleteRequest}
         />
 
         {/* Formatting Toolbar */}
@@ -203,6 +226,20 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
           onUpload={(file, titulo, categoria) =>
             uploadMaterial(file, titulo, categoria)
           }
+        />
+      )}
+
+      {/* Modal to confirm note deletion */}
+      {noteToDelete && (
+        <DeleteConfirmModal
+          isOpen={Boolean(noteToDelete)}
+          onClose={() => !isDeletingNote && setNoteToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          itemName={noteToDelete.titulo}
+          itemType="apunte"
+          title="¿Eliminar apunte?"
+          description="Estás a punto de eliminar este apunte. Se borrará su contenido y notas asociadas de forma permanente."
+          isDeleting={isDeletingNote}
         />
       )}
     </div>
