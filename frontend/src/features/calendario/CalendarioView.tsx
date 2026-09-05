@@ -15,7 +15,7 @@ interface CalendarioViewProps {
 
 export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluationModal }) => {
   const { eventos } = useCalendario();
-  const { evaluaciones } = useEvaluaciones();
+  const { evaluaciones, deleteEvaluacion } = useEvaluaciones();
   const { materias } = useMaterias();
 
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
@@ -25,6 +25,23 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
   const [selectedYear, setSelectedYear] = useState<number | 'TODOS'>('TODOS');
   const [selectedCuatri, setSelectedCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
   const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'agenda'>('mes');
+
+  const handleDeleteEvent = async (id: string, titulo: string) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar "${titulo}" del calendario?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteEvaluacion(id);
+      if (selectedEventId === id) {
+        setSelectedEventId(null);
+      }
+    } catch (err) {
+      console.error('Error al eliminar evaluación:', err);
+      alert('Ocurrió un error al eliminar la evaluación.');
+    }
+  };
 
   // Merge calendar events with actual academic evaluations
   const combinedEvents = useMemo(() => {
@@ -168,6 +185,7 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
             setSelectedDateStr(null);
           }}
           onOpenEvaluationModal={onOpenEvaluationModal}
+          onDeleteEvent={handleDeleteEvent}
         />
       </div>
     </div>

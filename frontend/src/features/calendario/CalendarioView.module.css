@@ -463,3 +463,47 @@
   font-size: 10px;
   color: var(--text-dim);
 }
+
+.btnDeleteEvent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: var(--red-alpha);
+  border: 1px solid var(--red-border);
+  color: var(--red);
+  padding: 8px 14px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.btnDeleteEvent:hover {
+  background-color: var(--red);
+  color: white;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+}
+
+.iconBtnDelete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  opacity: 0.6;
+}
+
+.iconBtnDelete:hover {
+  color: var(--red);
+  background-color: var(--red-alpha);
+  opacity: 1;
+}

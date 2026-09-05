@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import styles from '../CalendarioView.module.css';
-import { AlertTriangle, CheckCircle2, Calendar as CalendarIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import type { EventoCalendario } from '../../../types/academic';
 
 interface CalendarEventDetailProps {
@@ -8,13 +8,15 @@ interface CalendarEventDetailProps {
   allEvents: EventoCalendario[];
   onSelectEventId: (id: string) => void;
   onOpenEvaluationModal?: () => void;
+  onDeleteEvent?: (id: string, titulo: string) => void;
 }
 
 export const CalendarEventDetail: React.FC<CalendarEventDetailProps> = ({
   selectedEvent,
   allEvents,
   onSelectEventId,
-  onOpenEvaluationModal
+  onOpenEvaluationModal,
+  onDeleteEvent
 }) => {
   const todayStr = useMemo(() => {
     const today = new Date();
@@ -209,6 +211,17 @@ export const CalendarEventDetail: React.FC<CalendarEventDetailProps> = ({
               </div>
             </div>
           ) : null}
+
+          {onDeleteEvent && (
+            <button
+              className={styles.btnDeleteEvent}
+              onClick={() => onDeleteEvent(selectedEvent.id, selectedEvent.titulo)}
+              title="Eliminar esta evaluación del calendario"
+            >
+              <Trash2 size={13} />
+              <span>Eliminar Evaluación</span>
+            </button>
+          )}
         </div>
       ) : (
         <div
@@ -272,17 +285,31 @@ export const CalendarEventDetail: React.FC<CalendarEventDetailProps> = ({
                       {formatEventDate(ev.fecha)} · {ev.horarioInicio} hs {ev.aula ? `(${ev.aula})` : ''}
                     </span>
                   </div>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontFamily: 'var(--font-mono)',
-                      padding: '2px 5px',
-                      borderRadius: '2px',
-                      ...badgeStyle
-                    }}
-                  >
-                    {ev.tipo}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-mono)',
+                        padding: '2px 5px',
+                        borderRadius: '2px',
+                        ...badgeStyle
+                      }}
+                    >
+                      {ev.tipo}
+                    </span>
+                    {onDeleteEvent && (
+                      <button
+                        className={styles.iconBtnDelete}
+                        title="Eliminar evaluación"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteEvent(ev.id, ev.titulo);
+                        }}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

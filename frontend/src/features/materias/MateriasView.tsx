@@ -75,7 +75,21 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     filteredMaterias.find(m => m.id === selectedMateriaId) || filteredMaterias[0];
 
   // Evaluations for this materia
-  const { evaluaciones: materiaEvaluations } = useEvaluaciones(selectedMateria?.id);
+  const { evaluaciones: materiaEvaluations, deleteEvaluacion } = useEvaluaciones(selectedMateria?.id);
+
+  const handleDeleteEvaluation = async (id: string, titulo: string) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar la evaluación "${titulo}"?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteEvaluacion(id);
+    } catch (err) {
+      console.error('Error al eliminar evaluación:', err);
+      alert('Ocurrió un error al eliminar la evaluación.');
+    }
+  };
 
   // Load materials for selected materia
   useEffect(() => {
@@ -197,6 +211,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
             <EvaluationsList
               evaluations={materiaEvaluations}
               onOpenEvaluationModal={onOpenEvaluationModal}
+              onDeleteEvaluation={handleDeleteEvaluation}
             />
 
             <CorrelativesCard correlativas={selectedMateria.correlativas} />

@@ -6,11 +6,13 @@ import type { InstanciaEvaluacion } from '../../../types/academic';
 interface EvaluationsListProps {
   evaluations: InstanciaEvaluacion[];
   onOpenEvaluationModal: () => void;
+  onDeleteEvaluation?: (id: string, titulo: string) => void;
 }
 
 export const EvaluationsList: React.FC<EvaluationsListProps> = ({
   evaluations,
-  onOpenEvaluationModal
+  onOpenEvaluationModal,
+  onDeleteEvaluation
 }) => {
   return (
     <div className={styles.evalListSection}>
@@ -59,9 +61,15 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
             <button className={styles.iconBtnSmall} title="Editar">
               <Edit2 size={12} />
             </button>
-            <button className={styles.iconBtnSmall} title="Eliminar">
-              <Trash2 size={12} />
-            </button>
+            {onDeleteEvaluation && (
+              <button
+                className={styles.iconBtnSmall}
+                title="Eliminar evaluación"
+                onClick={() => onDeleteEvaluation(evalItem.id, evalItem.titulo)}
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
           </div>
         </div>
       ))}

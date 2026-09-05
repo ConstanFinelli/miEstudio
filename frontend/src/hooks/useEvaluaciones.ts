@@ -43,6 +43,12 @@ export const useEvaluaciones = (materiaId?: string) => {
     return updated;
   };
 
+  const deleteEvaluacion = async (id: string) => {
+    await evaluacionesService.deleteEvaluacion(id);
+    setEvaluaciones(prev => prev.filter(e => e.id !== id));
+    setProximas(prev => prev.filter(e => e.id !== id));
+  };
+
   return {
     evaluaciones,
     proximas,
@@ -50,6 +56,7 @@ export const useEvaluaciones = (materiaId?: string) => {
     error,
     refresh: fetchEvaluaciones,
     createEvaluacion,
-    updateNota
+    updateNota,
+    deleteEvaluacion
   };
 };

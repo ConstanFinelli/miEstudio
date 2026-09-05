@@ -80,5 +80,14 @@ export const evaluacionesService = {
       if (!found) throw new Error(`Evaluación con ID ${id} no encontrada`);
       return found;
     }
+  },
+
+  async deleteEvaluacion(id: string): Promise<void> {
+    try {
+      await apiClient.delete(`/evaluaciones/${id}`);
+    } catch {
+      // noop
+    }
+    localEvaluaciones = localEvaluaciones.filter(e => e.id !== id);
   }
 };
