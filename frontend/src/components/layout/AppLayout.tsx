@@ -6,7 +6,6 @@ import {
   BookOpen,
   Calendar,
   FileText,
-  Search,
   Bell,
   Settings,
   PlusCircle,
@@ -37,14 +36,12 @@ const defaultEmptyPerfil = {
 };
 
 interface AppLayoutProps {
-  onOpenCommandPalette: () => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
   children?: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
-  onOpenCommandPalette,
   onOpenEvaluationModal,
   onOpenNoteModal,
   children
@@ -83,15 +80,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Search Trigger */}
-          <button className={styles.searchTrigger} onClick={onOpenCommandPalette}>
-            <div className={styles.searchLeft}>
-              <Search size={14} />
-              <span>Buscar o comando...</span>
-            </div>
-            <span className={styles.kbd}>⌘K</span>
-          </button>
 
           {/* Navigation Menu */}
           <nav className={styles.navSection}>

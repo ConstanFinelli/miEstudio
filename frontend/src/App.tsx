@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
-import { CommandPalette } from './components/command/CommandPalette';
 import { DashboardView } from './features/dashboard/DashboardView';
 import { MateriasView } from './features/materias/MateriasView';
 import { CalendarioView } from './features/calendario/CalendarioView';
@@ -11,23 +10,19 @@ import { Toast } from './features/components';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
-  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMateriaModalOpen, setIsMateriaModalOpen] = useState(false);
   const [activePdf, setActivePdf] = useState<{ title: string; url: string } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Keyboard Shortcuts Listener (⌘K, ⌘N, ⌘E, ⌘M)
+  // Keyboard Shortcuts Listener (⌘N, ⌘E, ⌘M)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check for Cmd (Mac) or Ctrl (Windows/Linux)
       const isMeta = e.metaKey || e.ctrlKey;
 
-      if (isMeta && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsCommandPaletteOpen(prev => !prev);
-      } else if (isMeta && e.key.toLowerCase() === 'm') {
+      if (isMeta && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         setIsMateriaModalOpen(true);
       } else if (isMeta && e.key.toLowerCase() === 'n') {
@@ -50,7 +45,6 @@ export const App: React.FC = () => {
 
   return (
     <AppLayout
-      onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
       onOpenNoteModal={() => setIsNoteModalOpen(true)}
     >
@@ -99,14 +93,6 @@ export const App: React.FC = () => {
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
 
-      {/* Command Palette Modal (⌘K) */}
-      <CommandPalette
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-        onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-        onOpenNoteModal={() => setIsNoteModalOpen(true)}
-        onOpenMateriaModal={() => setIsMateriaModalOpen(true)}
-      />
 
       {/* Materia Modal (⌘M / Registro de Cursada) */}
       <MateriaModal

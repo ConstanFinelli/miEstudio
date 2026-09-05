@@ -6,8 +6,6 @@ import {
   Code,
   Columns,
   BookOpen,
-  Download,
-  Share2,
   Trash2,
 } from "lucide-react";
 import type { ApunteNota } from "../../../types/academic";
@@ -97,22 +95,6 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
         >
           <BookOpen size={12} />
           <span>{showPdfSplit ? "Cerrar PDF" : "Ver PDF"}</span>
-        </button>
-
-        <button
-          className={styles.btnNewFolder}
-          style={{ width: "auto", padding: "4px 8px" }}
-        >
-          <Download size={12} />
-          <span>Exportar PDF</span>
-        </button>
-
-        <button
-          className={styles.btnNewFolder}
-          style={{ width: "auto", padding: "4px 8px" }}
-        >
-          <Share2 size={12} />
-          <span>Compartir</span>
         </button>
 
         {activeNote && onDeleteNote && (
