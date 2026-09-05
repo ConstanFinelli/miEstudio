@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from '../MateriasView.module.css';
+import { Trash2 } from 'lucide-react';
 import type { Materia } from '../../../types/academic';
 import { StatusBadge } from '../../components';
 
@@ -8,13 +9,15 @@ interface MateriasListProps {
   selectedMateriaId: string;
   onSelectMateria: (id: string) => void;
   onOpenMateriaModal?: () => void;
+  onDeleteMateria?: (id: string, nombre: string) => void;
 }
 
 export const MateriasList: React.FC<MateriasListProps> = ({
   materias,
   selectedMateriaId,
   onSelectMateria,
-  onOpenMateriaModal
+  onOpenMateriaModal,
+  onDeleteMateria
 }) => {
   return (
     <div className={styles.masterColumn}>
@@ -55,7 +58,21 @@ export const MateriasList: React.FC<MateriasListProps> = ({
               <span className={styles.cardCodeMeta}>
                 {materia.codigo} · {materia.anio}° Año, {materia.cuatrimestre}
               </span>
-              <StatusBadge status={materia.estado} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <StatusBadge status={materia.estado} />
+                {onDeleteMateria && (
+                  <button
+                    className={styles.cardDeleteBtn}
+                    title={`Eliminar ${materia.nombre}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteMateria(materia.id, materia.nombre);
+                    }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className={styles.cardSubjectTitle}>{materia.nombre}</div>

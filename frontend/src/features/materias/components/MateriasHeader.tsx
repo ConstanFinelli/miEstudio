@@ -4,12 +4,10 @@ import { Plus } from 'lucide-react';
 
 interface MateriasHeaderProps {
   onRegisterMateria?: () => void;
-  totalCreditos?: number;
 }
 
 export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
-  onRegisterMateria,
-  totalCreditos
+  onRegisterMateria
 }) => {
   return (
     <div className={styles.headerArea}>
@@ -33,14 +31,6 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
       </div>
 
       <div className={styles.headerRight}>
-        {totalCreditos !== undefined && (
-          <div className={styles.creditsKpi}>
-            <span style={{ color: 'var(--emerald)' }}>●</span>
-            <span>Créditos en curso:</span>
-            <span className={styles.creditsKpiVal}>{totalCreditos} UCA</span>
-          </div>
-        )}
-
         {onRegisterMateria && (
           <button className={styles.btnPrimary} onClick={onRegisterMateria}>
             <Plus size={14} />

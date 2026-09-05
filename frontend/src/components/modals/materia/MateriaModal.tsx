@@ -32,7 +32,6 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const [cuatrimestre, setCuatrimestre] = useState<'1C' | '2C' | 'Anual'>('1C');
   const [estado, setEstado] = useState<EstadoMateria>('CURSANDO');
   const [color, setColor] = useState('#3b82f6');
-  const [creditos, setCreditos] = useState<number>(6);
   const [comision, setComision] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual' | 'Híbrida'>('Presencial');
   const [profesorTitular, setProfesorTitular] = useState('');
@@ -54,7 +53,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         cuatrimestre,
         estado,
         color,
-        creditos,
+        creditos: 6,
         comision: comision.trim() || 'Comisión Única',
         modalidad,
         profesores: {
@@ -133,8 +132,8 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
             </div>
           </div>
 
-          {/* Año, Cuatrimestre y Créditos */}
-          <div className={styles.row3}>
+          {/* Año y Cuatrimestre */}
+          <div className={styles.row2}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Año de la Carrera</label>
               <select
@@ -162,18 +161,6 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                 <option value="2C">2° Cuatrimestre</option>
                 <option value="Anual">Anual</option>
               </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Créditos (UCA)</label>
-              <input
-                type="number"
-                min={1}
-                max={30}
-                className={styles.input}
-                value={creditos}
-                onChange={e => setCreditos(Number(e.target.value))}
-              />
             </div>
           </div>
 

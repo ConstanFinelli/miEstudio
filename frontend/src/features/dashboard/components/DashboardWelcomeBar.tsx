@@ -1,6 +1,5 @@
 import React from "react";
 import styles from "../DashboardView.module.css";
-import { CheckCircle2 } from "lucide-react";
 import type { PerfilEstudiante } from "../../../types/academic";
 import { usePerfil } from "../../../hooks";
 
@@ -34,18 +33,9 @@ export const DashboardWelcomeBar: React.FC<DashboardWelcomeBarProps> = ({ perfil
         <button className={`${styles.filterPill} ${styles.filterPillActive}`}>
           Historial de Cursadas
         </button>
-        {perfil.creditosTotales > 0 ? (
-          <div className={`${styles.filterPill} ${styles.filterPillSuccess}`}>
-            <CheckCircle2 size={13} />
-            <span>
-              {perfil.creditosAprobados} / {perfil.creditosTotales} CR
-            </span>
-          </div>
-        ) : (
-          <div className={styles.filterPill}>
-            <span>Ciclo Académico Activo</span>
-          </div>
-        )}
+        <div className={styles.filterPill}>
+          <span>Ciclo Académico Activo</span>
+        </div>
       </div>
     </div>
   );

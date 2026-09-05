@@ -1,13 +1,17 @@
 import React from 'react';
 import styles from '../MateriasView.module.css';
-import { Edit2, Download, RotateCcw } from 'lucide-react';
+import { Edit2, Download, RotateCcw, Trash2 } from 'lucide-react';
 import type { Materia } from '../../../types/academic';
 
 interface MateriaDetailHeaderProps {
   materia: Materia;
+  onDeleteMateria?: (id: string, nombre: string) => void;
 }
 
-export const MateriaDetailHeader: React.FC<MateriaDetailHeaderProps> = ({ materia }) => {
+export const MateriaDetailHeader: React.FC<MateriaDetailHeaderProps> = ({
+  materia,
+  onDeleteMateria
+}) => {
   return (
     <div className={styles.detailHeader}>
       <div className={styles.detailHeaderLeft}>
@@ -31,6 +35,16 @@ export const MateriaDetailHeader: React.FC<MateriaDetailHeaderProps> = ({ materi
         <button className={styles.iconBtnSmall} title="Historial de Cambios">
           <RotateCcw size={13} />
         </button>
+        {onDeleteMateria && (
+          <button
+            className={styles.deleteBtn}
+            onClick={() => onDeleteMateria(materia.id, materia.nombre)}
+            title={`Eliminar ${materia.nombre}`}
+          >
+            <Trash2 size={13} />
+            <span>Eliminar</span>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './MateriasView.module.css';
 import { BookOpen, Plus } from 'lucide-react';
 import type { Materia, MaterialEstudio } from '../../types/academic';
@@ -34,7 +34,27 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>('');
   const [materiaMaterials, setMateriaMaterials] = useState<MaterialEstudio[]>([]);
 
-  const { materias, isLoading: isMateriasLoading } = useMaterias();
+  const { materias, isLoading: isMateriasLoading, deleteMateria } = useMaterias();
+
+  const handleDeleteMateria = async (id: string, nombre: string) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar "${nombre}"? Esta acción eliminará la cursada y sus registros asociados.`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteMateria(id);
+      const remaining = materias.filter(m => m.id !== id);
+      if (remaining.length > 0) {
+        setSelectedMateriaId(remaining[0].id);
+      } else {
+        setSelectedMateriaId('');
+      }
+    } catch (err) {
+      console.error('Error al eliminar materia:', err);
+      alert('Ocurrió un error al intentar eliminar la materia.');
+    }
+  };
 
   // Selected materia
   const selectedMateria: Materia | undefined =
@@ -57,10 +77,6 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     }
   }, [materias, selectedMateriaId]);
 
-  const totalCreditos = useMemo(() => {
-    return materias.reduce((acc, m) => acc + (m.creditos || 0), 0);
-  }, [materias]);
-
   if (isMateriasLoading && materias.length === 0) {
     return <div className={styles.container}>Cargando materias...</div>;
   }
@@ -71,7 +87,6 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
       <div className={styles.container}>
         <MateriasHeader
           onRegisterMateria={onOpenMateriaModal}
-          totalCreditos={0}
         />
         <div style={{
           backgroundColor: 'var(--surface-1)',
@@ -136,7 +151,6 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
       {/* 1. Header Area */}
       <MateriasHeader
         onRegisterMateria={onOpenMateriaModal}
-        totalCreditos={totalCreditos}
       />
 
       {/* 2. Filters Bar */}
@@ -159,12 +173,16 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           selectedMateriaId={selectedMateria?.id || ''}
           onSelectMateria={setSelectedMateriaId}
           onOpenMateriaModal={onOpenMateriaModal}
+          onDeleteMateria={handleDeleteMateria}
         />
 
         {/* Right Column: Selected Materia Details */}
         {selectedMateria ? (
           <div className={styles.detailColumn}>
-            <MateriaDetailHeader materia={selectedMateria} />
+            <MateriaDetailHeader
+              materia={selectedMateria}
+              onDeleteMateria={handleDeleteMateria}
+            />
 
             <AccreditationRulesCard reglas={selectedMateria.reglasAcreditacion} />
 

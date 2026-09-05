@@ -49,10 +49,16 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
 
   const deleteMateria = async (id: string) => {
     await materiasService.deleteMateria(id);
-    setMaterias(prev => prev.filter(m => m.id !== id));
-    if (selectedMateria?.id === id) {
-      setSelectedMateria(materias[0] || null);
-    }
+    setMaterias(prev => {
+      const remaining = prev.filter(m => m.id !== id);
+      setSelectedMateria(current => {
+        if (current?.id === id) {
+          return remaining.length > 0 ? remaining[0] : null;
+        }
+        return current;
+      });
+      return remaining;
+    });
   };
 
   return {
