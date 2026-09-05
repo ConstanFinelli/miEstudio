@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './NoteModal.module.css';
 import {
   X,
@@ -24,9 +24,9 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   const { materias } = useMaterias();
   const { evaluaciones } = useEvaluaciones();
 
-  const [materiaId, setMateriaId] = useState(materias[0]?.id || '');
+  const [materiaId, setMateriaId] = useState('');
   const [customMateria, setCustomMateria] = useState('');
-  const [evalId, setEvalId] = useState(evaluaciones[0]?.id || '');
+  const [evalId, setEvalId] = useState('');
   const [titulo, setTitulo] = useState('');
   const [template, setTemplate] = useState('teorico');
   const [tags, setTags] = useState<string[]>([]);
@@ -34,6 +34,21 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   const [syncKatex, setSyncKatex] = useState(true);
   const [syncPg, setSyncPg] = useState(true);
   const [syncAnki, setSyncAnki] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (materias.length > 0 && (!materiaId || !materias.some(m => m.id === materiaId))) {
+      setMateriaId(materias[0].id);
+    }
+  }, [materias, materiaId, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTitulo('');
+      setTags([]);
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -50,23 +65,47 @@ export const NoteModal: React.FC<NoteModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedMat = materias.find(m => m.id === materiaId);
-    const materiaNombre = selectedMat?.nombre || customMateria.trim() || 'General';
+    if (isSubmitting) return;
+
+    const selectedMat = materias.find(m => m.id === materiaId) || materias[0];
+    const materiaIdVal = selectedMat?.id || (customMateria.trim() ? `mat-${Date.now()}` : 'mat-general');
+    const materiaNombreVal = selectedMat?.nombre || customMateria.trim() || 'General';
     const selectedEval = evaluaciones.find(e => e.id === evalId);
     const noteTitle = titulo.trim() || 'Nuevo Apunte';
 
-    await apuntesService.createApunte({
-      materiaId: selectedMat?.id || `mat-${Date.now()}`,
-      materiaNombre,
-      evaluacionId: selectedEval?.id,
-      evaluacionNombre: selectedEval?.titulo,
-      titulo: noteTitle,
-      tags: tags.length > 0 ? tags : ['apunte'],
-      carpeta: template === 'laboratorio' ? 'Laboratorios' : 'Teoría',
-      contenidoMarkdown: `# ${noteTitle}\n\n## 1. Introducción y Conceptos Clave\n\nComienza a escribir tus notas de ${materiaNombre} aquí...\n`
-    });
-    onSuccess(noteTitle);
-    onClose();
+    let initialContent = `# ${noteTitle}\n\n## 1. Introducción y Conceptos Clave\n\nComienza a escribir tus notas de ${materiaNombreVal} aquí...\n`;
+    if (template === 'formulas') {
+      initialContent = `# ${noteTitle}\n\n## Fórmulas y Demostraciones Matemáticas\n\n$$\n\\int_{a}^{b} f(x) dx = F(b) - F(a)\n$$\n\n> [!NOTE]\n> Definición formal y condiciones de aplicabilidad.\n`;
+    } else if (template === 'laboratorio') {
+      initialContent = `# ${noteTitle}\n\n## Laboratorio y Práctica de Código\n\n\`\`\`bash\n# Comandos de ejecución\ngit status\n\`\`\`\n\n\`\`\`python\ndef test_algoritmo():\n    print("Ejecutando pruebas...")\n\`\`\`\n`;
+    } else if (template === 'blanco') {
+      initialContent = `# ${noteTitle}\n\n`;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const created = await apuntesService.createApunte({
+        materiaId: materiaIdVal,
+        materiaNombre: materiaNombreVal,
+        evaluacionId: selectedEval?.id,
+        evaluacionNombre: selectedEval?.titulo,
+        titulo: noteTitle,
+        tags: tags.length > 0 ? tags : ['apunte'],
+        carpeta: template === 'laboratorio' ? 'Laboratorios' : template === 'formulas' ? 'Fórmulas' : 'Teoría',
+        contenidoMarkdown: initialContent
+      });
+
+      // Disparar evento reactivo para sincronizar useApuntes y vistas abiertas
+      window.dispatchEvent(new CustomEvent('apuntes:updated', { detail: created }));
+
+      onSuccess(noteTitle);
+      onClose();
+    } catch (err) {
+      console.error('Error al crear apunte:', err);
+      alert('Error al crear apunte. Por favor intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const templates = [

@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from '../ApuntesView.module.css';
 import { Folder, ChevronLeft, Plus, Files } from 'lucide-react';
+import type { ApunteNota } from '../../../types/academic';
 import { useMaterias, useApuntes } from '../../../hooks';
 
 interface FoldersSidebarProps {
@@ -11,6 +12,7 @@ interface FoldersSidebarProps {
   selectedSubFolder: string | null;
   onSelectSubFolder: (sub: string | null) => void;
   onOpenNoteModal?: () => void;
+  notes?: ApunteNota[];
 }
 
 export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
@@ -20,10 +22,12 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
   onSelectFolder,
   selectedSubFolder,
   onSelectSubFolder,
-  onOpenNoteModal
+  onOpenNoteModal,
+  notes
 }) => {
   const { materias } = useMaterias();
-  const { apuntes } = useApuntes();
+  const { apuntes: hookApuntes } = useApuntes();
+  const apuntes = notes || hookApuntes;
 
   // Distinct materias that have notes or are enrolled
   const folderMaterias = React.useMemo(() => {

@@ -1,26 +1,135 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '../ApuntesView.module.css';
-import { X } from 'lucide-react';
+import { X, ExternalLink, UploadCloud, FileText, Loader2 } from 'lucide-react';
+import type { MaterialEstudio } from '../../../types/academic';
+import { materialesService } from '../../../services';
 
 interface SplitPdfViewerPaneProps {
   onClose: () => void;
+  activeMateriaId?: string;
+  activeMateriaNombre?: string;
+  onOpenUploadModal?: () => void;
 }
 
-export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({ onClose }) => {
+export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
+  onClose,
+  activeMateriaId,
+  activeMateriaNombre,
+  onOpenUploadModal
+}) => {
+  const [materials, setMaterials] = useState<MaterialEstudio[]>([]);
+  const [selectedDocId, setSelectedDocId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    // Fetch all materials or by materia
+    materialesService
+      .getMateriales(activeMateriaId)
+      .then(docs => {
+        if (!isMounted) return;
+        setMaterials(docs);
+        if (docs.length > 0) {
+          setSelectedDocId(docs[0].id);
+        } else {
+          // If no materials for this materia, fetch all materials across all materias
+          materialesService.getMateriales().then(allDocs => {
+            if (!isMounted) return;
+            setMaterials(allDocs);
+            if (allDocs.length > 0) {
+              setSelectedDocId(allDocs[0].id);
+            }
+          });
+        }
+      })
+      .catch(err => console.error('Error al cargar materiales para visor:', err))
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeMateriaId]);
+
+  const selectedDoc = materials.find(m => m.id === selectedDocId) || materials[0] || null;
+
   return (
-    <div className={styles.pdfPane} style={{ flex: 1, minWidth: '400px' }}>
+    <div className={styles.pdfPane} style={{ flex: 1, minWidth: '420px' }}>
+      {/* Top Header Bar */}
       <div className={styles.pdfHeader}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600 }}>
-          <span style={{ background: 'var(--primary)', color: 'white', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '2px' }}>DOC</span>
-          <span style={{ color: 'var(--text-primary)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            Visor de Documentos de Cátedra
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <span
+            style={{
+              background: 'var(--primary)',
+              color: 'white',
+              fontSize: '9px',
+              fontWeight: 700,
+              padding: '1px 5px',
+              borderRadius: '2px',
+              flexShrink: 0
+            }}
+          >
+            DOC
           </span>
+
+          {materials.length > 0 ? (
+            <select
+              className={styles.splitPdfSelect}
+              value={selectedDocId}
+              onChange={e => setSelectedDocId(e.target.value)}
+              title="Seleccionar documento de cátedra"
+            >
+              {materials.map(m => (
+                <option key={m.id} value={m.id}>
+                  [{m.categoria}] {m.titulo}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span
+              style={{
+                color: 'var(--text-primary)',
+                fontSize: '12px',
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Documentos de Cátedra
+            </span>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)', background: 'var(--surface-3)', padding: '2px 6px', borderRadius: '3px' }}>
-            Modo Estudio Paralelo
-          </span>
+          {onOpenUploadModal && (
+            <button
+              className={styles.toolBtn}
+              onClick={onOpenUploadModal}
+              title="Subir nuevo PDF de cátedra"
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px' }}
+            >
+              <UploadCloud size={12} color="var(--primary)" />
+              <span>+ Subir PDF</span>
+            </button>
+          )}
+
+          {selectedDoc?.archivoUrl && (
+            <a
+              href={selectedDoc.archivoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={styles.toolBtn}
+              title="Abrir PDF en pestaña completa"
+              style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <ExternalLink size={12} />
+            </a>
+          )}
+
           <button
             className={styles.toolBtn}
             style={{ padding: '3px 6px' }}
@@ -32,62 +141,83 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({ onClose 
         </div>
       </div>
 
-      {/* Reader Canvas Area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px', backgroundColor: 'var(--bg-canvas)', display: 'flex', justifyContent: 'center' }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '540px',
-          backgroundColor: 'var(--surface-1)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-sm)',
-          boxShadow: 'var(--shadow-md)',
-          padding: '28px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '14px',
-          color: 'var(--text-secondary)'
-        }}>
-          <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 700, marginBottom: '6px', lineHeight: 1.3 }}>
-              Lectura y Apuntes en Paralelo
-            </h2>
-            <div style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
-              Visor split-view para consulta bibliográfica activa
+      {/* Reader / Iframe Area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, backgroundColor: 'var(--surface-2)' }}>
+        {isLoading ? (
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              color: 'var(--text-muted)'
+            }}
+          >
+            <Loader2 size={24} className="animate-spin" />
+            <span style={{ fontSize: '12px' }}>Cargando documentos de cátedra...</span>
+          </div>
+        ) : selectedDoc?.archivoUrl ? (
+          <iframe
+            src={selectedDoc.archivoUrl}
+            className={styles.splitPdfIframe}
+            title={selectedDoc.titulo}
+          />
+        ) : (
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '24px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                maxWidth: '480px',
+                backgroundColor: 'var(--surface-1)',
+                border: '1px dashed var(--border-hover)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '32px 20px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '12px'
+              }}
+            >
+              <FileText size={36} color="var(--text-dim)" />
+              <div>
+                <h3 style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 600, marginBottom: '4px' }}>
+                  Sin documentos PDF disponibles
+                </h3>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                  {activeMateriaNombre
+                    ? `Aún no hay PDFs cargados para ${activeMateriaNombre}.`
+                    : 'Aún no hay PDFs de cátedra registrados.'}
+                  <br />
+                  Podés subir guías, diapositivas o parciales viejos para consultarlos en paralelo mientras tomás notas.
+                </p>
+              </div>
+
+              {onOpenUploadModal && (
+                <button
+                  type="button"
+                  className={styles.btnPrimary}
+                  onClick={onOpenUploadModal}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '12px', marginTop: '6px' }}
+                >
+                  <UploadCloud size={14} />
+                  <span>Subir Primer Documento PDF</span>
+                </button>
+              )}
             </div>
           </div>
-
-          <div style={{
-            backgroundColor: 'var(--surface-2)',
-            borderLeft: '2px solid var(--primary)',
-            padding: '10px 14px',
-            borderRadius: '2px',
-            fontSize: '12px',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.5
-          }}>
-            <strong>Modo Split-View Activado:</strong> Las columnas laterales se han replegado automáticamente para brindarte el máximo espacio visual. Puedes cargar archivos PDF desde la sección de <em>Materias &gt; Materiales</em> para consultarlos aquí mientras redactas.
-          </div>
-
-          <div style={{ fontSize: '12px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-            <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>Técnica de Estudio Efectiva</strong>
-            Alinea conceptos teóricos con demostraciones prácticas. Cuando formules hipótesis o extraigas resúmenes, usa la barra de herramientas superior para insertar bloques KaTeX y snippets de código copiables con un clic.
-          </div>
-
-          <div style={{
-            border: '1px dashed var(--border-subtle)',
-            borderRadius: 'var(--radius-xs)',
-            padding: '14px',
-            textAlign: 'center',
-            backgroundColor: 'var(--surface-2)'
-          }}>
-            <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--primary-glow)', marginBottom: '4px' }}>
-              [Espacio de Lectura y Referencias]
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
-              Sincronizado con el apunte activo en pantalla
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styles from '../ApuntesView.module.css';
 import { Flame, Check, Copy, FileText, Plus } from 'lucide-react';
 import katex from 'katex';
@@ -9,12 +9,14 @@ interface NoteReaderContentProps {
   viewMode: 'render' | 'markdown' | 'split';
   onOpenNoteModal?: () => void;
   onContentChange?: (newContent: string) => void;
+  onRegisterInsert?: (
+    inserter: (prefix: string, suffix?: string, defaultText?: string) => void
+  ) => void;
 }
 
 // Helper to render inline formatting: **bold**, `code`, and $katex$
 const renderInline = (text: string): React.ReactNode => {
   const parts: React.ReactNode[] = [];
-  // Regex to match $math$, `code`, **bold**
   const regex = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*)/g;
   const segments = text.split(regex);
 
@@ -51,7 +53,11 @@ const renderInline = (text: string): React.ReactNode => {
         </code>
       );
     } else if (seg.startsWith('**') && seg.endsWith('**') && seg.length > 4) {
-      parts.push(<strong key={idx} style={{ color: 'var(--text-primary)' }}>{seg.slice(2, -2)}</strong>);
+      parts.push(
+        <strong key={idx} style={{ color: 'var(--text-primary)' }}>
+          {seg.slice(2, -2)}
+        </strong>
+      );
     } else {
       parts.push(seg);
     }
@@ -190,9 +196,40 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
   activeNote,
   viewMode,
   onOpenNoteModal,
-  onContentChange
+  onContentChange,
+  onRegisterInsert
 }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Register the inserter function so FormattingToolbar can insert into the textarea cursor
+  useEffect(() => {
+    if (onRegisterInsert) {
+      onRegisterInsert((prefix: string, suffix: string = '', defaultText: string = '') => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart ?? 0;
+        const end = textarea.selectionEnd ?? 0;
+        const currentText = textarea.value;
+        const selected = currentText.substring(start, end) || defaultText;
+        const replacement = `${prefix}${selected}${suffix}`;
+
+        const newText =
+          currentText.substring(0, start) + replacement + currentText.substring(end);
+
+        onContentChange?.(newText);
+
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(
+            start + prefix.length,
+            start + prefix.length + selected.length
+          );
+        }, 10);
+      });
+    }
+  }, [onRegisterInsert, onContentChange]);
 
   const handleCopyCode = (codeText: string, index: number) => {
     navigator.clipboard.writeText(codeText);
@@ -203,34 +240,54 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
   // If no note is selected or available
   if (!activeNote || activeNote.id === 'nota-default') {
     return (
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 20px',
-        textAlign: 'center',
-        background: 'var(--bg-canvas)'
-      }}>
-        <div style={{
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          backgroundColor: 'var(--surface-2)',
-          border: '1px solid var(--border-subtle)',
+      <div
+        style={{
+          flex: 1,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '16px'
-        }}>
+          padding: '40px 20px',
+          textAlign: 'center',
+          background: 'var(--bg-canvas)'
+        }}
+      >
+        <div
+          style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--surface-2)',
+            border: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px'
+          }}
+        >
           <FileText size={26} color="var(--primary)" />
         </div>
-        <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+        <h3
+          style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            marginBottom: '8px'
+          }}
+        >
           Sin apunte seleccionado
         </h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '420px', lineHeight: 1.5, marginBottom: '20px' }}>
-          Selecciona una nota del panel lateral o crea un nuevo apunte en formato Markdown para documentar tus clases, fórmulas y laboratorios.
+        <p
+          style={{
+            fontSize: '13px',
+            color: 'var(--text-secondary)',
+            maxWidth: '420px',
+            lineHeight: 1.5,
+            marginBottom: '20px'
+          }}
+        >
+          Selecciona una nota del panel lateral o crea un nuevo apunte en formato Markdown para
+          documentar tus clases, fórmulas y laboratorios.
         </p>
         {onOpenNoteModal && (
           <button
@@ -248,160 +305,256 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
 
   const blocks = parseMarkdownBlocks(activeNote.contenidoMarkdown || '');
 
-  return (
-    <div className={styles.editorScrollArea} style={{ flex: 1 }}>
-      <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
-
-      <div className={styles.docMetaGroup}>
-        <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>
-        <div>Evaluación: <strong>{activeNote.evaluacionNombre || activeNote.carpeta || 'General'}</strong></div>
-        <div>Modificado: {new Date(activeNote.fechaModificacion).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-        <div>Lectura: ~{activeNote.tiempoLecturaMin || 1} min ({activeNote.palabras || 0} palabras)</div>
-      </div>
-
-      {viewMode === 'markdown' ? (
-        <textarea
-          value={activeNote.contenidoMarkdown}
-          onChange={(e) => onContentChange && onContentChange(e.target.value)}
-          style={{
-            width: '100%',
-            height: '500px',
-            background: 'var(--surface-1)',
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '13px',
-            lineHeight: 1.6,
-            padding: '16px',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-sm)',
-            resize: 'vertical'
-          }}
-        />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '12px' }}>
-          {blocks.map((block, idx) => {
-            switch (block.type) {
-              case 'h1':
-                return (
-                  <h1 key={idx} style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '12px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '6px' }}>
-                    {renderInline(block.content)}
-                  </h1>
-                );
-              case 'h2':
-                return (
-                  <h2 key={idx} style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '8px' }}>
-                    {renderInline(block.content)}
-                  </h2>
-                );
-              case 'h3':
-                return (
-                  <h3 key={idx} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginTop: '6px' }}>
-                    {renderInline(block.content)}
-                  </h3>
-                );
-              case 'callout':
-                return (
-                  <div key={idx} className={styles.calloutCritical}>
-                    <div className={styles.calloutHeader}>
-                      <Flame size={14} />
-                      <span>NOTA CLAVE</span>
-                    </div>
-                    <p className={styles.calloutBody}>
-                      {renderInline(block.content)}
-                    </p>
-                  </div>
-                );
-              case 'math': {
-                let mathHtml = block.content;
-                try {
-                  mathHtml = katex.renderToString(block.content, {
-                    displayMode: true,
-                    throwOnError: false
-                  });
-                } catch {
-                  mathHtml = block.content;
-                }
-                return (
-                  <div key={idx} className={styles.mathDisplayBox}>
-                    <div className={styles.mathHeader}>KaTeX · Formal Notation</div>
-                    <div
-                      className={styles.mathFormula}
-                      dangerouslySetInnerHTML={{ __html: mathHtml }}
-                    />
-                  </div>
-                );
-              }
-              case 'code':
-                return (
-                  <div key={idx} className={styles.codeBlock}>
-                    <div className={styles.codeHeader}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }} />
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }} />
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                        <span style={{ marginLeft: '6px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
-                          {block.extra?.lang || 'código'}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleCopyCode(block.content, idx)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer' }}
-                      >
-                        {copiedIndex === idx ? <Check size={12} color="var(--emerald)" /> : <Copy size={12} />}
-                        <span>{copiedIndex === idx ? 'Copiado' : 'Copiar'}</span>
-                      </button>
-                    </div>
-                    <pre className={styles.codeContent}>
-                      <code>{block.content}</code>
-                    </pre>
-                  </div>
-                );
-              case 'table': {
-                const rows = block.content.split('\n').filter(r => r.trim() && !r.includes('---'));
-                if (rows.length === 0) return null;
-                const headerCols = rows[0].split('|').map(c => c.trim()).filter(Boolean);
-                const bodyRows = rows.slice(1).map(r => r.split('|').map(c => c.trim()).filter(Boolean));
-                return (
-                  <table key={idx} className={styles.markdownTable}>
-                    <thead>
-                      <tr>
-                        {headerCols.map((col, colIdx) => (
-                          <th key={colIdx}>{renderInline(col)}</th>
+  const renderBlocksList = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '8px' }}>
+      {blocks.map((block, idx) => {
+        switch (block.type) {
+          case 'h1':
+            return (
+              <h1
+                key={idx}
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  marginTop: '12px',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  paddingBottom: '6px'
+                }}
+              >
+                {renderInline(block.content)}
+              </h1>
+            );
+          case 'h2':
+            return (
+              <h2
+                key={idx}
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  marginTop: '8px'
+                }}
+              >
+                {renderInline(block.content)}
+              </h2>
+            );
+          case 'h3':
+            return (
+              <h3
+                key={idx}
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  marginTop: '6px'
+                }}
+              >
+                {renderInline(block.content)}
+              </h3>
+            );
+          case 'callout':
+            return (
+              <div key={idx} className={styles.calloutCritical}>
+                <div className={styles.calloutHeader}>
+                  <Flame size={14} />
+                  <span>NOTA CLAVE</span>
+                </div>
+                <p className={styles.calloutBody}>{renderInline(block.content)}</p>
+              </div>
+            );
+          case 'math': {
+            let mathHtml = block.content;
+            try {
+              mathHtml = katex.renderToString(block.content, {
+                displayMode: true,
+                throwOnError: false
+              });
+            } catch {
+              mathHtml = `<pre>${block.content}</pre>`;
+            }
+            return (
+              <div
+                key={idx}
+                style={{
+                  margin: '12px 0',
+                  padding: '12px',
+                  background: 'var(--surface-2)',
+                  borderRadius: 'var(--radius-xs)',
+                  border: '1px solid var(--border-subtle)',
+                  overflowX: 'auto',
+                  textAlign: 'center'
+                }}
+                dangerouslySetInnerHTML={{ __html: mathHtml }}
+              />
+            );
+          }
+          case 'code':
+            return (
+              <div key={idx} className={styles.codeBlock}>
+                <div className={styles.codeHeader}>
+                  <span>{block.extra?.lang || 'código'}</span>
+                  <button
+                    className={styles.copyBtn}
+                    onClick={() => handleCopyCode(block.content, idx)}
+                  >
+                    {copiedIndex === idx ? (
+                      <>
+                        <Check size={12} color="var(--emerald)" />
+                        <span>Copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span>Copiar</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <pre className={styles.codeContent}>
+                  <code>{block.content}</code>
+                </pre>
+              </div>
+            );
+          case 'table': {
+            const rows = block.content.trim().split('\n');
+            const headerRow = rows[0]
+              ? rows[0]
+                  .split('|')
+                  .filter((_, i, arr) => i > 0 && i < arr.length - 1)
+                  .map(c => c.trim())
+              : [];
+            const dataRows = rows.slice(2).map(r =>
+              r
+                .split('|')
+                .filter((_, i, arr) => i > 0 && i < arr.length - 1)
+                .map(c => c.trim())
+            );
+            return (
+              <div key={idx} style={{ overflowX: 'auto', margin: '8px 0' }}>
+                <table className={styles.markdownTable}>
+                  <thead>
+                    <tr>
+                      {headerRow.map((h, hIdx) => (
+                        <th key={hIdx}>{renderInline(h)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dataRows.map((row, rIdx) => (
+                      <tr key={rIdx}>
+                        {row.map((cell, cIdx) => (
+                          <td key={cIdx}>{renderInline(cell)}</td>
                         ))}
                       </tr>
-                    </thead>
-                    <tbody>
-                      {bodyRows.map((row, rowIdx) => (
-                        <tr key={rowIdx}>
-                          {row.map((cell, cellIdx) => (
-                            <td key={cellIdx}>{renderInline(cell)}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                );
-              }
-              case 'list':
-                return (
-                  <ul key={idx} style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    {block.extra?.items?.map((item: string, itemIdx: number) => (
-                      <li key={itemIdx}>{renderInline(item)}</li>
                     ))}
-                  </ul>
-                );
-              case 'p':
-              default:
-                return (
-                  <p key={idx} style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    {renderInline(block.content)}
-                  </p>
-                );
-            }
-          })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
+          case 'list':
+            return (
+              <ul
+                key={idx}
+                style={{
+                  paddingLeft: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  color: 'var(--text-secondary)'
+                }}
+              >
+                {block.extra?.items?.map((item: string, itemIdx: number) => (
+                  <li key={itemIdx} style={{ lineHeight: 1.5 }}>
+                    {renderInline(item)}
+                  </li>
+                ))}
+              </ul>
+            );
+          case 'p':
+          default:
+            return (
+              <p
+                key={idx}
+                style={{
+                  lineHeight: 1.6,
+                  color: 'var(--text-secondary)',
+                  fontSize: '13px',
+                  margin: 0
+                }}
+              >
+                {renderInline(block.content)}
+              </p>
+            );
+        }
+      })}
+    </div>
+  );
+
+  return (
+    <>
+      {viewMode === 'split' ? (
+        /* Modo Split: Editor de Markdown a la izquierda + Live Preview Renderizado a la derecha */
+        <div className={styles.editorSplitContainer}>
+          <div className={styles.splitEditorPane}>
+            <textarea
+              ref={textareaRef}
+              value={activeNote.contenidoMarkdown}
+              onChange={e => onContentChange?.(e.target.value)}
+              className={styles.markdownTextarea}
+              placeholder="Escribe tu apunte en formato Markdown aquí..."
+              spellCheck={false}
+            />
+          </div>
+          <div className={styles.splitPreviewPane}>
+            <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
+            <div className={styles.docMetaGroup}>
+              <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>
+              <div>Evaluación: <strong>{activeNote.evaluacionNombre || activeNote.carpeta || 'General'}</strong></div>
+            </div>
+            {renderBlocksList()}
+          </div>
+        </div>
+      ) : viewMode === 'markdown' ? (
+        /* Modo Markdown Completo */
+        <div className={styles.editorScrollArea} style={{ flex: 1 }}>
+          <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
+          <div className={styles.docMetaGroup}>
+            <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>
+            <div>Evaluación: <strong>{activeNote.evaluacionNombre || activeNote.carpeta || 'General'}</strong></div>
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={activeNote.contenidoMarkdown}
+            onChange={e => onContentChange?.(e.target.value)}
+            className={styles.markdownTextarea}
+            placeholder="Escribe tu apunte en formato Markdown aquí..."
+            style={{ minHeight: '600px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}
+            spellCheck={false}
+          />
+        </div>
+      ) : (
+        /* Modo Renderizado Completo */
+        <div className={styles.editorScrollArea} style={{ flex: 1 }}>
+          <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
+          <div className={styles.docMetaGroup}>
+            <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>
+            <div>Evaluación: <strong>{activeNote.evaluacionNombre || activeNote.carpeta || 'General'}</strong></div>
+            <div>
+              Modificado:{' '}
+              {new Date(activeNote.fechaModificacion).toLocaleDateString('es-AR', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+              })}
+            </div>
+            <div>Lectura: ~{activeNote.tiempoLecturaMin || 1} min ({activeNote.palabras || 0} palabras)</div>
+          </div>
+          {renderBlocksList()}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
