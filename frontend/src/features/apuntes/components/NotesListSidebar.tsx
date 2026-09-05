@@ -73,32 +73,52 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
       </div>
 
       <div className={styles.notesList}>
-        {notes.map((note) => {
-          const isActive = note.id === activeNoteId;
-          return (
-            <div
-              key={note.id}
-              className={`${styles.noteCard} ${isActive ? styles.noteCardActive : ''}`}
-              onClick={() => onSelectNote(note.id)}
+        {notes.length === 0 ? (
+          <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <BookOpen size={24} style={{ color: 'var(--text-dim)', margin: '0 auto 8px', display: 'block', opacity: 0.6 }} />
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+              Sin notas
+            </p>
+            <span style={{ fontSize: '11px', color: 'var(--text-dim)', display: 'block', marginBottom: '14px', lineHeight: 1.4 }}>
+              {searchQuery ? 'No hay notas con ese término' : 'No hay notas registradas en esta carpeta'}
+            </span>
+            <button
+              className={styles.btnNewFolder}
+              onClick={onOpenNoteModal}
+              style={{ justifyContent: 'center' }}
             >
-              <div className={styles.noteCardTop}>
-                <h4 className={styles.noteCardTitle}>{note.titulo}</h4>
-                {isActive && <span className={styles.activeTag}>ACTIVO</span>}
-              </div>
+              <Plus size={12} />
+              <span>Crear Apunte</span>
+            </button>
+          </div>
+        ) : (
+          notes.map((note) => {
+            const isActive = note.id === activeNoteId;
+            return (
+              <div
+                key={note.id}
+                className={`${styles.noteCard} ${isActive ? styles.noteCardActive : ''}`}
+                onClick={() => onSelectNote(note.id)}
+              >
+                <div className={styles.noteCardTop}>
+                  <h4 className={styles.noteCardTitle}>{note.titulo}</h4>
+                  {isActive && <span className={styles.activeTag}>ACTIVO</span>}
+                </div>
 
-              <p className={styles.noteCardExcerpt}>{note.resumen}</p>
+                <p className={styles.noteCardExcerpt}>{note.resumen}</p>
 
-              <div className={styles.noteCardFooter}>
-                <span>{note.fechaModificacion}</span>
-                <div className={styles.tagPillsRow}>
-                  {note.tags.map(tag => (
-                    <span key={tag} className={styles.miniTag}>#{tag}</span>
-                  ))}
+                <div className={styles.noteCardFooter}>
+                  <span>{new Date(note.fechaModificacion).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</span>
+                  <div className={styles.tagPillsRow}>
+                    {note.tags.map(tag => (
+                      <span key={tag} className={styles.miniTag}>#{tag}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       <div className={styles.notesFooter}>

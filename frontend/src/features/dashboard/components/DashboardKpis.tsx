@@ -26,6 +26,11 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   const nextCritical = proximas.length > 0 ? proximas[0] : null;
 
   if (!perfil) return null;
+
+  const hasPromedio = perfil.promedioGeneral > 0;
+  const hasPlan = perfil.materiasTotales > 0;
+  const progressPercent = hasPlan ? Math.round((perfil.materiasAprobadas / perfil.materiasTotales) * 100) : 0;
+
   return (
     <div className={styles.kpiGrid}>
       {/* KPI 1: Promedio General */}
@@ -40,16 +45,31 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiValueRow}>
-          <span className={styles.kpiMainValue}>{perfil.promedioGeneral.toFixed(2)}</span>
+          <span className={styles.kpiMainValue}>{hasPromedio ? perfil.promedioGeneral.toFixed(2) : '--'}</span>
           <span className={styles.kpiSubValue}>/ 10.0</span>
-          <span className={styles.deltaBadge}>
-            <TrendingUp size={11} />
-            +{perfil.deltaPromedio} vs ciclo anterior
-          </span>
+          {perfil.deltaPromedio !== 0 ? (
+            <span className={styles.deltaBadge}>
+              <TrendingUp size={11} />
+              +{perfil.deltaPromedio} vs ciclo anterior
+            </span>
+          ) : (
+            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+              {hasPromedio ? 'Ciclo actual' : 'Sin notas cargadas'}
+            </span>
+          )}
         </div>
         <div className={styles.kpiFooter}>
-          <span>Puesto: #{perfil.puestoCohorte} en cohorte</span>
-          <span>Percentil {perfil.percentil}%</span>
+          {perfil.puestoCohorte > 0 ? (
+            <>
+              <span>Puesto: #{perfil.puestoCohorte} en cohorte</span>
+              <span>Percentil {perfil.percentil}%</span>
+            </>
+          ) : (
+            <>
+              <span>Régimen regular</span>
+              <span>En curso</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -59,7 +79,9 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <div className={styles.kpiTitleGroup}>
             <span className={styles.kpiLabel}>Progreso de Carrera</span>
             <span className={styles.kpiSub}>
-              {perfil.materiasAprobadas} de {perfil.materiasTotales} materias aprobadas
+              {hasPlan
+                ? `${perfil.materiasAprobadas} de ${perfil.materiasTotales} materias aprobadas`
+                : 'Plan de carrera'}
             </span>
           </div>
           <div className={styles.kpiIconBox}>
@@ -68,23 +90,32 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         </div>
         <div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue}>
-              {Math.round((perfil.materiasAprobadas / (perfil.materiasTotales || 1)) * 100)}%
-            </span>
+            <span className={styles.kpiMainValue}>{progressPercent}%</span>
             <span className={styles.kpiSubValue}>
-              {perfil.materiasTotales - perfil.materiasAprobadas} pendientes
+              {hasPlan ? `${perfil.materiasTotales - perfil.materiasAprobadas} pendientes` : 'Por iniciar'}
             </span>
           </div>
           <div className={styles.progressBarBg}>
             <div
               className={styles.progressBarFill}
-              style={{ width: `${(perfil.materiasAprobadas / (perfil.materiasTotales || 1)) * 100}%` }}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          <span>Tesina habilitada al 75%</span>
-          <span>{perfil.materiasTotales - perfil.materiasAprobadas} materias para graduación</span>
+          {hasPlan ? (
+            <>
+              <span>Tesina habilitada al 75%</span>
+              <span>{perfil.materiasTotales - perfil.materiasAprobadas} para graduación</span>
+            </>
+          ) : (
+            <>
+              <span>Sin materias aprobadas aún</span>
+              <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={onGoToMaterias}>
+                Ver materias →
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -102,7 +133,9 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         <div>
           <div className={styles.kpiValueRow}>
             <span className={styles.kpiMainValue}>{activeSubjects.length}</span>
-            <span style={{ fontSize: '12px', color: 'var(--emerald)' }}>Todas regulares al día</span>
+            <span style={{ fontSize: '12px', color: activeSubjects.length > 0 ? 'var(--emerald)' : 'var(--text-dim)' }}>
+              {activeSubjects.length > 0 ? 'Todas regulares al día' : 'Sin materias activas'}
+            </span>
           </div>
           <div className={styles.subjectPills}>
             {activeSubjects.slice(0, 4).map(subj => (
@@ -120,20 +153,24 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         </div>
       </div>
 
-      {/* KPI 4: Atención Inmediata */}
-      <div className={styles.kpiCard} style={{ borderLeft: '3px solid var(--red)' }}>
+      {/* KPI 4: Atención Inmediata / Próxima Evaluación */}
+      <div className={styles.kpiCard} style={{ borderLeft: nextCritical ? '3px solid var(--red)' : '3px solid var(--emerald)' }}>
         <div className={styles.kpiHeader}>
           <div className={styles.kpiTitleGroup}>
-            <span className={styles.kpiLabel} style={{ color: 'var(--red)' }}>Atención Inmediata</span>
-            <span className={styles.kpiSub}>Próxima evaluación crítica</span>
+            <span className={styles.kpiLabel} style={{ color: nextCritical ? 'var(--red)' : 'var(--emerald)' }}>
+              {nextCritical ? 'Atención Inmediata' : 'Cronograma al Día'}
+            </span>
+            <span className={styles.kpiSub}>
+              {nextCritical ? 'Próxima evaluación crítica' : 'Próximas fechas'}
+            </span>
           </div>
-          <div className={styles.kpiIconBox} style={{ color: 'var(--red)' }}>
+          <div className={styles.kpiIconBox} style={{ color: nextCritical ? 'var(--red)' : 'var(--emerald)' }}>
             <Flame size={15} />
           </div>
         </div>
         <div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue} style={{ color: 'var(--red)' }}>
+            <span className={styles.kpiMainValue} style={{ color: nextCritical ? 'var(--red)' : 'var(--text-primary)' }}>
               {nextCritical ? `${nextCritical.peso}%` : 'Al día'}
             </span>
             <span className={styles.kpiSubValue}>
@@ -143,16 +180,18 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <div className={styles.sparklineContainer}>
             <svg viewBox="0 0 100 20" className={styles.sparklineSvg}>
               <path
-                d="M 0,15 Q 25,5 50,12 T 100,2"
+                d={nextCritical ? "M 0,15 Q 25,5 50,12 T 100,2" : "M 0,10 L 100,10"}
                 fill="none"
-                stroke="var(--red)"
+                stroke={nextCritical ? "var(--red)" : "var(--border-subtle)"}
                 strokeWidth="2"
               />
             </svg>
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          <span style={{ color: 'var(--text-muted)' }}>Requiere repaso intensivo</span>
+          <span style={{ color: 'var(--text-muted)' }}>
+            {nextCritical ? 'Requiere repaso' : 'Calendario despejado'}
+          </span>
           <span
             style={{ cursor: 'pointer', color: 'var(--primary-glow)' }}
             onClick={onGoToCalendario}

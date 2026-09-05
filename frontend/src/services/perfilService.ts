@@ -6,19 +6,19 @@ import { mockPerfil } from '../data/mockData';
 import { isMocksEnabled } from '../config/mockConfig';
 
 const cleanPerfil: PerfilEstudiante = {
-  nombre: 'Sofía Chen',
-  legajo: '#48.910',
-  carrera: 'Ingeniería en Sistemas',
-  semestreActual: 'Ciclo 2026',
-  cicloActivo: '2026 · 1er Cuatrimestre',
+  nombre: 'Estudiante',
+  legajo: '---',
+  carrera: 'Carrera de Grado',
+  semestreActual: 'Ciclo Lectivo',
+  cicloActivo: 'Cuatrimestre en Curso',
   promedioGeneral: 0.0,
   deltaPromedio: 0.0,
-  puestoCohorte: 1,
-  percentil: 100,
+  puestoCohorte: 0,
+  percentil: 0,
   materiasAprobadas: 0,
-  materiasTotales: 44,
+  materiasTotales: 0,
   creditosAprobados: 0,
-  creditosTotales: 280,
+  creditosTotales: 0,
   promedioHistorico: []
 };
 

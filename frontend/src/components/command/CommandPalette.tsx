@@ -7,7 +7,6 @@ import {
   Calendar,
   FileText,
   PlusCircle,
-  Clock,
   Sparkles,
   ArrowRight,
   Sun,
@@ -22,15 +21,13 @@ interface CommandPaletteProps {
   onClose: () => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
-  onStartPomodoro: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
   onOpenEvaluationModal,
-  onOpenNoteModal,
-  onStartPomodoro
+  onOpenNoteModal
 }) => {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
@@ -78,8 +75,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       group: 'Acciones del Sistema',
       items: [
         { id: 'act-eval', label: 'Registrar Nueva Instancia de Evaluación', icon: PlusCircle, kbd: '⌘E', action: () => { onOpenEvaluationModal(); onClose(); } },
-        { id: 'act-note', label: 'Crear Nuevo Apunte Markdown', icon: PlusCircle, kbd: '⌘N', action: () => { onOpenNoteModal(); onClose(); } },
-        { id: 'act-pomo', label: 'Iniciar Modo Enfoque Pomodoro (25m)', icon: Clock, kbd: '⌘P', action: () => { onStartPomodoro(); onClose(); } }
+        { id: 'act-note', label: 'Crear Nuevo Apunte Markdown', icon: PlusCircle, kbd: '⌘N', action: () => { onOpenNoteModal(); onClose(); } }
       ]
     },
     {

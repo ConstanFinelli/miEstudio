@@ -7,7 +7,6 @@ import {
   UpcomingEvaluations,
   ScheduleBanner,
   AcademicProgressChart,
-  PomodoroWidget,
   RecentNotesWidget,
   KeyboardShortcutsWidget
 } from './components';
@@ -16,14 +15,12 @@ interface DashboardViewProps {
   onNavigate?: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
-  onStartPomodoro: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigate,
   onOpenEvaluationModal,
-  onOpenNoteModal,
-  onStartPomodoro
+  onOpenNoteModal
 }) => {
   const navigate = useNavigate();
   const goTo = (view: string) => {
@@ -56,16 +53,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <AcademicProgressChart />
         </div>
 
-        {/* Right Column: Sesión Pomodoro + Notas Recientes + Atajos */}
+        {/* Right Column: Notas Recientes + Atajos */}
         <div className={styles.rightColumn}>
-          <PomodoroWidget onStartPomodoro={onStartPomodoro} />
-
           <RecentNotesWidget onGoToApuntes={() => goTo('apuntes')} />
 
           <KeyboardShortcutsWidget
             onOpenNoteModal={onOpenNoteModal}
             onOpenEvaluationModal={onOpenEvaluationModal}
-            onStartPomodoro={onStartPomodoro}
           />
         </div>
       </div>

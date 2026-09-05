@@ -11,21 +11,21 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({ onClose 
     <div className={styles.pdfPane} style={{ flex: 1, minWidth: '400px' }}>
       <div className={styles.pdfHeader}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600 }}>
-          <span style={{ background: 'var(--red)', color: 'white', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '2px' }}>PDF</span>
+          <span style={{ background: 'var(--primary)', color: 'white', fontSize: '9px', fontWeight: 700, padding: '1px 5px', borderRadius: '2px' }}>DOC</span>
           <span style={{ color: 'var(--text-primary)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            Paper Raft (Ongaro & Ousterhout)
+            Visor de Documentos de Cátedra
           </span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)', background: 'var(--surface-3)', padding: '2px 6px', borderRadius: '3px' }}>
-            Pág. 1 / 18 · 100%
+            Modo Estudio Paralelo
           </span>
           <button
             className={styles.toolBtn}
             style={{ padding: '3px 6px' }}
             onClick={onClose}
-            title="Cerrar visor PDF y restaurar paneles laterales"
+            title="Cerrar visor y restaurar paneles laterales"
           >
             <X size={13} />
           </button>
@@ -37,10 +37,10 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({ onClose 
         <div style={{
           width: '100%',
           maxWidth: '540px',
-          backgroundColor: '#0d0d11',
+          backgroundColor: 'var(--surface-1)',
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-sm)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+          boxShadow: 'var(--shadow-md)',
           padding: '28px 24px',
           display: 'flex',
           flexDirection: 'column',
@@ -49,48 +49,43 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({ onClose 
         }}>
           <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '12px', textAlign: 'center' }}>
             <h2 style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 700, marginBottom: '6px', lineHeight: 1.3 }}>
-              In Search of an Understandable Consensus Algorithm
+              Lectura y Apuntes en Paralelo
             </h2>
             <div style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
-              Diego Ongaro and John Ousterhout · Stanford University
+              Visor split-view para consulta bibliográfica activa
             </div>
           </div>
 
           <div style={{
             backgroundColor: 'var(--surface-2)',
             borderLeft: '2px solid var(--primary)',
-            padding: '8px 12px',
+            padding: '10px 14px',
             borderRadius: '2px',
-            fontSize: '11px',
-            fontStyle: 'italic',
-            color: 'var(--text-muted)',
+            fontSize: '12px',
+            color: 'var(--text-secondary)',
             lineHeight: 1.5
           }}>
-            <strong>Abstract —</strong> Raft is a consensus algorithm for managing a replicated log. It produces a result equivalent to (multi-Paxos), and it is as efficient as Paxos, but its structure makes it more understandable.
+            <strong>Modo Split-View Activado:</strong> Las columnas laterales se han replegado automáticamente para brindarte el máximo espacio visual. Puedes cargar archivos PDF desde la sección de <em>Materias &gt; Materiales</em> para consultarlos aquí mientras redactas.
           </div>
 
-          <div style={{ fontSize: '11px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
-            <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>1. Introduction</strong>
-            Consensus algorithms allow a collection of machines to work as a coherent group that can survive the failures of some of its members. Raft decomposes consensus into relatively independent subproblems: Leader election, Log replication, and Safety...
+          <div style={{ fontSize: '12px', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>Técnica de Estudio Efectiva</strong>
+            Alinea conceptos teóricos con demostraciones prácticas. Cuando formules hipótesis o extraigas resúmenes, usa la barra de herramientas superior para insertar bloques KaTeX y snippets de código copiables con un clic.
           </div>
 
           <div style={{
-            border: '1px dashed var(--border-hover)',
+            border: '1px dashed var(--border-subtle)',
             borderRadius: 'var(--radius-xs)',
-            padding: '10px',
+            padding: '14px',
             textAlign: 'center',
-            backgroundColor: 'var(--surface-1)'
+            backgroundColor: 'var(--surface-2)'
           }}>
-            <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--emerald)', marginBottom: '4px' }}>
-              [Figure 3: Raft Server States & Transitions]
+            <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--primary-glow)', marginBottom: '4px' }}>
+              [Espacio de Lectura y Referencias]
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Follower ⇄ Candidate ⇄ Leader
+            <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+              Sincronizado con el apunte activo en pantalla
             </div>
-          </div>
-
-          <div style={{ fontSize: '10px', color: 'var(--text-dim)', textAlign: 'center', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>
-            — Fin de Página 1 de 18 · Material de Estudio Oficial —
           </div>
         </div>
       </div>

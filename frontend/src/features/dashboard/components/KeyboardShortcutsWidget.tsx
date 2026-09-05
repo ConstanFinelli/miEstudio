@@ -1,17 +1,18 @@
 import React from 'react';
 import styles from '../DashboardView.module.css';
+import { useTheme } from '../../../context/ThemeContext';
 
 interface KeyboardShortcutsWidgetProps {
   onOpenNoteModal: () => void;
   onOpenEvaluationModal: () => void;
-  onStartPomodoro: () => void;
 }
 
 export const KeyboardShortcutsWidget: React.FC<KeyboardShortcutsWidgetProps> = ({
   onOpenNoteModal,
-  onOpenEvaluationModal,
-  onStartPomodoro
+  onOpenEvaluationModal
 }) => {
+  const { toggleTheme } = useTheme();
+
   return (
     <div className={styles.widgetCard}>
       <div className={styles.widgetHeader}>
@@ -45,9 +46,9 @@ export const KeyboardShortcutsWidget: React.FC<KeyboardShortcutsWidgetProps> = (
           <span className={styles.shortcutKbd}>⌘ K</span>
         </button>
 
-        <button className={styles.shortcutItem} onClick={onStartPomodoro}>
-          <span>Iniciar enfoque</span>
-          <span className={styles.shortcutKbd}>⌘ P</span>
+        <button className={styles.shortcutItem} onClick={toggleTheme}>
+          <span>Cambiar tema</span>
+          <span className={styles.shortcutKbd}>⌘ T</span>
         </button>
       </div>
     </div>

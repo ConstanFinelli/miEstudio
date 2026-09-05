@@ -4,7 +4,7 @@ import { Cloud, Eye, Code, Columns, BookOpen, Download, Share2 } from 'lucide-re
 import type { ApunteNota } from '../../../types/academic';
 
 interface NoteEditorHeaderProps {
-  activeNote: ApunteNota;
+  activeNote: ApunteNota | null;
   viewMode: 'render' | 'markdown' | 'split';
   onViewModeChange: (mode: 'render' | 'markdown' | 'split') => void;
   showPdfSplit: boolean;
@@ -23,13 +23,23 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
       <div className={styles.editorBreadcrumbs}>
         <span>WORKSPACE</span>
         <span>/</span>
-        <span>{activeNote.materiaNombre}</span>
-        <span>/</span>
-        <span className={styles.parcialBadge}>Parcial 1</span>
+        <span>{activeNote?.materiaNombre || 'Apuntes'}</span>
+        {activeNote?.evaluacionNombre && (
+          <>
+            <span>/</span>
+            <span className={styles.parcialBadge}>{activeNote.evaluacionNombre}</span>
+          </>
+        )}
+        {activeNote?.carpeta && (
+          <>
+            <span>/</span>
+            <span>{activeNote.carpeta}</span>
+          </>
+        )}
         <span>·</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--emerald)' }}>
           <Cloud size={12} />
-          <span>Autoguardado 15:42</span>
+          <span>Sincronizado</span>
         </div>
       </div>
 

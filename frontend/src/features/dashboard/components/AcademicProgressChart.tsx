@@ -5,14 +5,7 @@ import { usePerfil } from '../../../hooks';
 
 export const AcademicProgressChart: React.FC = () => {
   const { perfil } = usePerfil();
-
-  const historico = perfil?.promedioHistorico || [
-    { cuatrimestre: '2022-1C', promedio: 7.2 },
-    { cuatrimestre: '2022-2C', promedio: 7.6 },
-    { cuatrimestre: '2023-1C', promedio: 7.9 },
-    { cuatrimestre: '2024-1C', promedio: 8.1 },
-    { cuatrimestre: '2025-1C', promedio: 8.42 }
-  ];
+  const historico = perfil?.promedioHistorico || [];
 
   return (
     <div className={styles.chartCard}>
@@ -25,52 +18,85 @@ export const AcademicProgressChart: React.FC = () => {
             Curva histórica de calificaciones por cuatrimestre
           </div>
         </div>
-        <div className={styles.chartTrend}>
-          <TrendingUp size={14} />
-          <span>Tendencia positiva</span>
+        {historico.length > 1 && (
+          <div className={styles.chartTrend}>
+            <TrendingUp size={14} />
+            <span>Tendencia académica</span>
+          </div>
+        )}
+      </div>
+
+      {historico.length === 0 ? (
+        <div style={{
+          padding: '24px 16px',
+          textAlign: 'center',
+          backgroundColor: 'var(--surface-1)',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px dashed var(--border-subtle)',
+          margin: '12px 0'
+        }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: 500 }}>
+            Curva en espera de calificaciones
+          </p>
+          <span style={{ fontSize: '11px', color: 'var(--text-dim)', maxWidth: '420px', display: 'inline-block', lineHeight: 1.4 }}>
+            A medida que registres parciales y finales aprobados, se graficará automáticamente tu evolución cuatrimestral.
+          </span>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className={styles.chartSvgWrapper}>
+            <svg width="100%" height="100%" viewBox="0 0 500 70" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              {(() => {
+                const points = historico.map((item, idx) => {
+                  const x = 30 + (idx / Math.max(1, historico.length - 1)) * 440;
+                  // Map average 0..10 to svg y: 10 -> y=12, 4 -> y=58
+                  const y = Math.max(12, Math.min(58, 65 - ((item.promedio - 4) / 6) * 48));
+                  return { x, y, item };
+                });
+                const d = points.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`, '');
+                const areaD = `${d} L ${points[points.length - 1].x} 70 L ${points[0].x} 70 Z`;
+                return (
+                  <>
+                    <path d={areaD} fill="url(#curveGrad)" />
+                    <path d={d} fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" />
+                    {points.map((p, idx) => (
+                      <circle
+                        key={idx}
+                        cx={p.x}
+                        cy={p.y}
+                        r={idx === points.length - 1 ? 4.5 : 3.5}
+                        fill={idx === points.length - 1 ? 'var(--surface-1)' : 'var(--primary-glow)'}
+                        stroke="var(--primary)"
+                        strokeWidth={idx === points.length - 1 ? 2 : 1}
+                      />
+                    ))}
+                  </>
+                );
+              })()}
+            </svg>
+          </div>
 
-      <div className={styles.chartSvgWrapper}>
-        <svg width="100%" height="100%" viewBox="0 0 500 70" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M 20 55 Q 120 48, 200 40 T 350 25 T 480 15 L 480 70 L 20 70 Z"
-            fill="url(#curveGrad)"
-          />
-          <path
-            d="M 20 55 Q 120 48, 200 40 T 350 25 T 480 15"
-            fill="none"
-            stroke="var(--primary)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <circle cx="20" cy="55" r="3.5" fill="var(--primary-glow)" />
-          <circle cx="135" cy="46" r="3.5" fill="var(--primary-glow)" />
-          <circle cx="250" cy="35" r="3.5" fill="var(--primary-glow)" />
-          <circle cx="365" cy="24" r="3.5" fill="var(--primary-glow)" />
-          <circle cx="480" cy="15" r="4.5" fill="var(--surface-1)" stroke="var(--primary)" strokeWidth="2" />
-        </svg>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-dim)' }}>
-        {historico.map((item, idx) => {
-          const isLatest = idx === historico.length - 1;
-          return (
-            <span
-              key={item.cuatrimestre}
-              style={{ color: isLatest ? 'var(--emerald)' : undefined, fontWeight: isLatest ? '600' : undefined }}
-            >
-              {item.cuatrimestre} ({item.promedio})
-            </span>
-          );
-        })}
-      </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-dim)' }}>
+            {historico.map((item, idx) => {
+              const isLatest = idx === historico.length - 1;
+              return (
+                <span
+                  key={item.cuatrimestre}
+                  style={{ color: isLatest ? 'var(--emerald)' : undefined, fontWeight: isLatest ? '600' : undefined }}
+                >
+                  {item.cuatrimestre} ({item.promedio.toFixed(1)})
+                </span>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };

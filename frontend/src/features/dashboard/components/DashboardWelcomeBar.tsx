@@ -14,12 +14,15 @@ export const DashboardWelcomeBar: React.FC<DashboardWelcomeBarProps> = ({ perfil
 
   if (!perfil) return null;
 
+  const displayName = perfil.nombre === 'Estudiante' ? 'a tu Espacio de Estudio' : perfil.nombre.split(" ")[0];
+  const greeting = perfil.nombre === 'Estudiante' ? `Bienvenido ${displayName}` : `Hola de nuevo, ${displayName}`;
+
   return (
     <div className={styles.welcomeSection}>
       <div className={styles.welcomeLeft}>
         <div className={styles.titleRow}>
           <h1 className={styles.welcomeTitle}>
-            Hola de nuevo, {perfil.nombre.split(" ")[0]}
+            {greeting}
           </h1>
           <span className={styles.semesterPill}>
             {perfil.semestreActual}
@@ -31,12 +34,18 @@ export const DashboardWelcomeBar: React.FC<DashboardWelcomeBarProps> = ({ perfil
         <button className={`${styles.filterPill} ${styles.filterPillActive}`}>
           Historial de Cursadas
         </button>
-        <div className={`${styles.filterPill} ${styles.filterPillSuccess}`}>
-          <CheckCircle2 size={13} />
-          <span>
-            {perfil.creditosAprobados} / {perfil.creditosTotales} CR
-          </span>
-        </div>
+        {perfil.creditosTotales > 0 ? (
+          <div className={`${styles.filterPill} ${styles.filterPillSuccess}`}>
+            <CheckCircle2 size={13} />
+            <span>
+              {perfil.creditosAprobados} / {perfil.creditosTotales} CR
+            </span>
+          </div>
+        ) : (
+          <div className={styles.filterPill}>
+            <span>Ciclo Académico Activo</span>
+          </div>
+        )}
       </div>
     </div>
   );

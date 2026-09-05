@@ -7,7 +7,6 @@ import {
   FlaskConical,
   Sigma
 } from 'lucide-react';
-import { mockMaterias, mockEvaluaciones } from '../../../data/mockData';
 import { useMaterias, useEvaluaciones } from '../../../hooks';
 import { apuntesService } from '../../../services';
 
@@ -24,14 +23,13 @@ export const NoteModal: React.FC<NoteModalProps> = ({
 }) => {
   const { materias } = useMaterias();
   const { evaluaciones } = useEvaluaciones();
-  const availableMaterias = materias.length > 0 ? materias : mockMaterias;
-  const availableEvaluaciones = evaluaciones.length > 0 ? evaluaciones : mockEvaluaciones;
 
-  const [materiaId, setMateriaId] = useState(availableMaterias[0]?.id || 'mat-1');
-  const [evalId, setEvalId] = useState(availableEvaluaciones[0]?.id || 'eval-1');
-  const [titulo, setTitulo] = useState('Arquitectura de Replicación de Máquina de Estados (RSM) y Raft');
+  const [materiaId, setMateriaId] = useState(materias[0]?.id || '');
+  const [customMateria, setCustomMateria] = useState('');
+  const [evalId, setEvalId] = useState(evaluaciones[0]?.id || '');
+  const [titulo, setTitulo] = useState('');
   const [template, setTemplate] = useState('teorico');
-  const [tags, setTags] = useState(['distribuidos', 'parcial1', 'raft-consenso']);
+  const [tags, setTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState('');
   const [syncKatex, setSyncKatex] = useState(true);
   const [syncPg, setSyncPg] = useState(true);
@@ -52,16 +50,22 @@ export const NoteModal: React.FC<NoteModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mat = availableMaterias.find(m => m.id === materiaId);
+    const selectedMat = materias.find(m => m.id === materiaId);
+    const materiaNombre = selectedMat?.nombre || customMateria.trim() || 'General';
+    const selectedEval = evaluaciones.find(e => e.id === evalId);
+    const noteTitle = titulo.trim() || 'Nuevo Apunte';
+
     await apuntesService.createApunte({
-      materiaId,
-      materiaNombre: mat?.nombre || 'Materia',
-      titulo,
-      tags,
+      materiaId: selectedMat?.id || `mat-${Date.now()}`,
+      materiaNombre,
+      evaluacionId: selectedEval?.id,
+      evaluacionNombre: selectedEval?.titulo,
+      titulo: noteTitle,
+      tags: tags.length > 0 ? tags : ['apunte'],
       carpeta: template === 'laboratorio' ? 'Laboratorios' : 'Teoría',
-      contenidoMarkdown: `# ${titulo}\n\n## 1. Introducción y Conceptos Clave\n\nApunte generado con plantilla ${template}.\n`
+      contenidoMarkdown: `# ${noteTitle}\n\n## 1. Introducción y Conceptos Clave\n\nComienza a escribir tus notas de ${materiaNombre} aquí...\n`
     });
-    onSuccess(titulo);
+    onSuccess(noteTitle);
     onClose();
   };
 
@@ -103,30 +107,42 @@ export const NoteModal: React.FC<NoteModalProps> = ({
                 <span>Materia Vinculada *</span>
                 <span style={{ color: 'var(--text-dim)' }}>Obligatorio</span>
               </div>
-              <select
-                className={styles.fieldInput}
-                value={materiaId}
-                onChange={(e) => setMateriaId(e.target.value)}
-              >
-                {availableMaterias.map(m => (
-                  <option key={m.id} value={m.id}>
-                    {m.codigo} · {m.nombre} ({m.cuatrimestre})
-                  </option>
-                ))}
-              </select>
+              {materias.length > 0 ? (
+                <select
+                  className={styles.fieldInput}
+                  value={materiaId || materias[0]?.id}
+                  onChange={(e) => setMateriaId(e.target.value)}
+                >
+                  {materias.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  className={styles.fieldInput}
+                  value={customMateria}
+                  onChange={(e) => setCustomMateria(e.target.value)}
+                  placeholder="Nombre de la materia (ej: Algoritmos)"
+                  required
+                />
+              )}
             </div>
 
             <div className={styles.fieldGroup}>
               <div className={styles.fieldLabelRow}>
                 <span>Instancia de Evaluación</span>
-                <span style={{ color: 'var(--primary-glow)' }}>RF2 / RF4</span>
+                <span style={{ color: 'var(--primary-glow)' }}>Opcional</span>
               </div>
               <select
                 className={styles.fieldInput}
                 value={evalId}
                 onChange={(e) => setEvalId(e.target.value)}
               >
-                {availableEvaluaciones.map(ev => (
+                <option value="">General (sin evaluación asociada)</option>
+                {evaluaciones.map(ev => (
                   <option key={ev.id} value={ev.id}>
                     {ev.titulo}
                   </option>
@@ -135,12 +151,12 @@ export const NoteModal: React.FC<NoteModalProps> = ({
             </div>
           </div>
 
-          {/* Row 2: Título y Slug */}
+          {/* Row 2: Título */}
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabelRow}>
               <span>Título del Documento</span>
               <span style={{ color: 'var(--text-dim)' }}>
-                Slug autogenerado: /sis-304/apunte-raft.md
+                Formato Markdown (.md)
               </span>
             </div>
             <input
@@ -148,7 +164,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
               className={styles.fieldInput}
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Ej: Consenso Distribuido Raft"
+              placeholder="Ej: Resumen Unidad 1 - Fundamentos"
               required
             />
           </div>

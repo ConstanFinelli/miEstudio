@@ -17,8 +17,8 @@ interface ApuntesViewProps {
 
 export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => {
   const { apuntes, selectedApunte, setSelectedApunte } = useApuntes();
-  const [selectedFolder, setSelectedFolder] = useState('Sistemas Distribuidos');
-  const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>('1er Parcial');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'render' | 'markdown' | 'split'>('render');
   const [showPdfSplit, setShowPdfSplit] = useState(false);
   const [isFoldersCollapsed, setIsFoldersCollapsed] = useState(false);
@@ -38,30 +38,29 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
     }
   };
 
-  const activeNote: ApunteNota =
-    selectedApunte ||
-    apuntes[0] || {
-      id: 'nota-default',
-      materiaId: 'mat-1',
-      materiaNombre: 'Sistemas Distribuidos',
-      carpeta: 'General',
-      titulo: 'Sin notas seleccionadas',
-      contenidoMarkdown: '# Sin notas\n\nCrea un nuevo apunte con ⌘N.',
-      tags: [],
-      fechaModificacion: new Date().toISOString(),
-      tiempoLecturaMin: 1,
-      palabras: 0
-    };
-
   const filteredNotes = useMemo(() => {
     return apuntes.filter(n => {
+      if (selectedFolder) {
+        const matchesMateria = n.materiaNombre === selectedFolder || n.materiaId === selectedFolder;
+        if (!matchesMateria) return false;
+      }
+      if (selectedSubFolder) {
+        const matchesSub = n.carpeta === selectedSubFolder || n.evaluacionNombre === selectedSubFolder;
+        if (!matchesSub) return false;
+      }
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         return n.titulo.toLowerCase().includes(q) || n.tags.some(t => t.toLowerCase().includes(q));
       }
       return true;
     });
-  }, [apuntes, searchQuery]);
+  }, [apuntes, selectedFolder, selectedSubFolder, searchQuery]);
+
+  const activeNote: ApunteNota | null =
+    selectedApunte ||
+    filteredNotes[0] ||
+    apuntes[0] ||
+    null;
 
   return (
     <div className={styles.container}>
@@ -73,6 +72,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
         onSelectFolder={setSelectedFolder}
         selectedSubFolder={selectedSubFolder}
         onSelectSubFolder={setSelectedSubFolder}
+        onOpenNoteModal={onOpenNoteModal}
       />
 
       {/* 2. Middle Notes List Column (Collapsible) */}
@@ -80,7 +80,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
         isCollapsed={isNotesListCollapsed}
         onToggleCollapse={setIsNotesListCollapsed}
         notes={filteredNotes}
-        activeNoteId={activeNote.id}
+        activeNoteId={activeNote?.id || ''}
         onSelectNote={(id) => {
           const found = apuntes.find(a => a.id === id);
           if (found) setSelectedApunte(found);
@@ -102,7 +102,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
         />
 
         {/* Formatting Toolbar */}
-        <FormattingToolbar tags={activeNote.tags} />
+        <FormattingToolbar tags={activeNote?.tags || []} />
 
         {/* Main Document Body or Split View */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -110,9 +110,10 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
           <NoteReaderContent
             activeNote={activeNote}
             viewMode={viewMode}
+            onOpenNoteModal={onOpenNoteModal}
           />
 
-          {/* PDF Split-View Pane (50% real estate, realistic reader controls) */}
+          {/* PDF Split-View Pane */}
           {showPdfSplit && (
             <SplitPdfViewerPane onClose={handleToggleSplit} />
           )}

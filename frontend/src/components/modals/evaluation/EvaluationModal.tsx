@@ -8,7 +8,6 @@ import {
   FlaskConical,
   HelpCircle
 } from 'lucide-react';
-import { mockMaterias } from '../../../data/mockData';
 import type { TipoEvaluacion } from '../../../types/academic';
 import { useMaterias } from '../../../hooks';
 import { evaluacionesService } from '../../../services';
@@ -25,29 +24,32 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   onSuccess
 }) => {
   const { materias } = useMaterias();
-  const availableMaterias = materias.length > 0 ? materias : mockMaterias;
-  const [materiaId, setMateriaId] = useState(availableMaterias[0]?.id || 'mat-1');
-  const [titulo, setTitulo] = useState('2° Parcial (Sistemas Distribuidos y Tolerancia a Fallos)');
+  const [materiaId, setMateriaId] = useState(materias[0]?.id || '');
+  const [customMateria, setCustomMateria] = useState('');
+  const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState<TipoEvaluacion>('PARCIAL');
-  const [fecha, setFecha] = useState('2025-06-12');
-  const [horario, setHorario] = useState('19:00 - 22:00 hs');
-  const [aula, setAula] = useState('Aula 302');
+  const [fecha, setFecha] = useState(() => new Date().toISOString().slice(0, 10));
+  const [horario, setHorario] = useState('19:00 hs');
+  const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mat = availableMaterias.find(m => m.id === materiaId);
+    const selectedMat = materias.find(m => m.id === materiaId);
+    const materiaNombre = selectedMat?.nombre || customMateria.trim() || 'Materia General';
+    const materiaCodigo = selectedMat?.codigo || 'GEN';
+
     await evaluacionesService.createEvaluacion({
-      materiaId,
-      materiaNombre: mat?.nombre || 'Materia',
-      materiaCodigo: mat?.codigo || 'MAT',
-      titulo,
+      materiaId: selectedMat?.id || `mat-${Date.now()}`,
+      materiaNombre,
+      materiaCodigo,
+      titulo: titulo.trim(),
       tipo,
       fecha,
-      horario,
-      aula,
+      horario: horario.trim() || '19:00 hs',
+      aula: aula.trim() || 'A confirmar',
       modalidad,
       peso: 35
     });
@@ -90,17 +92,28 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
               <span>1. Materia Vinculada</span>
               <span style={{ color: 'var(--text-dim)' }}>OBLIGATORIO</span>
             </div>
-            <select
-              className={styles.fieldInput}
-              value={materiaId}
-              onChange={(e) => setMateriaId(e.target.value)}
-            >
-              {availableMaterias.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.codigo} · {m.nombre} ({m.cuatrimestre} · {m.estado})
-                </option>
-              ))}
-            </select>
+            {materias.length > 0 ? (
+              <select
+                className={styles.fieldInput}
+                value={materiaId || materias[0]?.id}
+                onChange={(e) => setMateriaId(e.target.value)}
+              >
+                {materias.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                className={styles.fieldInput}
+                value={customMateria}
+                onChange={(e) => setCustomMateria(e.target.value)}
+                placeholder="Nombre de la materia (ej: Sistemas Distribuidos)"
+                required
+              />
+            )}
           </div>
 
           {/* 2. Título */}
@@ -114,7 +127,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
               className={styles.fieldInput}
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Ej: 2° Parcial (Consenso y DHT)"
+              placeholder="Ej: 1° Parcial Teórico / Entrega TP1"
               required
             />
           </div>
@@ -168,6 +181,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
                   className={styles.fieldInput}
                   value={horario}
                   onChange={(e) => setHorario(e.target.value)}
+                  placeholder="19:00 hs"
                   style={{ flex: 1 }}
                 />
                 <input
@@ -175,6 +189,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
                   className={styles.fieldInput}
                   value={aula}
                   onChange={(e) => setAula(e.target.value)}
+                  placeholder="Aula"
                   style={{ width: '90px' }}
                 />
                 <button

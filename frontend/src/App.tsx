@@ -32,9 +32,6 @@ export const App: React.FC = () => {
       } else if (isMeta && e.key.toLowerCase() === 'e') {
         e.preventDefault();
         setIsEvaluationModalOpen(true);
-      } else if (isMeta && e.key.toLowerCase() === 'p') {
-        e.preventDefault();
-        handleStartPomodoro();
       }
     };
 
@@ -45,10 +42,6 @@ export const App: React.FC = () => {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
-  };
-
-  const handleStartPomodoro = () => {
-    showToast('⏱️ Modo Enfoque Pomodoro iniciado (25:00)');
   };
 
   return (
@@ -69,7 +62,6 @@ export const App: React.FC = () => {
             <DashboardView
               onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
               onOpenNoteModal={() => setIsNoteModalOpen(true)}
-              onStartPomodoro={handleStartPomodoro}
             />
           }
         />
@@ -108,7 +100,6 @@ export const App: React.FC = () => {
         onClose={() => setIsCommandPaletteOpen(false)}
         onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
         onOpenNoteModal={() => setIsNoteModalOpen(true)}
-        onStartPomodoro={handleStartPomodoro}
       />
 
       {/* Evaluation Modal (⌘E / screen 5.png) */}

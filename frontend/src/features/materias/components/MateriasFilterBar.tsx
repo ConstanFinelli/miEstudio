@@ -1,7 +1,8 @@
 import React from 'react';
 import styles from '../MateriasView.module.css';
 import { Search } from 'lucide-react';
-import { mockMaterias } from '../../../data/mockData';
+import type { Materia } from '../../../types/academic';
+import { useMaterias } from '../../../hooks';
 
 interface MateriasFilterBarProps {
   selectedYear: number;
@@ -12,6 +13,7 @@ interface MateriasFilterBarProps {
   onSearchChange: (query: string) => void;
   selectedEstado: string;
   onSelectEstado: (estado: string) => void;
+  materias?: Materia[];
 }
 
 export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
@@ -22,8 +24,11 @@ export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
   searchQuery,
   onSearchChange,
   selectedEstado,
-  onSelectEstado
+  onSelectEstado,
+  materias: propMaterias
 }) => {
+  const { materias: hookMaterias } = useMaterias();
+  const currentMaterias = propMaterias || hookMaterias;
   return (
     <div className={styles.filtersBar}>
       <div className={styles.filtersLeft}>
@@ -71,8 +76,8 @@ export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
         <span style={{ color: 'var(--text-dim)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>ESTADO:</span>
         {['TODOS', 'CURSANDO', 'REGULAR', 'APROBADA', 'PROMOCIONADA'].map(st => {
           const count = st === 'TODOS'
-            ? mockMaterias.length
-            : mockMaterias.filter(m => m.estado === st).length;
+            ? currentMaterias.length
+            : currentMaterias.filter(m => m.estado === st).length;
           const label = st === 'TODOS' ? 'Todos' : st.charAt(0) + st.slice(1).toLowerCase();
           return (
             <button

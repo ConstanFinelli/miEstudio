@@ -10,12 +10,31 @@ import {
   Bell,
   Settings,
   PlusCircle,
+  User,
   Sun,
   Moon
 } from 'lucide-react';
 import { mockPerfil } from '../../data/mockData';
+import { isMocksEnabled } from '../../config/mockConfig';
 import { useTheme } from '../../context/ThemeContext';
 import { usePerfil } from '../../hooks';
+
+const defaultEmptyPerfil = {
+  nombre: 'Estudiante',
+  legajo: '---',
+  carrera: 'Carrera de Grado',
+  semestreActual: 'Ciclo Lectivo',
+  cicloActivo: 'Cuatrimestre en Curso',
+  promedioGeneral: 0.0,
+  deltaPromedio: 0.0,
+  puestoCohorte: 0,
+  percentil: 0,
+  materiasAprobadas: 0,
+  materiasTotales: 0,
+  creditosAprobados: 0,
+  creditosTotales: 0,
+  promedioHistorico: []
+};
 
 interface AppLayoutProps {
   onOpenCommandPalette: () => void;
@@ -33,7 +52,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { perfil } = usePerfil();
-  const currentPerfil = perfil || mockPerfil;
+  const currentPerfil = perfil || (isMocksEnabled() ? mockPerfil : defaultEmptyPerfil);
 
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
@@ -117,11 +136,29 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
           <div className={styles.userProfile}>
             <div className={styles.userInfo}>
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-                alt={currentPerfil.nombre}
-                className={styles.avatar}
-              />
+              {isMocksEnabled() ? (
+                <img
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                  alt={currentPerfil.nombre}
+                  className={styles.avatar}
+                />
+              ) : (
+                <div
+                  className={styles.avatar}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--surface-3)',
+                    color: 'var(--primary)',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    border: '1px solid var(--border-subtle)'
+                  }}
+                >
+                  <User size={15} />
+                </div>
+              )}
               <div className={styles.userDetails}>
                 <span className={styles.userName}>{currentPerfil.nombre}</span>
                 <span className={styles.userSub}>Legajo: {currentPerfil.legajo}</span>
@@ -171,12 +208,30 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <Bell size={16} />
             </button>
 
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-              alt="Sofía Chen"
-              className={styles.avatar}
-              style={{ cursor: 'pointer' }}
-            />
+            {isMocksEnabled() ? (
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                alt="Sofía Chen"
+                className={styles.avatar}
+                style={{ cursor: 'pointer' }}
+              />
+            ) : (
+              <div
+                className={styles.avatar}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'var(--surface-2)',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  cursor: 'pointer'
+                }}
+                title={currentPerfil.nombre}
+              >
+                <User size={14} />
+              </div>
+            )}
           </div>
         </header>
 
