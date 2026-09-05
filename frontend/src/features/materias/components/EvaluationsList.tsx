@@ -39,7 +39,9 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
                 <span>Peso: {evalItem.peso}%</span>
               </div>
               <div className={styles.evalItemTitle}>{evalItem.titulo}</div>
-              <div className={styles.evalItemSub}>{evalItem.temario.join(', ')}</div>
+              {Array.isArray(evalItem.temario) && evalItem.temario.length > 0 && (
+                <div className={styles.evalItemSub}>{evalItem.temario.join(', ')}</div>
+              )}
             </div>
           </div>
 

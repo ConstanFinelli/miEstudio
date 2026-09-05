@@ -7,6 +7,22 @@ export const evaluacionMapper = {
     materiaNombre: string = 'Materia',
     materiaCodigo: string = 'MAT'
   ): InstanciaEvaluacion {
+    let temarioList: string[] = [];
+    if (Array.isArray(dto.temario)) {
+      temarioList = dto.temario;
+    } else if (typeof (dto as any).temario === 'string' && (dto as any).temario.trim()) {
+      try {
+        const parsed = JSON.parse((dto as any).temario);
+        if (Array.isArray(parsed)) {
+          temarioList = parsed;
+        } else if (parsed) {
+          temarioList = [String(parsed)];
+        }
+      } catch {
+        temarioList = [(dto as any).temario];
+      }
+    }
+
     return {
       id: dto.id,
       materiaId: dto.materia_id,
@@ -21,7 +37,7 @@ export const evaluacionMapper = {
       estado: dto.nota !== null ? 'CALIFICADO' : 'PENDIENTE',
       aula: dto.aula || 'Aula Magna',
       modalidad: dto.modalidad || 'Presencial',
-      temario: dto.temario || [],
+      temario: temarioList,
       asistencia: 100,
       guiasCompletadas: '3/3 Guías',
       esAprobatorio: dto.es_aprobatorio

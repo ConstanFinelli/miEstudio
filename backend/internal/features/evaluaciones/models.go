@@ -1,6 +1,7 @@
 package evaluaciones
 
 import (
+	"encoding/json"
 	"time"
 
 	"gorm.io/gorm"
@@ -22,6 +23,57 @@ type Evaluacion struct {
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+type EvaluacionResponseDTO struct {
+	ID            string    `json:"id"`
+	MateriaID     string    `json:"materia_id"`
+	Titulo        string    `json:"titulo"`
+	Tipo          string    `json:"tipo"`
+	Fecha         time.Time `json:"fecha"`
+	Horario       string    `json:"horario"`
+	Nota          *float64  `json:"nota"`
+	Peso          int       `json:"peso"`
+	EsAprobatorio bool      `json:"es_aprobatorio"`
+	Aula          string    `json:"aula"`
+	Modalidad     string    `json:"modalidad"`
+	Temario       []string  `json:"temario"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+func ToResponseDTO(e Evaluacion) EvaluacionResponseDTO {
+	var temario []string
+	if e.Temario != "" {
+		_ = json.Unmarshal([]byte(e.Temario), &temario)
+	}
+	if temario == nil {
+		temario = []string{}
+	}
+	return EvaluacionResponseDTO{
+		ID:            e.ID,
+		MateriaID:     e.MateriaID,
+		Titulo:        e.Titulo,
+		Tipo:          e.Tipo,
+		Fecha:         e.Fecha,
+		Horario:       e.Horario,
+		Nota:          e.Nota,
+		Peso:          e.Peso,
+		EsAprobatorio: e.EsAprobatorio,
+		Aula:          e.Aula,
+		Modalidad:     e.Modalidad,
+		Temario:       temario,
+		CreatedAt:     e.CreatedAt,
+		UpdatedAt:     e.UpdatedAt,
+	}
+}
+
+func ToResponseDTOList(evals []Evaluacion) []EvaluacionResponseDTO {
+	res := make([]EvaluacionResponseDTO, len(evals))
+	for i, e := range evals {
+		res[i] = ToResponseDTO(e)
+	}
+	return res
 }
 
 type CreateEvaluacionDTO struct {

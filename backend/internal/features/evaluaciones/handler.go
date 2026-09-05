@@ -31,7 +31,7 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener evaluaciones", err.Error())
 	}
-	return common.SendSuccess(c, evaluaciones)
+	return common.SendSuccess(c, ToResponseDTOList(evaluaciones))
 }
 
 func (h *Handler) GetProximas(c *fiber.Ctx) error {
@@ -47,7 +47,7 @@ func (h *Handler) GetProximas(c *fiber.Ctx) error {
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener próximas evaluaciones", err.Error())
 	}
-	return common.SendSuccess(c, proximas)
+	return common.SendSuccess(c, ToResponseDTOList(proximas))
 }
 
 func (h *Handler) GetByID(c *fiber.Ctx) error {
@@ -56,7 +56,7 @@ func (h *Handler) GetByID(c *fiber.Ctx) error {
 	if err != nil {
 		return common.SendError(c, fiber.StatusNotFound, err.Error())
 	}
-	return common.SendSuccess(c, ev)
+	return common.SendSuccess(c, ToResponseDTO(*ev))
 }
 
 func (h *Handler) Create(c *fiber.Ctx) error {
@@ -69,7 +69,7 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	if err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, err.Error())
 	}
-	return common.SendCreated(c, created)
+	return common.SendCreated(c, ToResponseDTO(*created))
 }
 
 func (h *Handler) UpdateNota(c *fiber.Ctx) error {
@@ -83,7 +83,7 @@ func (h *Handler) UpdateNota(c *fiber.Ctx) error {
 	if err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, err.Error())
 	}
-	return common.SendSuccess(c, updated)
+	return common.SendSuccess(c, ToResponseDTO(*updated))
 }
 
 func (h *Handler) Delete(c *fiber.Ctx) error {
