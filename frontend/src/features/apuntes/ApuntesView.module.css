@@ -362,6 +362,7 @@
 .viewModeBtn {
   font-size: 11px;
   font-family: var(--font-mono);
+  background-color: var(--surface-2);
   color: var(--text-muted);
   padding: 3px 8px;
   border-radius: var(--radius-xs);
@@ -370,10 +371,17 @@
   gap: 4px;
 }
 
-.viewModeBtnActive {
-  background-color: var(--surface-3);
+.viewModeBtn:hover {
+  border-color: var(--border-hover);
   color: var(--text-primary);
   font-weight: 600;
+}
+
+.viewModeBtnActive {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border: 1px solid var(--primary-glow);
+  border-radius: var(--radius-sm);
+  color: #fff;
 }
 
 /* Formatting Toolbar */

@@ -1,29 +1,35 @@
-import React, { useState, useMemo } from 'react';
-import styles from './ApuntesView.module.css';
-import type { ApunteNota } from '../../types/academic';
-import { useApuntes } from '../../hooks';
+import React, { useState, useMemo } from "react";
+import styles from "./ApuntesView.module.css";
+import type { ApunteNota } from "../../types/academic";
+import { useApuntes } from "../../hooks";
 import {
   FoldersSidebar,
   NotesListSidebar,
   NoteEditorHeader,
   FormattingToolbar,
   NoteReaderContent,
-  SplitPdfViewerPane
-} from './components';
+  SplitPdfViewerPane,
+} from "./components";
 
 interface ApuntesViewProps {
   onOpenNoteModal: () => void;
 }
 
-export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => {
+export const ApuntesView: React.FC<ApuntesViewProps> = ({
+  onOpenNoteModal,
+}) => {
   const { apuntes, selectedApunte, setSelectedApunte } = useApuntes();
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'render' | 'markdown' | 'split'>('render');
+  const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(
+    null,
+  );
+  const [viewMode, setViewMode] = useState<"render" | "markdown" | "split">(
+    "render",
+  );
   const [showPdfSplit, setShowPdfSplit] = useState(false);
   const [isFoldersCollapsed, setIsFoldersCollapsed] = useState(false);
   const [isNotesListCollapsed, setIsNotesListCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Auto-collapse sidebars when activating split mode for a spacious study layout
   const handleToggleSplit = () => {
@@ -39,28 +45,31 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
   };
 
   const filteredNotes = useMemo(() => {
-    return apuntes.filter(n => {
+    return apuntes.filter((n) => {
       if (selectedFolder) {
-        const matchesMateria = n.materiaNombre === selectedFolder || n.materiaId === selectedFolder;
+        const matchesMateria =
+          n.materiaNombre === selectedFolder || n.materiaId === selectedFolder;
         if (!matchesMateria) return false;
       }
       if (selectedSubFolder) {
-        const matchesSub = n.carpeta === selectedSubFolder || n.evaluacionNombre === selectedSubFolder;
+        const matchesSub =
+          n.carpeta === selectedSubFolder ||
+          n.evaluacionNombre === selectedSubFolder;
         if (!matchesSub) return false;
       }
-      if (searchQuery.trim() !== '') {
+      if (searchQuery.trim() !== "") {
         const q = searchQuery.toLowerCase();
-        return n.titulo.toLowerCase().includes(q) || n.tags.some(t => t.toLowerCase().includes(q));
+        return (
+          n.titulo.toLowerCase().includes(q) ||
+          n.tags.some((t) => t.toLowerCase().includes(q))
+        );
       }
       return true;
     });
   }, [apuntes, selectedFolder, selectedSubFolder, searchQuery]);
 
   const activeNote: ApunteNota | null =
-    selectedApunte ||
-    filteredNotes[0] ||
-    apuntes[0] ||
-    null;
+    selectedApunte || filteredNotes[0] || apuntes[0] || null;
 
   return (
     <div className={styles.container}>
@@ -80,9 +89,9 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
         isCollapsed={isNotesListCollapsed}
         onToggleCollapse={setIsNotesListCollapsed}
         notes={filteredNotes}
-        activeNoteId={activeNote?.id || ''}
+        activeNoteId={activeNote?.id || ""}
         onSelectNote={(id) => {
-          const found = apuntes.find(a => a.id === id);
+          const found = apuntes.find((a) => a.id === id);
           if (found) setSelectedApunte(found);
         }}
         searchQuery={searchQuery}
@@ -105,7 +114,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
         <FormattingToolbar tags={activeNote?.tags || []} />
 
         {/* Main Document Body or Split View */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
           {/* Note Area */}
           <NoteReaderContent
             activeNote={activeNote}
@@ -114,9 +123,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
           />
 
           {/* PDF Split-View Pane */}
-          {showPdfSplit && (
-            <SplitPdfViewerPane onClose={handleToggleSplit} />
-          )}
+          {showPdfSplit && <SplitPdfViewerPane onClose={handleToggleSplit} />}
         </div>
       </main>
     </div>
