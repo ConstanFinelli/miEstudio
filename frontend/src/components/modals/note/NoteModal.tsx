@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './Modals.module.css';
+import styles from './NoteModal.module.css';
 import {
   X,
   FileText,
@@ -7,7 +7,7 @@ import {
   FlaskConical,
   Sigma
 } from 'lucide-react';
-import { mockMaterias, mockEvaluaciones } from '../../data/mockData';
+import { mockMaterias, mockEvaluaciones } from '../../../data/mockData';
 
 interface NoteModalProps {
   isOpen: boolean;
@@ -269,3 +269,5 @@ export const NoteModal: React.FC<NoteModalProps> = ({
     </div>
   );
 };
+
+export default NoteModal;

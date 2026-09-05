@@ -120,47 +120,6 @@
   border-color: var(--primary);
 }
 
-/* Evaluation Type Selector Cards */
-.typeCardsRow {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-@media (max-width: 600px) {
-  .typeCardsRow {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.typeCard {
-  background-color: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xs);
-  padding: 10px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-.typeCard:hover {
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-
-.typeCardActive {
-  background-color: var(--primary-alpha);
-  border-color: var(--primary-glow);
-  color: white;
-  font-weight: 600;
-}
-
 /* Templates Grid for Notes */
 .templatesGrid {
   display: grid;
@@ -264,7 +223,6 @@
   background-color: var(--emerald-alpha);
 }
 
-/* Modal Footer */
 .modalFooter {
   border-top: 1px solid var(--border-subtle);
   padding-top: 16px;

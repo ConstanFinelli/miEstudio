@@ -6,9 +6,8 @@ import { DashboardView } from './features/dashboard/DashboardView';
 import { MateriasView } from './features/materias/MateriasView';
 import { CalendarioView } from './features/calendario/CalendarioView';
 import { ApuntesView } from './features/apuntes/ApuntesView';
-import { EvaluationModal } from './components/modals/EvaluationModal';
-import { NoteModal } from './components/modals/NoteModal';
-import { PdfViewerModal } from './components/modals/PdfViewerModal';
+import { EvaluationModal, NoteModal, PdfViewerModal } from './components/modals';
+import { Toast } from './features/components';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -59,28 +58,7 @@ export const App: React.FC = () => {
       onOpenNoteModal={() => setIsNoteModalOpen(true)}
     >
       {/* Toast Notification */}
-      {toastMessage && (
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          backgroundColor: 'var(--surface-3)',
-          border: '1px solid var(--border-hover)',
-          color: 'var(--text-primary)',
-          padding: '10px 16px',
-          borderRadius: 'var(--radius-sm)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-          zIndex: 200,
-          fontFamily: 'var(--font-mono)',
-          fontSize: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          animation: 'fadeIn 0.2s ease'
-        }}>
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
 
       {/* Main Routed Views */}
       <Routes>

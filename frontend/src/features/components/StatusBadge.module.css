@@ -1,0 +1,70 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.cursando {
+  background-color: var(--emerald-alpha);
+  color: var(--emerald);
+  border-color: var(--emerald-border);
+}
+
+.cursando .dot {
+  background-color: var(--emerald);
+  box-shadow: 0 0 5px var(--emerald);
+}
+
+.regular {
+  background-color: var(--blue-alpha);
+  color: var(--blue);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.regular .dot {
+  background-color: var(--blue);
+}
+
+.aprobada {
+  background-color: var(--purple-alpha);
+  color: var(--purple);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.aprobada .dot {
+  background-color: var(--purple);
+}
+
+.promocionada {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--amber);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.promocionada .dot {
+  background-color: var(--amber);
+}
+
+.pendiente {
+  background-color: var(--surface-3);
+  color: var(--text-dim);
+  border-color: var(--border-subtle);
+}
+
+.pendiente .dot {
+  background-color: var(--text-dim);
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './Modals.module.css';
+import styles from './EvaluationModal.module.css';
 import {
   X,
   FileText,
@@ -8,8 +8,8 @@ import {
   FlaskConical,
   HelpCircle
 } from 'lucide-react';
-import { mockMaterias } from '../../data/mockData';
-import type { TipoEvaluacion } from '../../types/academic';
+import { mockMaterias } from '../../../data/mockData';
+import type { TipoEvaluacion } from '../../../types/academic';
 
 interface EvaluationModalProps {
   isOpen: boolean;
@@ -189,3 +189,5 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
     </div>
   );
 };
+
+export default EvaluationModal;
