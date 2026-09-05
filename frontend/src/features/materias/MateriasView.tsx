@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styles from './MateriasView.module.css';
+import { BookOpen, Plus } from 'lucide-react';
 import type { Materia, MaterialEstudio } from '../../types/academic';
 import { useMaterias, useEvaluaciones } from '../../hooks';
 import { materialesService } from '../../services';
@@ -17,11 +18,13 @@ import {
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
   onOpenNoteModal?: () => void;
+  onOpenMateriaModal?: () => void;
   onViewPdf: (title: string, url: string) => void;
 }
 
 export const MateriasView: React.FC<MateriasViewProps> = ({
   onOpenEvaluationModal,
+  onOpenMateriaModal,
   onViewPdf
 }) => {
   const [selectedYear, setSelectedYear] = useState<number>(3);
@@ -54,12 +57,68 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     }
   }, [materias, selectedMateriaId]);
 
+  const totalCreditos = useMemo(() => {
+    return materias.reduce((acc, m) => acc + (m.creditos || 0), 0);
+  }, [materias]);
+
   if (isMateriasLoading && materias.length === 0) {
     return <div className={styles.container}>Cargando materias...</div>;
   }
 
-  if (!selectedMateria) {
-    return <div className={styles.container}>No se encontraron materias.</div>;
+  // Si no hay materias registradas aún, mostrar header y empty state estilizado con acción para crear
+  if (materias.length === 0) {
+    return (
+      <div className={styles.container}>
+        <MateriasHeader
+          onRegisterMateria={onOpenMateriaModal}
+          totalCreditos={0}
+        />
+        <div style={{
+          backgroundColor: 'var(--surface-1)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          padding: '60px 24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
+          textAlign: 'center',
+          marginTop: '20px'
+        }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--surface-2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--primary)'
+          }}>
+            <BookOpen size={28} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+              No tenés materias registradas todavía
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '440px', lineHeight: 1.5, margin: 0 }}>
+              Registrá tus materias del cuatrimestre para comenzar a hacer el seguimiento de notas, fechas de examen, apuntes y bibliografía.
+            </p>
+          </div>
+          {onOpenMateriaModal && (
+            <button
+              className={styles.btnPrimary}
+              style={{ padding: '10px 20px', fontSize: '13px' }}
+              onClick={onOpenMateriaModal}
+            >
+              <Plus size={16} />
+              <span>+ Registrar Primera Materia</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // Filtered materias list
@@ -75,7 +134,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   return (
     <div className={styles.container}>
       {/* 1. Header Area */}
-      <MateriasHeader />
+      <MateriasHeader
+        onRegisterMateria={onOpenMateriaModal}
+        totalCreditos={totalCreditos}
+      />
 
       {/* 2. Filters Bar */}
       <MateriasFilterBar
@@ -94,29 +156,36 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
         {/* Left Column: Master Materias List */}
         <MateriasList
           materias={filteredMaterias}
-          selectedMateriaId={selectedMateria.id}
+          selectedMateriaId={selectedMateria?.id || ''}
           onSelectMateria={setSelectedMateriaId}
+          onOpenMateriaModal={onOpenMateriaModal}
         />
 
         {/* Right Column: Selected Materia Details */}
-        <div className={styles.detailColumn}>
-          <MateriaDetailHeader materia={selectedMateria} />
+        {selectedMateria ? (
+          <div className={styles.detailColumn}>
+            <MateriaDetailHeader materia={selectedMateria} />
 
-          <AccreditationRulesCard reglas={selectedMateria.reglasAcreditacion} />
+            <AccreditationRulesCard reglas={selectedMateria.reglasAcreditacion} />
 
-          <EvaluationsList
-            evaluations={materiaEvaluations}
-            onOpenEvaluationModal={onOpenEvaluationModal}
-          />
+            <EvaluationsList
+              evaluations={materiaEvaluations}
+              onOpenEvaluationModal={onOpenEvaluationModal}
+            />
 
-          <CorrelativesCard correlativas={selectedMateria.correlativas} />
+            <CorrelativesCard correlativas={selectedMateria.correlativas} />
 
-          <MaterialsManager
-            materials={materiaMaterials}
-            materiaNombre={selectedMateria.nombre}
-            onViewPdf={onViewPdf}
-          />
-        </div>
+            <MaterialsManager
+              materials={materiaMaterials}
+              materiaNombre={selectedMateria.nombre}
+              onViewPdf={onViewPdf}
+            />
+          </div>
+        ) : (
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Seleccioná una materia del listado para inspeccionar su cursada.
+          </div>
+        )}
       </div>
     </div>
   );

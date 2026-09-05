@@ -21,13 +21,15 @@ interface CommandPaletteProps {
   onClose: () => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
+  onOpenMateriaModal?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
   onOpenEvaluationModal,
-  onOpenNoteModal
+  onOpenNoteModal,
+  onOpenMateriaModal
 }) => {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
@@ -74,6 +76,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     {
       group: 'Acciones del Sistema',
       items: [
+        {
+          id: 'act-mat',
+          label: 'Registrar Nueva Materia / Cursada',
+          icon: PlusCircle,
+          kbd: '⌘M',
+          action: () => {
+            if (onOpenMateriaModal) onOpenMateriaModal();
+            onClose();
+          }
+        },
         { id: 'act-eval', label: 'Registrar Nueva Instancia de Evaluación', icon: PlusCircle, kbd: '⌘E', action: () => { onOpenEvaluationModal(); onClose(); } },
         { id: 'act-note', label: 'Crear Nuevo Apunte Markdown', icon: PlusCircle, kbd: '⌘N', action: () => { onOpenNoteModal(); onClose(); } }
       ]

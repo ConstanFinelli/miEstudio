@@ -1,0 +1,283 @@
+import React, { useState } from 'react';
+import styles from './MateriaModal.module.css';
+import { X, BookOpen, Plus } from 'lucide-react';
+import type { Materia, EstadoMateria } from '../../../types/academic';
+import { materiasService } from '../../../services';
+
+interface MateriaModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (created: Materia) => void;
+}
+
+const PRESET_COLORS = [
+  '#3b82f6', // Cobalt Blue
+  '#10b981', // Emerald
+  '#8b5cf6', // Purple
+  '#f59e0b', // Amber
+  '#ef4444', // Red
+  '#ec4899', // Pink
+  '#06b6d4', // Cyan
+  '#6366f1', // Indigo
+];
+
+export const MateriaModal: React.FC<MateriaModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess
+}) => {
+  const [nombre, setNombre] = useState('');
+  const [codigo, setCodigo] = useState('');
+  const [anio, setAnio] = useState<number>(3);
+  const [cuatrimestre, setCuatrimestre] = useState<'1C' | '2C' | 'Anual'>('1C');
+  const [estado, setEstado] = useState<EstadoMateria>('CURSANDO');
+  const [color, setColor] = useState('#3b82f6');
+  const [creditos, setCreditos] = useState<number>(6);
+  const [comision, setComision] = useState('');
+  const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual' | 'Híbrida'>('Presencial');
+  const [profesorTitular, setProfesorTitular] = useState('');
+  const [profesorJtp, setProfesorJtp] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nombre.trim()) return;
+
+    try {
+      setIsSubmitting(true);
+      const created = await materiasService.createMateria({
+        nombre: nombre.trim(),
+        codigo: codigo.trim() || `MAT-${Math.floor(100 + Math.random() * 900)}`,
+        anio,
+        cuatrimestre,
+        estado,
+        color,
+        creditos,
+        comision: comision.trim() || 'Comisión Única',
+        modalidad,
+        profesores: {
+          titular: profesorTitular.trim() || 'Docente Titular',
+          jtp: profesorJtp.trim() || 'Docente Auxiliar'
+        },
+        promedio: 0,
+        asistencia: 100,
+        ponderado: 0
+      });
+
+      // Reset form
+      setNombre('');
+      setCodigo('');
+      onSuccess(created);
+      onClose();
+    } catch (err) {
+      console.error('Error al registrar materia:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        {/* Top bar */}
+        <div className={styles.modalTopBar}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className={styles.tagBadge}>CURSADA</span>
+            <span>NUEVA MATERIA</span>
+          </div>
+          <button className={styles.closeBtn} onClick={onClose} title="Cerrar (Esc)">
+            <X size={14} />
+            <span>ESC</span>
+          </button>
+        </div>
+
+        {/* Modal Header */}
+        <div className={styles.modalHeader}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BookOpen size={20} color="var(--primary)" />
+            <h2 className={styles.modalTitle}>Registrar Asignatura / Cursada</h2>
+          </div>
+          <p className={styles.modalSub}>
+            Ingresá los datos académicos para comenzar a registrar notas, fechas de examen, apuntes y bibliografía.
+          </p>
+        </div>
+
+        {/* Form */}
+        <form className={styles.form} onSubmit={handleSubmit}>
+          {/* Nombre y Código */}
+          <div className={styles.row2}>
+            <div className={styles.formGroup} style={{ gridColumn: 'span 1' }}>
+              <label className={styles.label}>Nombre de la Materia *</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Ej: Sistemas Distribuidos"
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                autoFocus
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup} style={{ gridColumn: 'span 1' }}>
+              <label className={styles.label}>Código de Cátedra</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Ej: 75.08 o SIS-304"
+                value={codigo}
+                onChange={e => setCodigo(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Año, Cuatrimestre y Créditos */}
+          <div className={styles.row3}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Año de la Carrera</label>
+              <select
+                className={styles.select}
+                value={anio}
+                onChange={e => setAnio(Number(e.target.value))}
+              >
+                <option value={1}>1° Año</option>
+                <option value={2}>2° Año</option>
+                <option value={3}>3° Año</option>
+                <option value={4}>4° Año</option>
+                <option value={5}>5° Año</option>
+                <option value={6}>6° Año</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Cuatrimestre</label>
+              <select
+                className={styles.select}
+                value={cuatrimestre}
+                onChange={e => setCuatrimestre(e.target.value as '1C' | '2C' | 'Anual')}
+              >
+                <option value="1C">1° Cuatrimestre</option>
+                <option value="2C">2° Cuatrimestre</option>
+                <option value="Anual">Anual</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Créditos (UCA)</label>
+              <input
+                type="number"
+                min={1}
+                max={30}
+                className={styles.input}
+                value={creditos}
+                onChange={e => setCreditos(Number(e.target.value))}
+              />
+            </div>
+          </div>
+
+          {/* Estado y Modalidad */}
+          <div className={styles.row2}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Estado de la Cursada</label>
+              <select
+                className={styles.select}
+                value={estado}
+                onChange={e => setEstado(e.target.value as EstadoMateria)}
+              >
+                <option value="CURSANDO">Cursando actualmente</option>
+                <option value="REGULAR">Regularizada</option>
+                <option value="APROBADA">Aprobada (con Final)</option>
+                <option value="PROMOCIONADA">Promocionada directa</option>
+                <option value="LIBRE">Libre</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Modalidad de Dictado</label>
+              <select
+                className={styles.select}
+                value={modalidad}
+                onChange={e => setModalidad(e.target.value as 'Presencial' | 'Virtual' | 'Híbrida')}
+              >
+                <option value="Presencial">Presencial</option>
+                <option value="Virtual">Virtual</option>
+                <option value="Híbrida">Híbrida</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Comisión y Docentes */}
+          <div className={styles.row3}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Comisión / Turno</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Ej: K3051 o Noche"
+                value={comision}
+                onChange={e => setComision(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Profesor Titular</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Ej: Dr. García"
+                value={profesorTitular}
+                onChange={e => setProfesorTitular(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>JTP / Ayudante</label>
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Ej: Ing. Martínez"
+                value={profesorJtp}
+                onChange={e => setProfesorJtp(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Color de Identificación */}
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Color Identificador de la Materia</label>
+            <div className={styles.colorPickerRow}>
+              {PRESET_COLORS.map(c => (
+                <div
+                  key={c}
+                  className={`${styles.colorDot} ${color === c ? styles.colorDotSelected : ''}`}
+                  style={{ backgroundColor: c }}
+                  onClick={() => setColor(c)}
+                  title={c}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className={styles.actionsRow}>
+            <button type="button" className={styles.btnCancel} onClick={onClose}>
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className={styles.btnSubmit}
+              disabled={!nombre.trim() || isSubmitting}
+            >
+              <Plus size={14} />
+              <span>{isSubmitting ? 'Registrando...' : 'Registrar Materia'}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default MateriaModal;

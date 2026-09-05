@@ -7,12 +7,14 @@ interface MateriasListProps {
   materias: Materia[];
   selectedMateriaId: string;
   onSelectMateria: (id: string) => void;
+  onOpenMateriaModal?: () => void;
 }
 
 export const MateriasList: React.FC<MateriasListProps> = ({
   materias,
   selectedMateriaId,
-  onSelectMateria
+  onSelectMateria,
+  onOpenMateriaModal
 }) => {
   return (
     <div className={styles.masterColumn}>
@@ -26,9 +28,18 @@ export const MateriasList: React.FC<MateriasListProps> = ({
           <p style={{ fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
             No hay materias en este filtro
           </p>
-          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-dim)', display: 'block', marginBottom: '12px' }}>
             Usa el botón "+ Nueva Materia" para registrar tu primera cursada.
           </span>
+          {onOpenMateriaModal && (
+            <button
+              className={styles.btnPrimary}
+              style={{ padding: '6px 14px', fontSize: '11px', margin: '0 auto' }}
+              onClick={onOpenMateriaModal}
+            >
+              + Nueva Materia
+            </button>
+          )}
         </div>
       ) : (
         materias.map((materia) => {

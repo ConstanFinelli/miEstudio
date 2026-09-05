@@ -6,7 +6,7 @@ import { DashboardView } from './features/dashboard/DashboardView';
 import { MateriasView } from './features/materias/MateriasView';
 import { CalendarioView } from './features/calendario/CalendarioView';
 import { ApuntesView } from './features/apuntes/ApuntesView';
-import { EvaluationModal, NoteModal, PdfViewerModal } from './components/modals';
+import { EvaluationModal, NoteModal, PdfViewerModal, MateriaModal } from './components/modals';
 import { Toast } from './features/components';
 
 export const App: React.FC = () => {
@@ -14,10 +14,11 @@ export const App: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [isMateriaModalOpen, setIsMateriaModalOpen] = useState(false);
   const [activePdf, setActivePdf] = useState<{ title: string; url: string } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Keyboard Shortcuts Listener (⌘K, ⌘N, ⌘E, ⌘P)
+  // Keyboard Shortcuts Listener (⌘K, ⌘N, ⌘E, ⌘M)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check for Cmd (Mac) or Ctrl (Windows/Linux)
@@ -26,6 +27,9 @@ export const App: React.FC = () => {
       if (isMeta && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
+      } else if (isMeta && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setIsMateriaModalOpen(true);
       } else if (isMeta && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         setIsNoteModalOpen(true);
@@ -70,6 +74,7 @@ export const App: React.FC = () => {
           element={
             <MateriasView
               onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+              onOpenMateriaModal={() => setIsMateriaModalOpen(true)}
               onOpenNoteModal={() => setIsNoteModalOpen(true)}
               onViewPdf={(title, url) => setActivePdf({ title, url })}
             />
@@ -100,6 +105,17 @@ export const App: React.FC = () => {
         onClose={() => setIsCommandPaletteOpen(false)}
         onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
         onOpenNoteModal={() => setIsNoteModalOpen(true)}
+        onOpenMateriaModal={() => setIsMateriaModalOpen(true)}
+      />
+
+      {/* Materia Modal (⌘M / Registro de Cursada) */}
+      <MateriaModal
+        isOpen={isMateriaModalOpen}
+        onClose={() => setIsMateriaModalOpen(false)}
+        onSuccess={(created) => {
+          showToast(`✓ Materia "${created.nombre}" registrada con éxito`);
+          navigate('/materias');
+        }}
       />
 
       {/* Evaluation Modal (⌘E / screen 5.png) */}
@@ -119,7 +135,7 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* PDF Viewer Modal (Herramienta de visualización de PDFs solicitada) */}
+      {/* PDF Viewer Modal */}
       <PdfViewerModal
         isOpen={!!activePdf}
         onClose={() => setActivePdf(null)}
@@ -135,4 +151,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-
