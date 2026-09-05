@@ -15,12 +15,12 @@ type Perfil struct {
 	CicloActivo       string         `gorm:"type:varchar(50);default:'1C 2026'" json:"ciclo_activo"`
 	PromedioGeneral   float64        `gorm:"default:0" json:"promedio_general"`
 	DeltaPromedio     float64        `gorm:"default:0" json:"delta_promedio"`
-	PuestoCohorte     int            `gorm:"default:1" json:"puesto_cohorte"`
-	Percentil         int            `gorm:"default:95" json:"percentil"`
+	PuestoCohorte     int            `gorm:"default:0" json:"puesto_cohorte"`
+	Percentil         int            `gorm:"default:0" json:"percentil"`
 	MateriasAprobadas int            `gorm:"default:0" json:"materias_aprobadas"`
-	MateriasTotales   int            `gorm:"default:36" json:"materias_totales"`
+	MateriasTotales   int            `gorm:"default:0" json:"materias_totales"`
 	CreditosAprobados int            `gorm:"default:0" json:"creditos_aprobados"`
-	CreditosTotales   int            `gorm:"default:240" json:"creditos_totales"`
+	CreditosTotales   int            `gorm:"default:0" json:"creditos_totales"`
 	PromedioHistorico string         `gorm:"type:text" json:"-"` // JSON string en DB
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`

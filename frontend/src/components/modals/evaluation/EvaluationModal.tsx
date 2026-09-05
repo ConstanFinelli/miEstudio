@@ -32,29 +32,41 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const [horario, setHorario] = useState('19:00 hs');
   const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
+  const selectedMat = materias.find(m => m.id === (materiaId || materias[0]?.id));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedMat = materias.find(m => m.id === materiaId);
-    const materiaNombre = selectedMat?.nombre || customMateria.trim() || 'Materia General';
-    const materiaCodigo = selectedMat?.codigo || 'GEN';
+    if (!titulo.trim() || isSubmitting) return;
 
-    await evaluacionesService.createEvaluacion({
-      materiaId: selectedMat?.id || `mat-${Date.now()}`,
-      materiaNombre,
-      materiaCodigo,
-      titulo: titulo.trim(),
-      tipo,
-      fecha,
-      horario: horario.trim() || '19:00 hs',
-      aula: aula.trim() || 'A confirmar',
-      modalidad,
-      peso: 35
-    });
-    onSuccess();
-    onClose();
+    try {
+      setIsSubmitting(true);
+      const materiaNombre = selectedMat?.nombre || customMateria.trim() || 'Materia General';
+      const materiaCodigo = selectedMat?.codigo || 'GEN';
+
+      await evaluacionesService.createEvaluacion({
+        materiaId: selectedMat?.id || `mat-${Date.now()}`,
+        materiaNombre,
+        materiaCodigo,
+        titulo: titulo.trim(),
+        tipo,
+        fecha,
+        horario: horario.trim() || '19:00 hs',
+        aula: aula.trim() || 'A confirmar',
+        modalidad,
+        peso: 35
+      });
+      setTitulo('');
+      onSuccess();
+      onClose();
+    } catch (err) {
+      console.error('Error al registrar evaluacion:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const evalTypes: { id: TipoEvaluacion; label: string; icon: any }[] = [
@@ -70,10 +82,13 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         {/* Top bar */}
         <div className={styles.modalTopBar}>
-          <span>RF2.0 · SISTEMAS DISTRIBUIDOS / Nueva Instancia</span>
-          <button className={styles.closeBtn} onClick={onClose}>
-            <span>ESC</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className={styles.tagBadge}>EVALUACIÓN</span>
+            <span>{selectedMat ? selectedMat.nombre.toUpperCase() : 'NUEVA INSTANCIA'}</span>
+          </div>
+          <button className={styles.closeBtn} onClick={onClose} title="Cerrar (Esc)">
             <X size={14} />
+            <span>ESC</span>
           </button>
         </div>
 
@@ -194,9 +209,9 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
                 />
                 <button
                   type="button"
-                  className={`${styles.btnCancel} ${modalidad === 'Presencial' ? styles.tagBadge : ''}`}
+                  className={`${styles.modalidadToggle} ${modalidad === 'Presencial' ? styles.modalidadToggleActive : ''}`}
                   onClick={() => setModalidad(modalidad === 'Presencial' ? 'Virtual' : 'Presencial')}
-                  style={{ padding: '4px 8px', fontSize: '10px' }}
+                  title="Alternar modalidad presencial / virtual"
                 >
                   {modalidad}
                 </button>
@@ -206,13 +221,17 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
           {/* Footer */}
           <div className={styles.modalFooter}>
-            <span>Tip: La ponderación impacta directamente en el cálculo de regularidad y promoción</span>
+            <span>Tip: La ponderación impacta en el cálculo de regularidad y promoción</span>
             <div className={styles.footerActions}>
               <button type="button" className={styles.btnCancel} onClick={onClose}>
                 Cancelar
               </button>
-              <button type="submit" className={styles.btnSubmit}>
-                Guardar Evaluación
+              <button
+                type="submit"
+                className={styles.btnSubmit}
+                disabled={!titulo.trim() || isSubmitting}
+              >
+                {isSubmitting ? 'Guardando...' : 'Guardar Evaluación'}
               </button>
             </div>
           </div>

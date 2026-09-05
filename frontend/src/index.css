@@ -9,6 +9,7 @@
 
 :root,
 [data-theme="dark"] {
+  color-scheme: dark;
   /* ==========================================================================
      Color Palette: Editorial Ivy (Dark Mode)
      Vibe: Oxford Navy, Warm Amber Accents, Deep Slate & High Contrast
@@ -77,6 +78,7 @@
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   /* ==========================================================================
      Color Palette: Editorial Ivy (Light Mode)
      Vibe: Ivory Academic Paper, Crisp Oxford Navy & Amber Ochre Highlights

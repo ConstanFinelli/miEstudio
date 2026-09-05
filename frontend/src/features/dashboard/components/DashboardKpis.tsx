@@ -27,9 +27,19 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
 
   if (!perfil) return null;
 
-  const hasPromedio = perfil.promedioGeneral > 0;
-  const hasPlan = perfil.materiasTotales > 0;
-  const progressPercent = hasPlan ? Math.round((perfil.materiasAprobadas / perfil.materiasTotales) * 100) : 0;
+  // Real data calculations
+  const approvedSubjects = materias.filter(m => m.estado === 'APROBADA' || m.estado === 'PROMOCIONADA');
+  const totalApproved = perfil.materiasAprobadas > 0 ? perfil.materiasAprobadas : approvedSubjects.length;
+  const totalPlan = perfil.materiasTotales > 0 ? perfil.materiasTotales : materias.length;
+  const progressPercent = totalPlan > 0 ? Math.min(100, Math.round((totalApproved / totalPlan) * 100)) : 0;
+
+  // Promedio calculation from real grades
+  const gradedSubjects = materias.filter(m => (m.calificacionFinal && m.calificacionFinal > 0) || (m.promedio && m.promedio > 0));
+  const computedAverage = gradedSubjects.length > 0
+    ? (gradedSubjects.reduce((acc, m) => acc + (m.calificacionFinal || m.promedio || 0), 0) / gradedSubjects.length)
+    : 0;
+  const displayAverage = perfil.promedioGeneral > 0 ? perfil.promedioGeneral : computedAverage;
+  const hasPromedio = displayAverage > 0;
 
   return (
     <div className={styles.kpiGrid}>
@@ -45,7 +55,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiValueRow}>
-          <span className={styles.kpiMainValue}>{hasPromedio ? perfil.promedioGeneral.toFixed(2) : '--'}</span>
+          <span className={styles.kpiMainValue}>{hasPromedio ? displayAverage.toFixed(2) : '--'}</span>
           <span className={styles.kpiSubValue}>/ 10.0</span>
           {perfil.deltaPromedio !== 0 ? (
             <span className={styles.deltaBadge}>
@@ -67,7 +77,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           ) : (
             <>
               <span>Régimen regular</span>
-              <span>En curso</span>
+              <span>{activeSubjects.length > 0 ? 'Cursadas activas' : 'Sin cursadas'}</span>
             </>
           )}
         </div>
@@ -79,8 +89,8 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <div className={styles.kpiTitleGroup}>
             <span className={styles.kpiLabel}>Progreso de Carrera</span>
             <span className={styles.kpiSub}>
-              {hasPlan
-                ? `${perfil.materiasAprobadas} de ${perfil.materiasTotales} materias aprobadas`
+              {totalPlan > 0
+                ? `${totalApproved} de ${totalPlan} materias aprobadas`
                 : 'Plan de carrera'}
             </span>
           </div>
@@ -92,7 +102,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <div className={styles.kpiValueRow}>
             <span className={styles.kpiMainValue}>{progressPercent}%</span>
             <span className={styles.kpiSubValue}>
-              {hasPlan ? `${perfil.materiasTotales - perfil.materiasAprobadas} pendientes` : 'Por iniciar'}
+              {totalPlan > 0 ? `${Math.max(0, totalPlan - totalApproved)} pendientes` : 'Por iniciar'}
             </span>
           </div>
           <div className={styles.progressBarBg}>
@@ -103,10 +113,10 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          {hasPlan ? (
+          {totalPlan > 0 ? (
             <>
-              <span>Tesina habilitada al 75%</span>
-              <span>{perfil.materiasTotales - perfil.materiasAprobadas} para graduación</span>
+              <span>{totalApproved} materias acreditadas</span>
+              <span>{Math.max(0, totalPlan - totalApproved)} para completar</span>
             </>
           ) : (
             <>
@@ -146,7 +156,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          <span>Carga semanal: {activeSubjects.length * 6} hs</span>
+          <span>Carga estimada: {activeSubjects.length * 4} hs/sem</span>
           <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={onGoToMaterias}>
             Ver detalle →
           </span>
