@@ -14,6 +14,7 @@ import {
   CorrelativesCard,
   MaterialsManager
 } from './components';
+import { AccreditationRulesModal } from '../../components/modals';
 
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
@@ -27,14 +28,15 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   onOpenMateriaModal,
   onViewPdf
 }) => {
-  const [selectedYear, setSelectedYear] = useState<number>(3);
-  const [selectedCuatri, setSelectedCuatri] = useState<'1C' | '2C' | 'Anual'>('1C');
-  const [selectedEstado, setSelectedEstado] = useState<string>('CURSANDO');
+  const [selectedYear, setSelectedYear] = useState<number | 'TODOS'>('TODOS');
+  const [selectedCuatri, setSelectedCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
+  const [selectedEstado, setSelectedEstado] = useState<string>('TODOS');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>('');
   const [materiaMaterials, setMateriaMaterials] = useState<MaterialEstudio[]>([]);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
 
-  const { materias, isLoading: isMateriasLoading, deleteMateria } = useMaterias();
+  const { materias, isLoading: isMateriasLoading, deleteMateria, updateMateria } = useMaterias();
 
   const handleDeleteMateria = async (id: string, nombre: string) => {
     const confirmDelete = window.confirm(
@@ -56,9 +58,21 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     }
   };
 
-  // Selected materia
+  // Filtered materias list applying Year (1-6 o TODOS), Cuatrimestre, Estado and Search
+  const filteredMaterias = materias.filter(m => {
+    if (selectedYear !== 'TODOS' && m.anio !== selectedYear) return false;
+    if (selectedCuatri !== 'TODOS' && m.cuatrimestre !== selectedCuatri) return false;
+    if (selectedEstado !== 'TODOS' && m.estado !== selectedEstado) return false;
+    if (searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase();
+      return m.nombre.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  // Selected materia prioritizes matching selected ID within filtered list
   const selectedMateria: Materia | undefined =
-    materias.find(m => m.id === selectedMateriaId) || materias[0];
+    filteredMaterias.find(m => m.id === selectedMateriaId) || filteredMaterias[0];
 
   // Evaluations for this materia
   const { evaluaciones: materiaEvaluations } = useEvaluaciones(selectedMateria?.id);
@@ -72,10 +86,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
 
   // Set initial selected id when materias load
   useEffect(() => {
-    if (materias.length > 0 && !selectedMateriaId) {
-      setSelectedMateriaId(materias[0].id);
+    if (filteredMaterias.length > 0 && (!selectedMateriaId || !filteredMaterias.some(m => m.id === selectedMateriaId))) {
+      setSelectedMateriaId(filteredMaterias[0].id);
     }
-  }, [materias, selectedMateriaId]);
+  }, [filteredMaterias, selectedMateriaId]);
 
   if (isMateriasLoading && materias.length === 0) {
     return <div className={styles.container}>Cargando materias...</div>;
@@ -136,16 +150,6 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     );
   }
 
-  // Filtered materias list
-  const filteredMaterias = materias.filter(m => {
-    if (selectedEstado !== 'TODOS' && m.estado !== selectedEstado) return false;
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
-      return m.nombre.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q);
-    }
-    return true;
-  });
-
   return (
     <div className={styles.container}>
       {/* 1. Header Area */}
@@ -153,7 +157,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
         onRegisterMateria={onOpenMateriaModal}
       />
 
-      {/* 2. Filters Bar */}
+      {/* 2. Filters Bar con Años 1 a 6 y Cuatrimestres funcionales */}
       <MateriasFilterBar
         selectedYear={selectedYear}
         onSelectYear={setSelectedYear}
@@ -163,6 +167,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
         onSearchChange={setSearchQuery}
         selectedEstado={selectedEstado}
         onSelectEstado={setSelectedEstado}
+        materias={materias}
       />
 
       {/* 3. Master-Detail Grid */}
@@ -184,7 +189,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
               onDeleteMateria={handleDeleteMateria}
             />
 
-            <AccreditationRulesCard reglas={selectedMateria.reglasAcreditacion} />
+            <AccreditationRulesCard
+              reglas={selectedMateria.reglasAcreditacion}
+              onConfigure={() => setIsRulesModalOpen(true)}
+            />
 
             <EvaluationsList
               evaluations={materiaEvaluations}
@@ -200,11 +208,35 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
             />
           </div>
         ) : (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            Seleccioná una materia del listado para inspeccionar su cursada.
+          <div style={{
+            padding: '60px 20px',
+            textAlign: 'center',
+            backgroundColor: 'var(--surface-1)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px dashed var(--border-subtle)',
+            color: 'var(--text-muted)'
+          }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
+              Ninguna materia coincide con los filtros
+            </p>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+              Probá seleccionando "Todos" los años o cuatrimestres para explorar tus asignaturas registradas.
+            </span>
           </div>
         )}
       </div>
+
+      {/* Modal para configurar las reglas de acreditación */}
+      {selectedMateria && (
+        <AccreditationRulesModal
+          isOpen={isRulesModalOpen}
+          onClose={() => setIsRulesModalOpen(false)}
+          materia={selectedMateria}
+          onSave={async (newReglas) => {
+            await updateMateria(selectedMateria.id, { reglasAcreditacion: newReglas });
+          }}
+        />
+      )}
     </div>
   );
 };

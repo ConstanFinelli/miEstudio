@@ -254,3 +254,43 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.miniFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.miniPillGroup {
+  display: flex;
+  align-items: center;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 2px;
+  gap: 2px;
+}
+
+.miniPillBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.miniPillBtn:hover {
+  color: var(--text-primary);
+}
+
+.miniPillBtnActive {
+  background-color: var(--surface-3);
+  color: var(--text-primary);
+  font-weight: 600;
+}

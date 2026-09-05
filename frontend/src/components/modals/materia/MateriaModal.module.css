@@ -159,9 +159,50 @@
 }
 
 .colorDotSelected {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 0 2px var(--primary-alpha);
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--primary);
+}
+
+.rulesSection {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rulesSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.promoToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.promoToggleBtnActive {
+  border-color: var(--emerald-border);
+  color: var(--emerald);
+  background: var(--emerald-alpha);
+  font-weight: 600;
 }
 
 .actionsRow {

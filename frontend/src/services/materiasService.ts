@@ -58,16 +58,13 @@ export const materiasService = {
         cuatrimestre: materia.cuatrimestre || '1C',
         estado: materia.estado || 'CURSANDO',
         color: materia.color || '#2563eb',
-        creditos: materia.creditos || 6,
         comision: materia.comision || 'Comisión Única',
         modalidad: materia.modalidad || 'Presencial',
         promedio: 0,
-        asistencia: 100,
-        ponderado: 0,
         profesores: materia.profesores || { titular: 'A designar', jtp: 'A designar' },
         reglasAcreditacion: materia.reglasAcreditacion || {
-          promocion: { minPromedio: 8.0, minParcial: 7.0, permiteRecuperatorio: false, descripcion: 'Promoción directa.' },
-          regularidad: { minNota: 4.0, minAsistencia: 75, descripcion: 'Regularidad.' }
+          promocion: { permitePromocion: true, minPromedio: 8.0, minParcial: 7.0, permiteRecuperatorio: false, minAsistencia: 80, descripcion: 'Promoción directa.' },
+          regularidad: { minNota: 4.0, minAsistencia: 75, permiteRecuperatorio: true, descripcion: 'Regularidad.' }
         },
         correlativas: materia.correlativas || { requiere: [], habilita: [] }
       };

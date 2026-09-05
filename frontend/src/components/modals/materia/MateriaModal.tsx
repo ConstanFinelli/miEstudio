@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './MateriaModal.module.css';
-import { X, BookOpen, Plus } from 'lucide-react';
+import { X, BookOpen, Plus, Award } from 'lucide-react';
 import type { Materia, EstadoMateria } from '../../../types/academic';
 import { materiasService } from '../../../services';
 
@@ -36,6 +36,14 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual' | 'Híbrida'>('Presencial');
   const [profesorTitular, setProfesorTitular] = useState('');
   const [profesorJtp, setProfesorJtp] = useState('');
+
+  // Reglas de acreditación configurables
+  const [permitePromocion, setPermitePromocion] = useState(true);
+  const [minPromedio, setMinPromedio] = useState(8.0);
+  const [minParcial, setMinParcial] = useState(7.0);
+  const [minNotaRegular, setMinNotaRegular] = useState(4.0);
+  const [minAsistencia, setMinAsistencia] = useState(75);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -53,7 +61,6 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         cuatrimestre,
         estado,
         color,
-        creditos: 6,
         comision: comision.trim() || 'Comisión Única',
         modalidad,
         profesores: {
@@ -61,8 +68,24 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
           jtp: profesorJtp.trim() || 'Docente Auxiliar'
         },
         promedio: 0,
-        asistencia: 100,
-        ponderado: 0
+        reglasAcreditacion: {
+          promocion: {
+            permitePromocion,
+            minPromedio: permitePromocion ? minPromedio : 0,
+            minParcial: permitePromocion ? minParcial : 0,
+            permiteRecuperatorio: false,
+            minAsistencia: 80,
+            descripcion: permitePromocion
+              ? `Promedio ≥ ${minPromedio.toFixed(1)}, parciales ≥ ${minParcial.toFixed(1)} sin recuperatorio.`
+              : 'Sin promoción directa. Examen final obligatorio para acreditar la materia.'
+          },
+          regularidad: {
+            minNota: minNotaRegular,
+            minAsistencia,
+            permiteRecuperatorio: true,
+            descripcion: `Evaluaciones ≥ ${minNotaRegular.toFixed(1)} y ${minAsistencia}% de asistencia mínima.`
+          }
+        }
       });
 
       // Reset form
@@ -228,6 +251,82 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                 value={profesorJtp}
                 onChange={e => setProfesorJtp(e.target.value)}
               />
+            </div>
+          </div>
+
+          {/* Configuración de Reglas de Acreditación */}
+          <div className={styles.rulesSection}>
+            <div className={styles.rulesSectionHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Award size={14} color="var(--primary)" />
+                <span>Reglas de Acreditación de Cursada</span>
+              </div>
+              <button
+                type="button"
+                className={`${styles.promoToggleBtn} ${permitePromocion ? styles.promoToggleBtnActive : ''}`}
+                onClick={() => setPermitePromocion(!permitePromocion)}
+              >
+                {permitePromocion ? '✓ Admite Promoción Directa' : '🚫 Sin Promoción (Final Obligatorio)'}
+              </button>
+            </div>
+
+            {permitePromocion ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} style={{ fontSize: '10px' }}>Promedio Mínimo para Promover</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    max="10"
+                    className={styles.input}
+                    value={minPromedio}
+                    onChange={e => setMinPromedio(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} style={{ fontSize: '10px' }}>Nota Mínima por Parcial</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="1"
+                    max="10"
+                    className={styles.input}
+                    value={minParcial}
+                    onChange={e => setMinParcial(parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '11px', color: 'var(--amber)', backgroundColor: 'var(--amber-alpha)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--amber-border)' }}>
+                Esta materia requerirá obligatoriamente aprobación de examen final tras regularizar.
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className={styles.formGroup}>
+                <label className={styles.label} style={{ fontSize: '10px' }}>Nota Mín. Regularidad (Parciales)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="1"
+                  max="10"
+                  className={styles.input}
+                  value={minNotaRegular}
+                  onChange={e => setMinNotaRegular(parseFloat(e.target.value) || 0)}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label} style={{ fontSize: '10px' }}>Asistencia Mínima Requerida (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className={styles.input}
+                  value={minAsistencia}
+                  onChange={e => setMinAsistencia(parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
             </div>
           </div>
 

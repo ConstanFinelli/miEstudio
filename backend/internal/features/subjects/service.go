@@ -59,24 +59,25 @@ func (s *service) CreateMateria(ctx context.Context, dto CreateMateriaDTO) (*Mat
 	if dto.Modalidad == "" {
 		dto.Modalidad = "Presencial"
 	}
-	if dto.Creditos <= 0 {
-		dto.Creditos = 4
+
+	reglas := dto.ReglasAcreditacion
+	if reglas == nil {
+		def := DefaultReglasAcreditacion()
+		reglas = &def
 	}
 
 	materia := &Materia{
-		ID:           uuid.New().String(),
-		Codigo:       dto.Codigo,
-		Nombre:       dto.Nombre,
-		Anio:         dto.Anio,
-		Cuatrimestre: dto.Cuatrimestre,
-		Estado:       dto.Estado,
-		Color:        dto.Color,
-		Creditos:     dto.Creditos,
-		Comision:     dto.Comision,
-		Modalidad:    dto.Modalidad,
-		Promedio:     dto.Promedio,
-		Asistencia:   dto.Asistencia,
-		Ponderado:    dto.Ponderado,
+		ID:                 uuid.New().String(),
+		Codigo:             dto.Codigo,
+		Nombre:             dto.Nombre,
+		Anio:               dto.Anio,
+		Cuatrimestre:       dto.Cuatrimestre,
+		Estado:             dto.Estado,
+		Color:              dto.Color,
+		Comision:           dto.Comision,
+		Modalidad:          dto.Modalidad,
+		Promedio:           dto.Promedio,
+		ReglasAcreditacion: reglas,
 	}
 
 	if err := s.repo.Create(ctx, materia); err != nil {
@@ -110,9 +111,6 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 	if dto.Color != nil {
 		materia.Color = *dto.Color
 	}
-	if dto.Creditos != nil {
-		materia.Creditos = *dto.Creditos
-	}
 	if dto.Comision != nil {
 		materia.Comision = *dto.Comision
 	}
@@ -122,11 +120,8 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 	if dto.Promedio != nil {
 		materia.Promedio = *dto.Promedio
 	}
-	if dto.Asistencia != nil {
-		materia.Asistencia = *dto.Asistencia
-	}
-	if dto.Ponderado != nil {
-		materia.Ponderado = *dto.Ponderado
+	if dto.ReglasAcreditacion != nil {
+		materia.ReglasAcreditacion = dto.ReglasAcreditacion
 	}
 
 	if err := s.repo.Update(ctx, materia); err != nil {

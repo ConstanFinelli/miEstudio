@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styles from './CalendarioView.module.css';
 import type { EventoCalendario, TipoEvento } from '../../types/academic';
-import { useCalendario, useEvaluaciones } from '../../hooks';
+import { useCalendario, useEvaluaciones, useMaterias } from '../../hooks';
 import {
   CalendarTopNav,
   CalendarFiltersBar,
@@ -16,11 +16,14 @@ interface CalendarioViewProps {
 export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluationModal }) => {
   const { eventos } = useCalendario();
   const { evaluaciones } = useEvaluaciones();
+  const { materias } = useMaterias();
 
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
+  const [selectedYear, setSelectedYear] = useState<number | 'TODOS'>('TODOS');
+  const [selectedCuatri, setSelectedCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
   const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'agenda'>('mes');
 
   // Merge calendar events with actual academic evaluations
@@ -55,23 +58,38 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
     return [...evalAsEvents, ...otherEvents];
   }, [evaluaciones, eventos]);
 
-  // Filter events based on selected filter badge
+  // Filter events based on selected filter badge, year and cuatrimestre
   const filteredEvents = useMemo(() => {
-    if (selectedFilter === 'ALL') return combinedEvents;
+    let list = combinedEvents;
+
     if (selectedFilter === 'EXAMEN') {
-      return combinedEvents.filter(e => e.tipo === 'EXAMEN');
+      list = list.filter(e => e.tipo === 'EXAMEN');
+    } else if (selectedFilter === 'TP') {
+      list = list.filter(e => e.tipo === 'ENTREGA');
+    } else if (selectedFilter === 'LAB') {
+      list = list.filter(e => e.tipo === 'LABORATORIO');
+    } else if (selectedFilter === 'ESTUDIO') {
+      list = list.filter(e => e.tipo === 'ESTUDIO' || e.tipo === 'CONSULTA');
     }
-    if (selectedFilter === 'TP') {
-      return combinedEvents.filter(e => e.tipo === 'ENTREGA');
+
+    if (selectedYear !== 'TODOS') {
+      list = list.filter(e => {
+        if (!e.materiaId && !e.materiaCodigo) return true;
+        const mat = materias.find(m => m.id === e.materiaId || m.codigo === e.materiaCodigo);
+        return mat ? mat.anio === selectedYear : true;
+      });
     }
-    if (selectedFilter === 'LAB') {
-      return combinedEvents.filter(e => e.tipo === 'LABORATORIO');
+
+    if (selectedCuatri !== 'TODOS') {
+      list = list.filter(e => {
+        if (!e.materiaId && !e.materiaCodigo) return true;
+        const mat = materias.find(m => m.id === e.materiaId || m.codigo === e.materiaCodigo);
+        return mat ? mat.cuatrimestre === selectedCuatri : true;
+      });
     }
-    if (selectedFilter === 'ESTUDIO') {
-      return combinedEvents.filter(e => e.tipo === 'ESTUDIO' || e.tipo === 'CONSULTA');
-    }
-    return combinedEvents;
-  }, [combinedEvents, selectedFilter]);
+
+    return list;
+  }, [combinedEvents, selectedFilter, selectedYear, selectedCuatri, materias]);
 
   // Keep selected event in sync
   useEffect(() => {
@@ -119,6 +137,10 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
       <CalendarFiltersBar
         selectedFilter={selectedFilter}
         onSelectFilter={setSelectedFilter}
+        selectedYear={selectedYear}
+        onSelectYear={setSelectedYear}
+        selectedCuatri={selectedCuatri}
+        onSelectCuatri={setSelectedCuatri}
       />
 
       {/* 3. Calendar Grid + Detail Sidebar Split */}

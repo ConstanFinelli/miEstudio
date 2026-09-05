@@ -5,10 +5,10 @@ import type { Materia } from '../../../types/academic';
 import { useMaterias } from '../../../hooks';
 
 interface MateriasFilterBarProps {
-  selectedYear: number;
-  onSelectYear: (year: number) => void;
-  selectedCuatri: '1C' | '2C' | 'Anual';
-  onSelectCuatri: (cuatri: '1C' | '2C' | 'Anual') => void;
+  selectedYear: number | 'TODOS';
+  onSelectYear: (year: number | 'TODOS') => void;
+  selectedCuatri: 'TODOS' | '1C' | '2C' | 'Anual';
+  onSelectCuatri: (cuatri: 'TODOS' | '1C' | '2C' | 'Anual') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedEstado: string;
@@ -29,24 +29,38 @@ export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
 }) => {
   const { materias: hookMaterias } = useMaterias();
   const currentMaterias = propMaterias || hookMaterias;
+
   return (
     <div className={styles.filtersBar}>
       <div className={styles.filtersLeft}>
-        {/* Year Pills */}
+        {/* Year Pills (1 a 6 y Todos) */}
         <div className={styles.pillGroup}>
-          {[1, 2, 3, 4].map(yr => (
+          <button
+            className={`${styles.pillBtn} ${selectedYear === 'TODOS' ? styles.pillBtnActive : ''}`}
+            onClick={() => onSelectYear('TODOS')}
+            title="Todos los años"
+          >
+            Todos
+          </button>
+          {[1, 2, 3, 4, 5, 6].map(yr => (
             <button
               key={yr}
               className={`${styles.pillBtn} ${selectedYear === yr ? styles.pillBtnActive : ''}`}
               onClick={() => onSelectYear(yr)}
             >
-              {yr}° Año
+              {yr}°
             </button>
           ))}
         </div>
 
-        {/* Cuatrimestre */}
+        {/* Cuatrimestre Pills (1C, 2C, Anual y Todos) */}
         <div className={styles.pillGroup}>
+          <button
+            className={`${styles.pillBtn} ${selectedCuatri === 'TODOS' ? styles.pillBtnActive : ''}`}
+            onClick={() => onSelectCuatri('TODOS')}
+          >
+            Todos
+          </button>
           {(['1C', '2C', 'Anual'] as const).map(c => (
             <button
               key={c}

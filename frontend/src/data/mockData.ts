@@ -46,11 +46,9 @@ export const mockMaterias: Materia[] = [
       jtp: 'Ing. Valeria Morales'
     },
     promedio: 8.5,
-    ponderado: 65,
-    asistencia: 92,
-    creditos: 6,
     reglasAcreditacion: {
       promocion: {
+        permitePromocion: true,
         minPromedio: 8.0,
         minParcial: 7.0,
         permiteRecuperatorio: false,
@@ -87,15 +85,13 @@ export const mockMaterias: Materia[] = [
       jtp: 'Lic. Fernando Gómez'
     },
     promedio: 7.0,
-    ponderado: 50,
-    asistencia: 85,
-    creditos: 6,
     reglasAcreditacion: {
       promocion: {
-        minPromedio: 8.0,
-        minParcial: 8.0,
+        permitePromocion: false,
+        minPromedio: 0,
+        minParcial: 0,
         permiteRecuperatorio: false,
-        descripcion: 'Promedio ≥ 8.0 con TP aprobado con nota ≥ 8.0.'
+        descripcion: 'Sin promoción directa. Examen final obligatorio para acreditar la materia.'
       },
       regularidad: {
         minNota: 4.0,
@@ -127,11 +123,9 @@ export const mockMaterias: Materia[] = [
       jtp: 'Ing. Lucas Díaz'
     },
     promedio: 7.8,
-    ponderado: 35,
-    asistencia: 88,
-    creditos: 6,
     reglasAcreditacion: {
       promocion: {
+        permitePromocion: true,
         minPromedio: 8.0,
         minParcial: 7.5,
         permiteRecuperatorio: false,
@@ -168,11 +162,9 @@ export const mockMaterias: Materia[] = [
     },
     promedio: 9.0,
     calificacionFinal: 9.0,
-    ponderado: 100,
-    asistencia: 96,
-    creditos: 6,
     reglasAcreditacion: {
       promocion: {
+        permitePromocion: true,
         minPromedio: 8.0,
         minParcial: 7.0,
         permiteRecuperatorio: false,
@@ -207,11 +199,9 @@ export const mockMaterias: Materia[] = [
     },
     promedio: 8.0,
     calificacionFinal: 8.0,
-    ponderado: 100,
-    asistencia: 90,
-    creditos: 6,
     reglasAcreditacion: {
       promocion: {
+        permitePromocion: true,
         minPromedio: 8.0,
         minParcial: 8.0,
         permiteRecuperatorio: false,

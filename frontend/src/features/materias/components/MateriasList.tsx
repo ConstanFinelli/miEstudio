@@ -87,19 +87,25 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                     </span>
                   </div>
                   <div className={styles.cardMetricBlock}>
-                    <span className={styles.cardMetricLabel}>Ponderado</span>
-                    <span className={styles.cardMetricVal}>{materia.ponderado}%</span>
+                    <span className={styles.cardMetricLabel}>Cursada</span>
+                    <span className={styles.cardMetricVal}>{materia.anio}° Año · {materia.cuatrimestre}</span>
                   </div>
                   <div className={styles.cardMetricBlock}>
-                    <span className={styles.cardMetricLabel}>Asistencia</span>
-                    <span className={styles.cardMetricVal}>{materia.asistencia}%</span>
+                    <span className={styles.cardMetricLabel}>Régimen</span>
+                    <span className={styles.cardMetricVal} style={{ fontSize: '11px', color: materia.reglasAcreditacion?.promocion?.permitePromocion === false ? 'var(--amber)' : 'var(--emerald)' }}>
+                      {materia.reglasAcreditacion?.promocion?.permitePromocion === false ? 'Final Oblig.' : 'Promocionable'}
+                    </span>
                   </div>
                 </div>
 
                 <div className={styles.projectionRow}>
-                  <span>Proyección Académica:</span>
+                  <span>Proyección:</span>
                   <span className={styles.projectionHighlight}>
-                    {materia.promedio >= 8.0 ? '☍ En camino a Promoción (≥ 8.0)' : 'Regular (Final Pendiente)'}
+                    {materia.reglasAcreditacion?.promocion?.permitePromocion === false
+                      ? 'Examen Final Obligatorio'
+                      : (materia.promedio >= (materia.reglasAcreditacion?.promocion?.minPromedio || 8.0)
+                          ? `☍ En camino a Promoción (≥ ${materia.reglasAcreditacion?.promocion?.minPromedio || 8.0})`
+                          : 'Regular (Final Pendiente)')}
                   </span>
                 </div>
               </>

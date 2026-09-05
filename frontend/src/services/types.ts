@@ -4,6 +4,27 @@
  * Siguen la convención snake_case del backend.
  */
 
+export interface ReglaPromocionDTO {
+  permite_promocion: boolean;
+  min_promedio: number;
+  min_parcial: number;
+  permite_recuperatorio: boolean;
+  min_asistencia: number;
+  descripcion: string;
+}
+
+export interface ReglaRegularidadDTO {
+  min_nota: number;
+  min_asistencia: number;
+  permite_recuperatorio: boolean;
+  descripcion: string;
+}
+
+export interface ReglasAcreditacionDTO {
+  promocion: ReglaPromocionDTO;
+  regularidad: ReglaRegularidadDTO;
+}
+
 export interface MateriaDTO {
   id: string;
   codigo?: string;
@@ -12,12 +33,10 @@ export interface MateriaDTO {
   cuatrimestre: 'PRIMERO' | 'SEGUNDO' | 'ANUAL';
   estado: 'CURSANDO' | 'REGULAR' | 'APROBADA' | 'PROMOCIONADA' | 'LIBRE';
   color: string;
-  creditos?: number;
   comision?: string;
   modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
   promedio?: number;
-  asistencia?: number;
-  ponderado?: number;
+  reglas_acreditacion?: ReglasAcreditacionDTO | null;
   created_at?: string;
   updated_at?: string;
 }

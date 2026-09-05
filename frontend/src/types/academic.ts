@@ -19,20 +19,20 @@ export interface Materia {
   comision: string;
   modalidad: 'Presencial' | 'Virtual' | 'Híbrida';
   promedio: number;
-  asistencia: number; // Porcentaje ej: 92
-  ponderado: number; // Porcentaje de cursada completado ej: 65
-  creditos: number;
   calificacionFinal?: number;
   reglasAcreditacion: {
     promocion: {
+      permitePromocion?: boolean;
       minPromedio: number;
       minParcial: number;
       permiteRecuperatorio: boolean;
+      minAsistencia?: number;
       descripcion: string;
     };
     regularidad: {
       minNota: number;
       minAsistencia: number;
+      permiteRecuperatorio?: boolean;
       descripcion: string;
     };
   };

@@ -24,6 +24,8 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   onSuccess
 }) => {
   const { materias } = useMaterias();
+  const [filterYear, setFilterYear] = useState<number | 'TODOS'>('TODOS');
+  const [filterCuatri, setFilterCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
   const [materiaId, setMateriaId] = useState(materias[0]?.id || '');
   const [customMateria, setCustomMateria] = useState('');
   const [titulo, setTitulo] = useState('');
@@ -36,7 +38,13 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
   if (!isOpen) return null;
 
-  const selectedMat = materias.find(m => m.id === (materiaId || materias[0]?.id));
+  const filteredMaterias = materias.filter(m => {
+    if (filterYear !== 'TODOS' && m.anio !== filterYear) return false;
+    if (filterCuatri !== 'TODOS' && m.cuatrimestre !== filterCuatri) return false;
+    return true;
+  });
+
+  const selectedMat = materias.find(m => m.id === (materiaId || filteredMaterias[0]?.id || materias[0]?.id));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,18 +115,83 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
               <span>1. Materia Vinculada</span>
               <span style={{ color: 'var(--text-dim)' }}>OBLIGATORIO</span>
             </div>
-            {materias.length > 0 ? (
+
+            {/* Quick Year and Cuatri Filter */}
+            {materias.length > 0 && (
+              <div className={styles.miniFilterRow}>
+                <div className={styles.miniPillGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.miniPillBtn} ${filterYear === 'TODOS' ? styles.miniPillBtnActive : ''}`}
+                    onClick={() => setFilterYear('TODOS')}
+                  >
+                    Todos
+                  </button>
+                  {[1, 2, 3, 4, 5, 6].map(yr => (
+                    <button
+                      key={yr}
+                      type="button"
+                      className={`${styles.miniPillBtn} ${filterYear === yr ? styles.miniPillBtnActive : ''}`}
+                      onClick={() => setFilterYear(yr)}
+                    >
+                      {yr}°
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.miniPillGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.miniPillBtn} ${filterCuatri === 'TODOS' ? styles.miniPillBtnActive : ''}`}
+                    onClick={() => setFilterCuatri('TODOS')}
+                  >
+                    Todos
+                  </button>
+                  {(['1C', '2C', 'Anual'] as const).map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`${styles.miniPillBtn} ${filterCuatri === c ? styles.miniPillBtnActive : ''}`}
+                      onClick={() => setFilterCuatri(c)}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {filteredMaterias.length > 0 ? (
               <select
                 className={styles.fieldInput}
-                value={materiaId || materias[0]?.id}
+                value={materiaId || filteredMaterias[0]?.id}
                 onChange={(e) => setMateriaId(e.target.value)}
               >
-                {materias.map(m => (
-                  <option key={m.id} value={m.id}>
-                    {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
-                  </option>
-                ))}
+                {[1, 2, 3, 4, 5, 6].map(yr => {
+                  const matsInYear = filteredMaterias.filter(m => m.anio === yr);
+                  if (matsInYear.length === 0) return null;
+                  return (
+                    <optgroup key={yr} label={`${yr}° Año de la Carrera`}>
+                      {matsInYear.map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
+                        </option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
               </select>
+            ) : materias.length > 0 ? (
+              <div style={{ fontSize: '12px', color: 'var(--amber)', padding: '6px 0' }}>
+                No hay materias en {filterYear !== 'TODOS' ? `${filterYear}° Año` : ''} {filterCuatri !== 'TODOS' ? `(${filterCuatri})` : ''}.
+                <button
+                  type="button"
+                  style={{ marginLeft: '6px', background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => { setFilterYear('TODOS'); setFilterCuatri('TODOS'); }}
+                >
+                  Restablecer filtros
+                </button>
+              </div>
             ) : (
               <input
                 type="text"
