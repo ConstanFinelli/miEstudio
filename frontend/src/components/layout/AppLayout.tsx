@@ -9,9 +9,12 @@ import {
   Search,
   Bell,
   Settings,
-  PlusCircle
+  PlusCircle,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { mockPerfil } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AppLayoutProps {
   onOpenCommandPalette: () => void;
@@ -27,6 +30,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   children
 }) => {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
@@ -149,6 +153,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             <button className={styles.btnActionPrimary} onClick={onOpenNoteModal}>
               <PlusCircle size={14} />
               <span>+ Nuevo Apunte</span>
+            </button>
+
+            <button
+              className={styles.iconBtn}
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+              aria-label="Alternar tema claro u oscuro"
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             <button className={styles.iconBtn} title="Notificaciones">

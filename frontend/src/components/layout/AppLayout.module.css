@@ -347,20 +347,20 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, var(--primary), #4f46e5);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   border: 1px solid var(--primary-glow);
   border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
   color: #ffffff;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 10px var(--primary-alpha);
   transition: all 0.15s ease;
 }
 
 .btnActionPrimary:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 14px rgba(99, 102, 241, 0.4);
+  filter: brightness(1.08);
+  box-shadow: 0 0 14px var(--primary-alpha);
 }
 
 .iconBtn {

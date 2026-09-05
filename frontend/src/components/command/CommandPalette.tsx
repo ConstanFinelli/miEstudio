@@ -9,8 +9,11 @@ import {
   PlusCircle,
   Clock,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -29,6 +32,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -74,6 +78,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         { id: 'act-eval', label: 'Registrar Nueva Instancia de Evaluación', icon: PlusCircle, kbd: '⌘E', action: () => { onOpenEvaluationModal(); onClose(); } },
         { id: 'act-note', label: 'Crear Nuevo Apunte Markdown', icon: PlusCircle, kbd: '⌘N', action: () => { onOpenNoteModal(); onClose(); } },
         { id: 'act-pomo', label: 'Iniciar Modo Enfoque Pomodoro (25m)', icon: Clock, kbd: '⌘P', action: () => { onStartPomodoro(); onClose(); } }
+      ]
+    },
+    {
+      group: 'Apariencia y Tema (Editorial Ivy)',
+      items: [
+        {
+          id: 'act-theme',
+          label: theme === 'dark' ? 'Cambiar a Modo Claro (Papel Editorial)' : 'Cambiar a Modo Oscuro (Oxford Navy)',
+          icon: theme === 'dark' ? Sun : Moon,
+          kbd: '⌘T',
+          action: () => { toggleTheme(); onClose(); }
+        }
       ]
     },
     {
