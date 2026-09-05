@@ -1,15 +1,143 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import styles from '../CalendarioView.module.css';
+import type { EventoCalendario } from '../../../types/academic';
 
 interface CalendarMonthGridProps {
-  selectedEventId: string;
+  currentDate: Date;
+  events: EventoCalendario[];
+  selectedEventId: string | null;
   onSelectEventId: (id: string) => void;
+  selectedDateStr?: string | null;
+  onSelectDate?: (dateStr: string) => void;
 }
 
 export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
+  currentDate,
+  events,
   selectedEventId,
-  onSelectEventId
+  onSelectEventId,
+  selectedDateStr,
+  onSelectDate
 }) => {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const todayStr = useMemo(() => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, []);
+
+  // Compute month cells (Monday first)
+  const calendarCells = useMemo(() => {
+    const firstDay = new Date(year, month, 1);
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const cells: Array<{
+      dayNum: number;
+      dateStr: string;
+      isOutside: boolean;
+      isToday: boolean;
+      dayEvents: EventoCalendario[];
+    }> = [];
+
+    // 1. Previous month overflow days
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+      const dayNum = daysInPrevMonth - i;
+      const prevDate = new Date(year, month - 1, dayNum);
+      const y = prevDate.getFullYear();
+      const m = String(prevDate.getMonth() + 1).padStart(2, '0');
+      const d = String(dayNum).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+
+      cells.push({
+        dayNum,
+        dateStr,
+        isOutside: true,
+        isToday: dateStr === todayStr,
+        dayEvents: events.filter(e => e.fecha === dateStr)
+      });
+    }
+
+    // 2. Current month days
+    for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+      const m = String(month + 1).padStart(2, '0');
+      const d = String(dayNum).padStart(2, '0');
+      const dateStr = `${year}-${m}-${d}`;
+
+      cells.push({
+        dayNum,
+        dateStr,
+        isOutside: false,
+        isToday: dateStr === todayStr,
+        dayEvents: events.filter(e => e.fecha === dateStr)
+      });
+    }
+
+    // 3. Next month overflow days (fill grid to 35 or 42 cells)
+    const totalCells = cells.length > 35 ? 42 : 35;
+    const remaining = totalCells - cells.length;
+    for (let dayNum = 1; dayNum <= remaining; dayNum++) {
+      const nextDate = new Date(year, month + 1, dayNum);
+      const y = nextDate.getFullYear();
+      const m = String(nextDate.getMonth() + 1).padStart(2, '0');
+      const d = String(dayNum).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+
+      cells.push({
+        dayNum,
+        dateStr,
+        isOutside: true,
+        isToday: dateStr === todayStr,
+        dayEvents: events.filter(e => e.fecha === dateStr)
+      });
+    }
+
+    return cells;
+  }, [year, month, events, todayStr]);
+
+  const getBadgeClass = (tipo: string) => {
+    switch (tipo) {
+      case 'EXAMEN':
+      case 'PARCIAL':
+      case 'FINAL':
+        return styles.eventBadgeExam;
+      case 'ENTREGA':
+      case 'TP':
+        return styles.eventBadgeTP;
+      case 'LAB':
+      case 'LABORATORIO':
+        return styles.eventBadgeLab;
+      case 'ESTUDIO':
+      case 'CONSULTA':
+      default:
+        return styles.eventBadgeStudy;
+    }
+  };
+
+  const getEventIcon = (tipo: string) => {
+    switch (tipo) {
+      case 'EXAMEN':
+      case 'PARCIAL':
+      case 'FINAL':
+        return '★';
+      case 'ENTREGA':
+      case 'TP':
+        return '📦';
+      case 'LAB':
+      case 'LABORATORIO':
+        return '🔬';
+      case 'ESTUDIO':
+      case 'CONSULTA':
+      default:
+        return '📖';
+    }
+  };
+
   return (
     <div className={styles.gridWrapper}>
       <div className={styles.daysHeaderRow}>
@@ -19,90 +147,61 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
       </div>
 
       <div className={styles.cellsGrid}>
-        {/* Week 1: 31 Mar to 06 Apr */}
-        <div className={`${styles.dayCell} ${styles.dayCellOutside}`}><div className={styles.dayCellHeader}><span>31</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>01</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>02</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>03</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>04</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>05</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>06</span></div></div>
+        {calendarCells.map((cell) => {
+          const hasSelectedEvent = cell.dayEvents.some(e => e.id === selectedEventId);
+          const isDateSelected = selectedDateStr === cell.dateStr;
+          const isSelected = hasSelectedEvent || isDateSelected;
 
-        {/* Week 2: 07 to 13 Apr */}
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>07</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>08</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>09</span></div></div>
-        <div className={styles.dayCell}>
-          <div className={styles.dayCellHeader}>
-            <span>10</span>
-            <span style={{ color: 'var(--emerald)', fontSize: '10px' }}>✔</span>
-          </div>
-          <div className={styles.eventBadgeTP}>TP Raft...</div>
-        </div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>11</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>12</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>13</span></div></div>
+          return (
+            <div
+              key={cell.dateStr}
+              className={`${styles.dayCell} ${cell.isOutside ? styles.dayCellOutside : ''} ${isSelected ? styles.dayCellSelected : ''}`}
+              onClick={() => {
+                if (cell.dayEvents.length > 0) {
+                  onSelectEventId(cell.dayEvents[0].id);
+                } else if (onSelectDate) {
+                  onSelectDate(cell.dateStr);
+                }
+              }}
+            >
+              <div className={styles.dayCellHeader}>
+                {cell.isToday ? (
+                  <span className={styles.dayCellToday}>{cell.dayNum} HOY</span>
+                ) : (
+                  <span>{String(cell.dayNum).padStart(2, '0')}</span>
+                )}
+                {cell.dayEvents.length > 0 && (
+                  <span style={{ fontSize: '9px', color: 'var(--primary-glow)' }}>
+                    ●
+                  </span>
+                )}
+              </div>
 
-        {/* Week 3: 14 to 20 Apr */}
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>14</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>15</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>16</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>17</span></div></div>
-        <div className={styles.dayCell}>
-          <div className={styles.dayCellHeader}>
-            <span>18</span>
-            <span style={{ color: 'var(--blue)', fontSize: '9px' }}>●</span>
-          </div>
-          <div className={styles.eventBadgeLab}>Lab: SQL... 14:00</div>
-        </div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>19</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>20</span></div></div>
+              {cell.dayEvents.slice(0, 2).map((ev) => (
+                <div
+                  key={ev.id}
+                  className={getBadgeClass(ev.tipo)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectEventId(ev.id);
+                  }}
+                  title={`${ev.titulo} (${ev.horarioInicio || ''})`}
+                >
+                  <span>{getEventIcon(ev.tipo)}</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {ev.titulo}
+                  </span>
+                </div>
+              ))}
 
-        {/* Week 4: 21 to 27 Apr */}
-        <div
-          className={`${styles.dayCell} ${selectedEventId === 'evt-3' ? styles.dayCellSelected : ''}`}
-          onClick={() => onSelectEventId('evt-3')}
-        >
-          <div className={styles.dayCellHeader}>
-            <span className={styles.dayCellToday}>21 HOY</span>
-            <span style={{ color: 'var(--emerald)', fontSize: '9px' }}>●</span>
-          </div>
-          <div className={styles.eventBadgeStudy}>📖 Estudio 18:00 hs</div>
-        </div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>22</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>23</span></div></div>
-        <div
-          className={`${styles.dayCell} ${selectedEventId === 'evt-1' ? styles.dayCellSelected : ''}`}
-          style={{ borderLeft: '2px solid var(--red)' }}
-          onClick={() => onSelectEventId('evt-1')}
-        >
-          <div className={styles.dayCellHeader}>
-            <span style={{ color: 'var(--red)', fontWeight: 700 }}>24 !</span>
-            <span style={{ background: 'var(--red-alpha)', color: 'var(--red)', padding: '0 4px', borderRadius: '2px' }}>40%</span>
-          </div>
-          <div className={styles.eventBadgeExam}>★ 1° Parcial 09:00</div>
-        </div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>25</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>26</span></div></div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>27</span></div></div>
-
-        {/* Week 5: 28 Apr to 04 May */}
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>28</span></div></div>
-        <div
-          className={`${styles.dayCell} ${selectedEventId === 'evt-2' ? styles.dayCellSelected : ''}`}
-          onClick={() => onSelectEventId('evt-2')}
-        >
-          <div className={styles.dayCellHeader}>
-            <span>29</span>
-            <span style={{ color: 'var(--purple)', fontSize: '9px' }}>●</span>
-          </div>
-          <div className={styles.eventBadgeTP}>TP Entrega BD II</div>
-        </div>
-        <div className={styles.dayCell}><div className={styles.dayCellHeader}><span>30</span></div></div>
-        <div className={`${styles.dayCell} ${styles.dayCellOutside}`}><div className={styles.dayCellHeader}><span>01 Feriado</span></div></div>
-        <div className={`${styles.dayCell} ${styles.dayCellOutside}`}><div className={styles.dayCellHeader}><span>02</span></div></div>
-        <div className={`${styles.dayCell} ${styles.dayCellOutside}`}><div className={styles.dayCellHeader}><span>03</span></div></div>
-        <div className={`${styles.dayCell} ${styles.dayCellOutside}`}><div className={styles.dayCellHeader}><span>04</span></div></div>
+              {cell.dayEvents.length > 2 && (
+                <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                  +{cell.dayEvents.length - 2} más
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
