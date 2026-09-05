@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './DashboardView.module.css';
 import {
   CalendarClock,
@@ -17,7 +18,7 @@ import {
 import { mockPerfil } from '../../data/mockData';
 
 interface DashboardViewProps {
-  onNavigate: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
+  onNavigate?: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
   onStartPomodoro: () => void;
@@ -29,6 +30,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenNoteModal,
   onStartPomodoro
 }) => {
+  const navigate = useNavigate();
+  const goTo = (view: string) => {
+    if (onNavigate) onNavigate(view as any);
+    navigate('/' + view);
+  };
+
   const [tasks, setTasks] = useState([
     { id: 't1', text: 'Revisión de slides: Leader Election', completed: true },
     { id: 't2', text: 'Releer paper Diego Ongaro (Capítulo 5)', completed: true },
@@ -155,7 +162,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className={styles.kpiFooter}>
             <span>Carga semanal: 24 hs</span>
-            <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={() => onNavigate('materias')}>
+            <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={() => goTo('materias')}>
               Ver detalle →
             </span>
           </div>
@@ -186,7 +193,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span style={{ color: 'var(--text-muted)' }}>Requiere repaso intensivo</span>
             <span
               style={{ cursor: 'pointer', color: 'var(--primary-glow)' }}
-              onClick={() => onNavigate('calendario')}
+              onClick={() => goTo('calendario')}
             >
               Ver fechas →
             </span>
@@ -240,7 +247,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span>·</span>
                 <span>Guías completadas: <strong className={styles.evalMetricHighlight}>4 / 4</strong></span>
               </div>
-              <button className={styles.evalActionLink} onClick={() => onNavigate('materias')}>
+              <button className={styles.evalActionLink} onClick={() => goTo('materias')}>
                 <span>Ver simulacro de examen</span>
                 <ArrowRight size={13} />
               </button>
@@ -281,7 +288,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                 repo: <span style={{ color: 'var(--primary-glow)', textDecoration: 'underline' }}>sofiachen/go-bplus-cache</span> ↗
               </div>
-              <button className={styles.evalActionLink} onClick={() => onNavigate('apuntes')}>
+              <button className={styles.evalActionLink} onClick={() => goTo('apuntes')}>
                 <span>Abrir guía de laboratorio</span>
                 <ArrowRight size={13} />
               </button>
@@ -318,7 +325,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           {/* Calendario Banner */}
-          <div className={styles.scheduleBanner} onClick={() => onNavigate('calendario')}>
+          <div className={styles.scheduleBanner} onClick={() => goTo('calendario')}>
             <div className={styles.scheduleBannerLeft}>
               <CalendarClock size={16} color="var(--primary-glow)" />
               <span>Ver cronograma completo de exámenes del cuatrimestre (12 eventos restantes)</span>
@@ -437,7 +444,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
               <button
                 style={{ fontSize: '11px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '3px' }}
-                onClick={() => onNavigate('apuntes')}
+                onClick={() => goTo('apuntes')}
               >
                 <span>Ver todas</span>
                 <ExternalLink size={11} />
@@ -445,7 +452,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             <div className={styles.recentNotesList}>
-              <div className={styles.recentNoteItem} onClick={() => onNavigate('apuntes')}>
+              <div className={styles.recentNoteItem} onClick={() => goTo('apuntes')}>
                 <div className={styles.recentNoteMeta}>
                   <span className={styles.recentNoteSubject}>SISTEMAS DISTRIBUIDOS</span>
                   <span className={styles.recentNoteDate}>Editado hace 2h</span>
@@ -456,7 +463,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
 
-              <div className={styles.recentNoteItem} onClick={() => onNavigate('apuntes')}>
+              <div className={styles.recentNoteItem} onClick={() => goTo('apuntes')}>
                 <div className={styles.recentNoteMeta}>
                   <span className={styles.recentNoteSubject} style={{ color: 'var(--blue)' }}>BASES DE DATOS II</span>
                   <span className={styles.recentNoteDate}>Ayer, 21:30</span>
@@ -467,7 +474,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
 
-              <div className={styles.recentNoteItem} onClick={() => onNavigate('apuntes')}>
+              <div className={styles.recentNoteItem} onClick={() => goTo('apuntes')}>
                 <div className={styles.recentNoteMeta}>
                   <span className={styles.recentNoteSubject} style={{ color: 'var(--purple)' }}>REDES DE DATOS</span>
                   <span className={styles.recentNoteDate}>18 Abr</span>

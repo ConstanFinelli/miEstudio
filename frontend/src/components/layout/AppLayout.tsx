@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink, useLocation, Outlet } from 'react-router-dom';
 import styles from './AppLayout.module.css';
 import {
   LayoutDashboard,
@@ -13,35 +14,27 @@ import {
 import { mockPerfil } from '../../data/mockData';
 
 interface AppLayoutProps {
-  currentView: 'dashboard' | 'materias' | 'calendario' | 'apuntes';
-  onNavigate: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
   onOpenCommandPalette: () => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
-  currentView,
-  onNavigate,
   onOpenCommandPalette,
   onOpenEvaluationModal,
   onOpenNoteModal,
   children
 }) => {
+  const location = useLocation();
+
   const getBreadcrumbTitle = () => {
-    switch (currentView) {
-      case 'dashboard':
-        return 'Dashboard General';
-      case 'materias':
-        return 'Materias & Cursadas';
-      case 'calendario':
-        return 'Calendario Académico';
-      case 'apuntes':
-        return 'Repositorio de Apuntes';
-      default:
-        return 'Workspace';
-    }
+    const path = location.pathname;
+    if (path.startsWith('/dashboard')) return 'Dashboard General';
+    if (path.startsWith('/materias')) return 'Materias & Cursadas';
+    if (path.startsWith('/calendario')) return 'Calendario Académico';
+    if (path.startsWith('/apuntes')) return 'Repositorio de Apuntes';
+    return 'Workspace';
   };
 
   return (
@@ -77,34 +70,34 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           {/* Navigation Menu */}
           <nav className={styles.navSection}>
             <span className={styles.navHeader}>Navegación</span>
-            <button
-              className={`${styles.navItem} ${currentView === 'dashboard' ? styles.navItemActive : ''}`}
-              onClick={() => onNavigate('dashboard')}
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
               <LayoutDashboard className={styles.navIcon} />
               <span>Dashboard</span>
-            </button>
-            <button
-              className={`${styles.navItem} ${currentView === 'materias' ? styles.navItemActive : ''}`}
-              onClick={() => onNavigate('materias')}
+            </NavLink>
+            <NavLink
+              to="/materias"
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
               <BookOpen className={styles.navIcon} />
               <span>Materias y Evaluaciones</span>
-            </button>
-            <button
-              className={`${styles.navItem} ${currentView === 'calendario' ? styles.navItemActive : ''}`}
-              onClick={() => onNavigate('calendario')}
+            </NavLink>
+            <NavLink
+              to="/calendario"
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
               <Calendar className={styles.navIcon} />
               <span>Calendario y Fechas</span>
-            </button>
-            <button
-              className={`${styles.navItem} ${currentView === 'apuntes' ? styles.navItemActive : ''}`}
-              onClick={() => onNavigate('apuntes')}
+            </NavLink>
+            <NavLink
+              to="/apuntes"
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
               <FileText className={styles.navIcon} />
               <span>Apuntes y Notas</span>
-            </button>
+            </NavLink>
           </nav>
         </div>
 
@@ -173,9 +166,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
         {/* Content Body */}
         <main className={styles.contentBody}>
-          {children}
+          {children || <Outlet />}
         </main>
       </div>
     </div>
   );
 };
+export default AppLayout;
+

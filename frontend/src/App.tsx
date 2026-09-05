@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { CommandPalette } from './components/command/CommandPalette';
 import { DashboardView } from './features/dashboard/DashboardView';
@@ -10,7 +11,7 @@ import { NoteModal } from './components/modals/NoteModal';
 import { PdfViewerModal } from './components/modals/PdfViewerModal';
 
 export const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'dashboard' | 'materias' | 'calendario' | 'apuntes'>('dashboard');
+  const navigate = useNavigate();
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
@@ -53,8 +54,6 @@ export const App: React.FC = () => {
 
   return (
     <AppLayout
-      currentView={currentView}
-      onNavigate={setCurrentView}
       onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
       onOpenNoteModal={() => setIsNoteModalOpen(true)}
@@ -83,41 +82,52 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Main Views */}
-      {currentView === 'dashboard' && (
-        <DashboardView
-          onNavigate={setCurrentView}
-          onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-          onOpenNoteModal={() => setIsNoteModalOpen(true)}
-          onStartPomodoro={handleStartPomodoro}
+      {/* Main Routed Views */}
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardView
+              onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+              onOpenNoteModal={() => setIsNoteModalOpen(true)}
+              onStartPomodoro={handleStartPomodoro}
+            />
+          }
         />
-      )}
-
-      {currentView === 'materias' && (
-        <MateriasView
-          onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-          onOpenNoteModal={() => setIsNoteModalOpen(true)}
-          onViewPdf={(title, url) => setActivePdf({ title, url })}
+        <Route
+          path="/materias"
+          element={
+            <MateriasView
+              onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+              onOpenNoteModal={() => setIsNoteModalOpen(true)}
+              onViewPdf={(title, url) => setActivePdf({ title, url })}
+            />
+          }
         />
-      )}
-
-      {currentView === 'calendario' && (
-        <CalendarioView
-          onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+        <Route
+          path="/calendario"
+          element={
+            <CalendarioView
+              onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+            />
+          }
         />
-      )}
-
-      {currentView === 'apuntes' && (
-        <ApuntesView
-          onOpenNoteModal={() => setIsNoteModalOpen(true)}
+        <Route
+          path="/apuntes"
+          element={
+            <ApuntesView
+              onOpenNoteModal={() => setIsNoteModalOpen(true)}
+            />
+          }
         />
-      )}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
 
       {/* Command Palette Modal (⌘K) */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        onNavigate={setCurrentView}
         onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
         onOpenNoteModal={() => setIsNoteModalOpen(true)}
         onStartPomodoro={handleStartPomodoro}
@@ -136,7 +146,7 @@ export const App: React.FC = () => {
         onClose={() => setIsNoteModalOpen(false)}
         onSuccess={(title) => {
           showToast(`✓ Apunte "${title.slice(0, 25)}..." creado`);
-          setCurrentView('apuntes');
+          navigate('/apuntes');
         }}
       />
 
@@ -148,7 +158,7 @@ export const App: React.FC = () => {
         pdfUrl={activePdf?.url}
         onOpenSplitNote={() => {
           setActivePdf(null);
-          setCurrentView('apuntes');
+          navigate('/apuntes');
         }}
       />
     </AppLayout>
@@ -156,3 +166,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

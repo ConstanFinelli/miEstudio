@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './CommandPalette.module.css';
 import {
   LayoutDashboard,
@@ -14,7 +15,6 @@ import {
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigate: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
   onStartPomodoro: () => void;
@@ -23,12 +23,12 @@ interface CommandPaletteProps {
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
   isOpen,
   onClose,
-  onNavigate,
   onOpenEvaluationModal,
   onOpenNoteModal,
   onStartPomodoro
 }) => {
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,10 +62,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     {
       group: 'Navegación Rápida',
       items: [
-        { id: 'nav-dash', label: 'Ir al Dashboard', icon: LayoutDashboard, action: () => { onNavigate('dashboard'); onClose(); } },
-        { id: 'nav-mat', label: 'Ver Materias & Cursadas', icon: BookOpen, action: () => { onNavigate('materias'); onClose(); } },
-        { id: 'nav-cal', label: 'Abrir Calendario & Fechas', icon: Calendar, action: () => { onNavigate('calendario'); onClose(); } },
-        { id: 'nav-notes', label: 'Explorar Apuntes & Notas', icon: FileText, action: () => { onNavigate('apuntes'); onClose(); } }
+        { id: 'nav-dash', label: 'Ir al Dashboard', icon: LayoutDashboard, action: () => { navigate('/dashboard'); onClose(); } },
+        { id: 'nav-mat', label: 'Ver Materias & Cursadas', icon: BookOpen, action: () => { navigate('/materias'); onClose(); } },
+        { id: 'nav-cal', label: 'Abrir Calendario & Fechas', icon: Calendar, action: () => { navigate('/calendario'); onClose(); } },
+        { id: 'nav-notes', label: 'Explorar Apuntes & Notas', icon: FileText, action: () => { navigate('/apuntes'); onClose(); } }
       ]
     },
     {
@@ -79,9 +79,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     {
       group: 'Materias Frecuentes',
       items: [
-        { id: 'mat-sd', label: 'Sistemas Distribuidos (SIS-304)', icon: ArrowRight, action: () => { onNavigate('materias'); onClose(); } },
-        { id: 'mat-bd', label: 'Bases de Datos II (DAT-301)', icon: ArrowRight, action: () => { onNavigate('materias'); onClose(); } },
-        { id: 'mat-alg', label: 'Algoritmos y Estructuras III (ALG-302)', icon: ArrowRight, action: () => { onNavigate('materias'); onClose(); } }
+        { id: 'mat-sd', label: 'Sistemas Distribuidos (SIS-304)', icon: ArrowRight, action: () => { navigate('/materias'); onClose(); } },
+        { id: 'mat-bd', label: 'Bases de Datos II (DAT-301)', icon: ArrowRight, action: () => { navigate('/materias'); onClose(); } },
+        { id: 'mat-alg', label: 'Algoritmos y Estructuras III (ALG-302)', icon: ArrowRight, action: () => { navigate('/materias'); onClose(); } }
       ]
     }
   ];
