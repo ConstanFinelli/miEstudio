@@ -108,10 +108,10 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
             {/* Paper Header */}
             <div className={styles.paperHeader}>
               <h1 className={styles.paperTitle}>
-                In Search of an Understandable Consensus Algorithm
+                {pdfTitle || 'Documento de Cátedra'}
               </h1>
               <div className={styles.paperAuthors}>
-                Diego Ongaro and John Ousterhout · Stanford University
+                Material de Cátedra y Bibliografía Oficial
               </div>
             </div>
 
