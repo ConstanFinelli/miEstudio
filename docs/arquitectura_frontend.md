@@ -40,7 +40,7 @@ src/
 - **Build Tool:** `Vite` + React + TypeScript.
 - **Server State (Peticiones):** `TanStack Query (React Query)`. Fundamental para manejar estados de carga, errores y caché de los CRUDs.
 - **Client State (Estado Global):** `Zustand`. Ligero y fácil, ideal para estados de UI (ej. sidebar abierto, paneles colapsados, zoom del visor).
-- **Estilos y UI:** `Tailwind CSS` combinado con `Shadcn/UI` para componentes pre-armados, accesibles y estéticos.
+- **Estilos y UI:** `CSS Modules` + Variables CSS (`index.css` con el sistema de tokens de `Terminal Scholar`). Sin Tailwind CSS, priorizando estilos puros, modulares y alto control.
 - **Manejo de Formularios:** `React Hook Form` + `Zod` (para validación de esquemas).
-- **Editor de Notas:** `TipTap` (Headless editor extensible) o `BlockNote` (Estilo Notion por bloques, muy rápido de implementar).
-- **Visor PDF:** `@react-pdf-viewer/core` o `react-pdf`.
+- **Editor de Notas:** Editor Markdown nativo con soporte KaTeX y bloques de código.
+- **Visor PDF:** `@react-pdf-viewer/core` o visor integrado con PDF.js.
