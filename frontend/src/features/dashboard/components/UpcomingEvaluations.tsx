@@ -50,7 +50,25 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
         <span className={styles.sectionScopeBadge}>Ventana: 30 Días</span>
       </div>
 
-      {proximas.slice(0, 3).map((ev, index) => {
+      {proximas.length === 0 ? (
+        <div style={{
+          padding: '28px 20px',
+          textAlign: 'center',
+          backgroundColor: 'var(--surface-1)',
+          border: '1px dashed var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '16px'
+        }}>
+          <CalendarClock size={28} style={{ color: 'var(--emerald)', margin: '0 auto 10px', display: 'block', opacity: 0.8 }} />
+          <h4 style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
+            Sin evaluaciones pendientes
+          </h4>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            Estás al día con tus cursadas. Usa el botón superior para registrar un nuevo examen o entrega.
+          </p>
+        </div>
+      ) : (
+        proximas.slice(0, 3).map((ev, index) => {
         const isUrgent = index === 0;
         return (
           <div
@@ -107,7 +125,7 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
             </div>
           </div>
         );
-      })}
+      }))}
     </div>
   );
 };

@@ -3,8 +3,9 @@ import type { MaterialDTO } from './types';
 import type { MaterialEstudio } from '../types/academic';
 import { materialMapper } from './mappers';
 import { mockMateriales } from '../data/mockData';
+import { isMocksEnabled } from '../config/mockConfig';
 
-let localMateriales: MaterialEstudio[] = [...mockMateriales];
+let localMateriales: MaterialEstudio[] = isMocksEnabled() ? [...mockMateriales] : [];
 
 export const materialesService = {
   async getMateriales(materiaId?: string): Promise<MaterialEstudio[]> {

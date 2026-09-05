@@ -3,8 +3,9 @@ import type { EvaluacionDTO } from './types';
 import type { InstanciaEvaluacion } from '../types/academic';
 import { evaluacionMapper } from './mappers';
 import { mockEvaluaciones } from '../data/mockData';
+import { isMocksEnabled } from '../config/mockConfig';
 
-let localEvaluaciones: InstanciaEvaluacion[] = [...mockEvaluaciones];
+let localEvaluaciones: InstanciaEvaluacion[] = isMocksEnabled() ? [...mockEvaluaciones] : [];
 
 export const evaluacionesService = {
   async getEvaluaciones(materiaId?: string): Promise<InstanciaEvaluacion[]> {

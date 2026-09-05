@@ -27,20 +27,29 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({ onGoToApun
       </div>
 
       <div className={styles.recentNotesList}>
-        {apuntes.slice(0, 3).map((note) => (
-          <div key={note.id} className={styles.recentNoteItem} onClick={onGoToApuntes}>
-            <div className={styles.recentNoteMeta}>
-              <span className={styles.recentNoteSubject}>{note.materiaNombre.toUpperCase()}</span>
-              <span className={styles.recentNoteDate}>
-                {new Date(note.fechaModificacion).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-              </span>
-            </div>
-            <div className={styles.recentNoteTitle}>{note.titulo}</div>
-            <div className={styles.recentNoteExcerpt}>
-              {note.resumen || (note.contenidoMarkdown ? note.contenidoMarkdown.slice(0, 80) + '...' : '')}
-            </div>
+        {apuntes.length === 0 ? (
+          <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '12px', marginBottom: '4px' }}>No hay apuntes creados aún.</p>
+            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+              Presiona ⌘N para crear tu primera nota de estudio.
+            </span>
           </div>
-        ))}
+        ) : (
+          apuntes.slice(0, 3).map((note) => (
+            <div key={note.id} className={styles.recentNoteItem} onClick={onGoToApuntes}>
+              <div className={styles.recentNoteMeta}>
+                <span className={styles.recentNoteSubject}>{note.materiaNombre.toUpperCase()}</span>
+                <span className={styles.recentNoteDate}>
+                  {new Date(note.fechaModificacion).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                </span>
+              </div>
+              <div className={styles.recentNoteTitle}>{note.titulo}</div>
+              <div className={styles.recentNoteExcerpt}>
+                {note.resumen || (note.contenidoMarkdown ? note.contenidoMarkdown.slice(0, 80) + '...' : '')}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

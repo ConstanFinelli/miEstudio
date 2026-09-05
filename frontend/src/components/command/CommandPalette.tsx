@@ -11,9 +11,11 @@ import {
   Sparkles,
   ArrowRight,
   Sun,
-  Moon
+  Moon,
+  Database
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { isMocksEnabled, toggleMocks } from '../../config/mockConfig';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -89,6 +91,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           icon: theme === 'dark' ? Sun : Moon,
           kbd: '⌘T',
           action: () => { toggleTheme(); onClose(); }
+        }
+      ]
+    },
+    {
+      group: 'Configuración y Datos',
+      items: [
+        {
+          id: 'cfg-mocks',
+          label: isMocksEnabled()
+            ? 'Desactivar Datos de Prueba (Ver Modo Limpio / Empty States)'
+            : 'Activar Datos de Prueba (Cargar Mocks de Ejemplo)',
+          icon: Database,
+          action: () => { toggleMocks(); onClose(); }
         }
       ]
     },

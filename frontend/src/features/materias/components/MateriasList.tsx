@@ -21,15 +21,25 @@ export const MateriasList: React.FC<MateriasListProps> = ({
         <span style={{ color: 'var(--text-dim)' }}>Clic para inspeccionar</span>
       </div>
 
-      {materias.map((materia) => {
-        const isSelected = materia.id === selectedMateriaId;
-        const isCursando = materia.estado === 'CURSANDO';
-        return (
-          <div
-            key={materia.id}
-            className={`${styles.subjectCard} ${isSelected ? styles.subjectCardSelected : ''}`}
-            onClick={() => onSelectMateria(materia.id)}
-          >
+      {materias.length === 0 ? (
+        <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <p style={{ fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: 'var(--text-secondary)' }}>
+            No hay materias en este filtro
+          </p>
+          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+            Usa el botón "+ Nueva Materia" para registrar tu primera cursada.
+          </span>
+        </div>
+      ) : (
+        materias.map((materia) => {
+          const isSelected = materia.id === selectedMateriaId;
+          const isCursando = materia.estado === 'CURSANDO';
+          return (
+            <div
+              key={materia.id}
+              className={`${styles.subjectCard} ${isSelected ? styles.subjectCardSelected : ''}`}
+              onClick={() => onSelectMateria(materia.id)}
+            >
             <div className={styles.cardTopRow}>
               <span className={styles.cardCodeMeta}>
                 {materia.codigo} · {materia.anio}° Año, {materia.cuatrimestre}
@@ -77,7 +87,7 @@ export const MateriasList: React.FC<MateriasListProps> = ({
             )}
           </div>
         );
-      })}
+      }))}
     </div>
   );
 };

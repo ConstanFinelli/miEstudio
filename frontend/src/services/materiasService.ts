@@ -3,9 +3,10 @@ import type { MateriaDTO } from './types';
 import type { Materia } from '../types/academic';
 import { materiaMapper } from './mappers';
 import { mockMaterias } from '../data/mockData';
+import { isMocksEnabled } from '../config/mockConfig';
 
-// Almacén en memoria mutable para desarrollo offline
-let localMaterias: Materia[] = [...mockMaterias];
+// Almacén en memoria mutable para desarrollo offline (depende de isMocksEnabled)
+let localMaterias: Materia[] = isMocksEnabled() ? [...mockMaterias] : [];
 
 export const materiasService = {
   async getMaterias(filters?: { anio?: number; estado?: string }): Promise<Materia[]> {

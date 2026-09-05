@@ -3,8 +3,9 @@ import type { ApunteDTO } from './types';
 import type { ApunteNota } from '../types/academic';
 import { apunteMapper } from './mappers';
 import { mockApuntes } from '../data/mockData';
+import { isMocksEnabled } from '../config/mockConfig';
 
-let localApuntes: ApunteNota[] = [...mockApuntes];
+let localApuntes: ApunteNota[] = isMocksEnabled() ? [...mockApuntes] : [];
 
 export const apuntesService = {
   async getApuntes(materiaId?: string): Promise<ApunteNota[]> {

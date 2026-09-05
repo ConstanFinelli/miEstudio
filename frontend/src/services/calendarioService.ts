@@ -2,8 +2,9 @@ import { apiClient } from './apiClient';
 import type { EventoCalendarioDTO } from './types';
 import type { EventoCalendario } from '../types/academic';
 import { mockEventosCalendario } from '../data/mockData';
+import { isMocksEnabled } from '../config/mockConfig';
 
-let localEventos: EventoCalendario[] = [...mockEventosCalendario];
+let localEventos: EventoCalendario[] = isMocksEnabled() ? [...mockEventosCalendario] : [];
 
 export const calendarioService = {
   async getEventos(): Promise<EventoCalendario[]> {
