@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './MateriasView.module.css';
-import { mockMaterias, mockEvaluaciones, mockMateriales } from '../../data/mockData';
-import type { Materia } from '../../types/academic';
+import type { Materia, MaterialEstudio } from '../../types/academic';
+import { useMaterias, useEvaluaciones } from '../../hooks';
+import { materialesService } from '../../services';
 import {
   MateriasHeader,
   MateriasFilterBar,
@@ -27,16 +28,42 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const [selectedCuatri, setSelectedCuatri] = useState<'1C' | '2C' | 'Anual'>('1C');
   const [selectedEstado, setSelectedEstado] = useState<string>('CURSANDO');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMateriaId, setSelectedMateriaId] = useState<string>('mat-1');
+  const [selectedMateriaId, setSelectedMateriaId] = useState<string>('');
+  const [materiaMaterials, setMateriaMaterials] = useState<MaterialEstudio[]>([]);
 
-  const selectedMateria: Materia = mockMaterias.find(m => m.id === selectedMateriaId) || mockMaterias[0];
+  const { materias, isLoading: isMateriasLoading } = useMaterias();
 
-  // Evaluations and materials for this materia
-  const materiaEvaluations = mockEvaluaciones.filter(e => e.materiaId === selectedMateria.id);
-  const materiaMaterials = mockMateriales.filter(m => m.materiaId === selectedMateria.id);
+  // Selected materia
+  const selectedMateria: Materia | undefined =
+    materias.find(m => m.id === selectedMateriaId) || materias[0];
+
+  // Evaluations for this materia
+  const { evaluaciones: materiaEvaluations } = useEvaluaciones(selectedMateria?.id);
+
+  // Load materials for selected materia
+  useEffect(() => {
+    if (selectedMateria?.id) {
+      materialesService.getMateriales(selectedMateria.id).then(setMateriaMaterials);
+    }
+  }, [selectedMateria?.id]);
+
+  // Set initial selected id when materias load
+  useEffect(() => {
+    if (materias.length > 0 && !selectedMateriaId) {
+      setSelectedMateriaId(materias[0].id);
+    }
+  }, [materias, selectedMateriaId]);
+
+  if (isMateriasLoading && materias.length === 0) {
+    return <div className={styles.container}>Cargando materias...</div>;
+  }
+
+  if (!selectedMateria) {
+    return <div className={styles.container}>No se encontraron materias.</div>;
+  }
 
   // Filtered materias list
-  const filteredMaterias = mockMaterias.filter(m => {
+  const filteredMaterias = materias.filter(m => {
     if (selectedEstado !== 'TODOS' && m.estado !== selectedEstado) return false;
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();

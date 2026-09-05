@@ -1,8 +1,19 @@
 import React from 'react';
 import styles from '../DashboardView.module.css';
 import { TrendingUp } from 'lucide-react';
+import { usePerfil } from '../../../hooks';
 
 export const AcademicProgressChart: React.FC = () => {
+  const { perfil } = usePerfil();
+
+  const historico = perfil?.promedioHistorico || [
+    { cuatrimestre: '2022-1C', promedio: 7.2 },
+    { cuatrimestre: '2022-2C', promedio: 7.6 },
+    { cuatrimestre: '2023-1C', promedio: 7.9 },
+    { cuatrimestre: '2024-1C', promedio: 8.1 },
+    { cuatrimestre: '2025-1C', promedio: 8.42 }
+  ];
+
   return (
     <div className={styles.chartCard}>
       <div className={styles.chartHeader}>
@@ -24,8 +35,8 @@ export const AcademicProgressChart: React.FC = () => {
         <svg width="100%" height="100%" viewBox="0 0 500 70" preserveAspectRatio="none">
           <defs>
             <linearGradient id="curveGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#818cf8" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
             </linearGradient>
           </defs>
           <path
@@ -35,24 +46,30 @@ export const AcademicProgressChart: React.FC = () => {
           <path
             d="M 20 55 Q 120 48, 200 40 T 350 25 T 480 15"
             fill="none"
-            stroke="#c0c1ff"
+            stroke="var(--primary)"
             strokeWidth="2.5"
             strokeLinecap="round"
           />
-          <circle cx="20" cy="55" r="3.5" fill="#818cf8" />
-          <circle cx="135" cy="46" r="3.5" fill="#818cf8" />
-          <circle cx="250" cy="35" r="3.5" fill="#818cf8" />
-          <circle cx="365" cy="24" r="3.5" fill="#818cf8" />
-          <circle cx="480" cy="15" r="4.5" fill="#ffffff" stroke="#6366f1" strokeWidth="2" />
+          <circle cx="20" cy="55" r="3.5" fill="var(--primary-glow)" />
+          <circle cx="135" cy="46" r="3.5" fill="var(--primary-glow)" />
+          <circle cx="250" cy="35" r="3.5" fill="var(--primary-glow)" />
+          <circle cx="365" cy="24" r="3.5" fill="var(--primary-glow)" />
+          <circle cx="480" cy="15" r="4.5" fill="var(--surface-1)" stroke="var(--primary)" strokeWidth="2" />
         </svg>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-dim)' }}>
-        <span>2022-1C (7.2)</span>
-        <span>2022-2C (7.6)</span>
-        <span>2023-1C (7.9)</span>
-        <span>2024-1C (8.1)</span>
-        <span style={{ color: 'var(--emerald)', fontWeight: '600' }}>2025-1C (8.42)</span>
+        {historico.map((item, idx) => {
+          const isLatest = idx === historico.length - 1;
+          return (
+            <span
+              key={item.cuatrimestre}
+              style={{ color: isLatest ? 'var(--emerald)' : undefined, fontWeight: isLatest ? '600' : undefined }}
+            >
+              {item.cuatrimestre} ({item.promedio})
+            </span>
+          );
+        })}
       </div>
     </div>
   );

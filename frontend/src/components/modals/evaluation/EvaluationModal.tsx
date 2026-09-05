@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { mockMaterias } from '../../../data/mockData';
 import type { TipoEvaluacion } from '../../../types/academic';
+import { useMaterias } from '../../../hooks';
+import { evaluacionesService } from '../../../services';
 
 interface EvaluationModalProps {
   isOpen: boolean;
@@ -22,7 +24,9 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const [materiaId, setMateriaId] = useState(mockMaterias[0].id);
+  const { materias } = useMaterias();
+  const availableMaterias = materias.length > 0 ? materias : mockMaterias;
+  const [materiaId, setMateriaId] = useState(availableMaterias[0]?.id || 'mat-1');
   const [titulo, setTitulo] = useState('2° Parcial (Sistemas Distribuidos y Tolerancia a Fallos)');
   const [tipo, setTipo] = useState<TipoEvaluacion>('PARCIAL');
   const [fecha, setFecha] = useState('2025-06-12');
@@ -32,8 +36,21 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const mat = availableMaterias.find(m => m.id === materiaId);
+    await evaluacionesService.createEvaluacion({
+      materiaId,
+      materiaNombre: mat?.nombre || 'Materia',
+      materiaCodigo: mat?.codigo || 'MAT',
+      titulo,
+      tipo,
+      fecha,
+      horario,
+      aula,
+      modalidad,
+      peso: 35
+    });
     onSuccess();
     onClose();
   };
@@ -78,9 +95,9 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
               value={materiaId}
               onChange={(e) => setMateriaId(e.target.value)}
             >
-              {mockMaterias.map(m => (
+              {availableMaterias.map(m => (
                 <option key={m.id} value={m.id}>
-                  {m.codigo} · {m.nombre} ({m.cuatrimestre} {m.anio === 3 ? '2025' : '2024'} · {m.estado})
+                  {m.codigo} · {m.nombre} ({m.cuatrimestre} · {m.estado})
                 </option>
               ))}
             </select>

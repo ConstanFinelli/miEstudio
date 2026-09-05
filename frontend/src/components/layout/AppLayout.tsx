@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { mockPerfil } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
+import { usePerfil } from '../../hooks';
 
 interface AppLayoutProps {
   onOpenCommandPalette: () => void;
@@ -31,6 +32,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { perfil } = usePerfil();
+  const currentPerfil = perfil || mockPerfil;
 
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
@@ -57,7 +60,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               </div>
               <div className={styles.careerTag}>
                 <span className={styles.liveDot} />
-                <span>{mockPerfil.carrera}</span>
+                <span>{currentPerfil.carrera}</span>
               </div>
             </div>
           </div>
@@ -109,19 +112,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         <div className={styles.sidebarFooter}>
           <div className={styles.cycleInfo}>
             <span className={styles.cycleTitle}>Promedio General</span>
-            <span className={styles.cycleScore}>{mockPerfil.promedioGeneral.toFixed(2)}</span>
+            <span className={styles.cycleScore}>{currentPerfil.promedioGeneral.toFixed(2)}</span>
           </div>
 
           <div className={styles.userProfile}>
             <div className={styles.userInfo}>
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-                alt="Sofía Chen"
+                alt={currentPerfil.nombre}
                 className={styles.avatar}
               />
               <div className={styles.userDetails}>
-                <span className={styles.userName}>{mockPerfil.nombre}</span>
-                <span className={styles.userSub}>Legajo: {mockPerfil.legajo}</span>
+                <span className={styles.userName}>{currentPerfil.nombre}</span>
+                <span className={styles.userSub}>Legajo: {currentPerfil.legajo}</span>
               </div>
             </div>
             <button className={styles.settingsBtn} title="Configuración">

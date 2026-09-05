@@ -8,6 +8,8 @@ import {
   Sigma
 } from 'lucide-react';
 import { mockMaterias, mockEvaluaciones } from '../../../data/mockData';
+import { useMaterias, useEvaluaciones } from '../../../hooks';
+import { apuntesService } from '../../../services';
 
 interface NoteModalProps {
   isOpen: boolean;
@@ -20,8 +22,13 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const [materiaId, setMateriaId] = useState(mockMaterias[0].id);
-  const [evalId, setEvalId] = useState(mockEvaluaciones[0].id);
+  const { materias } = useMaterias();
+  const { evaluaciones } = useEvaluaciones();
+  const availableMaterias = materias.length > 0 ? materias : mockMaterias;
+  const availableEvaluaciones = evaluaciones.length > 0 ? evaluaciones : mockEvaluaciones;
+
+  const [materiaId, setMateriaId] = useState(availableMaterias[0]?.id || 'mat-1');
+  const [evalId, setEvalId] = useState(availableEvaluaciones[0]?.id || 'eval-1');
   const [titulo, setTitulo] = useState('Arquitectura de Replicación de Máquina de Estados (RSM) y Raft');
   const [template, setTemplate] = useState('teorico');
   const [tags, setTags] = useState(['distribuidos', 'parcial1', 'raft-consenso']);
@@ -43,8 +50,17 @@ export const NoteModal: React.FC<NoteModalProps> = ({
     setTags(tags.filter(t => t !== tagToRemove));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const mat = availableMaterias.find(m => m.id === materiaId);
+    await apuntesService.createApunte({
+      materiaId,
+      materiaNombre: mat?.nombre || 'Materia',
+      titulo,
+      tags,
+      carpeta: template === 'laboratorio' ? 'Laboratorios' : 'Teoría',
+      contenidoMarkdown: `# ${titulo}\n\n## 1. Introducción y Conceptos Clave\n\nApunte generado con plantilla ${template}.\n`
+    });
     onSuccess(titulo);
     onClose();
   };
@@ -92,9 +108,9 @@ export const NoteModal: React.FC<NoteModalProps> = ({
                 value={materiaId}
                 onChange={(e) => setMateriaId(e.target.value)}
               >
-                {mockMaterias.map(m => (
+                {availableMaterias.map(m => (
                   <option key={m.id} value={m.id}>
-                    {m.codigo} · {m.nombre} ({m.cuatrimestre} {m.anio === 3 ? '2025' : '2024'})
+                    {m.codigo} · {m.nombre} ({m.cuatrimestre})
                   </option>
                 ))}
               </select>
@@ -110,7 +126,7 @@ export const NoteModal: React.FC<NoteModalProps> = ({
                 value={evalId}
                 onChange={(e) => setEvalId(e.target.value)}
               >
-                {mockEvaluaciones.map(ev => (
+                {availableEvaluaciones.map(ev => (
                   <option key={ev.id} value={ev.id}>
                     {ev.titulo}
                   </option>

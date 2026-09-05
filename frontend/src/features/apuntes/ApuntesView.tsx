@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import styles from './ApuntesView.module.css';
-import { mockApuntes } from '../../data/mockData';
 import type { ApunteNota } from '../../types/academic';
+import { useApuntes } from '../../hooks';
 import {
   FoldersSidebar,
   NotesListSidebar,
@@ -16,9 +16,9 @@ interface ApuntesViewProps {
 }
 
 export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => {
+  const { apuntes, selectedApunte, setSelectedApunte } = useApuntes();
   const [selectedFolder, setSelectedFolder] = useState('Sistemas Distribuidos');
   const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>('1er Parcial');
-  const [activeNoteId, setActiveNoteId] = useState('note-1');
   const [viewMode, setViewMode] = useState<'render' | 'markdown' | 'split'>('render');
   const [showPdfSplit, setShowPdfSplit] = useState(false);
   const [isFoldersCollapsed, setIsFoldersCollapsed] = useState(false);
@@ -38,17 +38,30 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
     }
   };
 
-  const activeNote: ApunteNota = mockApuntes.find(n => n.id === activeNoteId) || mockApuntes[0];
+  const activeNote: ApunteNota =
+    selectedApunte ||
+    apuntes[0] || {
+      id: 'nota-default',
+      materiaId: 'mat-1',
+      materiaNombre: 'Sistemas Distribuidos',
+      carpeta: 'General',
+      titulo: 'Sin notas seleccionadas',
+      contenidoMarkdown: '# Sin notas\n\nCrea un nuevo apunte con ⌘N.',
+      tags: [],
+      fechaModificacion: new Date().toISOString(),
+      tiempoLecturaMin: 1,
+      palabras: 0
+    };
 
   const filteredNotes = useMemo(() => {
-    return mockApuntes.filter(n => {
+    return apuntes.filter(n => {
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         return n.titulo.toLowerCase().includes(q) || n.tags.some(t => t.toLowerCase().includes(q));
       }
       return true;
     });
-  }, [searchQuery]);
+  }, [apuntes, searchQuery]);
 
   return (
     <div className={styles.container}>
@@ -68,7 +81,10 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({ onOpenNoteModal }) => 
         onToggleCollapse={setIsNotesListCollapsed}
         notes={filteredNotes}
         activeNoteId={activeNote.id}
-        onSelectNote={setActiveNoteId}
+        onSelectNote={(id) => {
+          const found = apuntes.find(a => a.id === id);
+          if (found) setSelectedApunte(found);
+        }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onOpenNoteModal={onOpenNoteModal}

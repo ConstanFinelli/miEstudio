@@ -1,0 +1,107 @@
+/**
+ * Cliente HTTP Base para comunicación con el Backend Go.
+ * Soporta configuración mediante variables de entorno (VITE_API_URL).
+ * Incluye detección de conectividad y fallback inteligente para desarrollo sin backend activo.
+ */
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const FORCE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
+
+class ApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  private getHeaders(isFormData = false): HeadersInit {
+    const headers: Record<string, string> = {
+      Accept: 'application/json'
+    };
+
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    // Token de autenticación si estuviese disponible
+    const token = localStorage.getItem('miestudio-token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
+
+  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    if (FORCE_MOCKS) {
+      throw new Error('MODO_MOCKS_ACTIVADO');
+    }
+
+    const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const isFormData = options.body instanceof FormData;
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          ...this.getHeaders(isFormData),
+          ...options.headers
+        }
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.message || `Error HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // Si es 204 No Content
+      if (response.status === 204) {
+        return {} as T;
+      }
+
+      return await response.json();
+    } catch (err: unknown) {
+      // Registrar log amigable de desarrollo cuando el backend Go no está corriendo
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        console.info(
+          `[apiClient] Backend Go en ${this.baseUrl} no detectado. Activando fallback a datos locales en memoria.`
+        );
+      }
+      throw err;
+    }
+  }
+
+  get<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
+  }
+
+  post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: body instanceof FormData ? body : JSON.stringify(body)
+    });
+  }
+
+  put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: body instanceof FormData ? body : JSON.stringify(body)
+    });
+  }
+
+  patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: body instanceof FormData ? body : JSON.stringify(body)
+    });
+  }
+
+  delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  }
+}
+
+export const apiClient = new ApiClient(API_BASE_URL);

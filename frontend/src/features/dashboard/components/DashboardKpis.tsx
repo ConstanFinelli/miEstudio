@@ -7,7 +7,7 @@ import {
   Flame,
   TrendingUp
 } from 'lucide-react';
-import { mockPerfil } from '../../../data/mockData';
+import { usePerfil, useMaterias, useEvaluaciones } from '../../../hooks';
 
 interface DashboardKpisProps {
   onGoToMaterias: () => void;
@@ -18,6 +18,14 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   onGoToMaterias,
   onGoToCalendario
 }) => {
+  const { perfil } = usePerfil();
+  const { materias } = useMaterias();
+  const { proximas } = useEvaluaciones();
+
+  const activeSubjects = materias.filter(m => m.estado === 'CURSANDO');
+  const nextCritical = proximas.length > 0 ? proximas[0] : null;
+
+  if (!perfil) return null;
   return (
     <div className={styles.kpiGrid}>
       {/* KPI 1: Promedio General */}
@@ -32,16 +40,16 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiValueRow}>
-          <span className={styles.kpiMainValue}>{mockPerfil.promedioGeneral.toFixed(2)}</span>
+          <span className={styles.kpiMainValue}>{perfil.promedioGeneral.toFixed(2)}</span>
           <span className={styles.kpiSubValue}>/ 10.0</span>
           <span className={styles.deltaBadge}>
             <TrendingUp size={11} />
-            +{mockPerfil.deltaPromedio} vs 2024-2C
+            +{perfil.deltaPromedio} vs ciclo anterior
           </span>
         </div>
         <div className={styles.kpiFooter}>
-          <span>Puesto: #{mockPerfil.puestoCohorte} en cohorte</span>
-          <span>Percentil {mockPerfil.percentil}%</span>
+          <span>Puesto: #{perfil.puestoCohorte} en cohorte</span>
+          <span>Percentil {perfil.percentil}%</span>
         </div>
       </div>
 
@@ -51,7 +59,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <div className={styles.kpiTitleGroup}>
             <span className={styles.kpiLabel}>Progreso de Carrera</span>
             <span className={styles.kpiSub}>
-              {mockPerfil.materiasAprobadas} de {mockPerfil.materiasTotales} materias aprobadas
+              {perfil.materiasAprobadas} de {perfil.materiasTotales} materias aprobadas
             </span>
           </div>
           <div className={styles.kpiIconBox}>
@@ -61,22 +69,22 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         <div>
           <div className={styles.kpiValueRow}>
             <span className={styles.kpiMainValue}>
-              {Math.round((mockPerfil.materiasAprobadas / mockPerfil.materiasTotales) * 100)}%
+              {Math.round((perfil.materiasAprobadas / (perfil.materiasTotales || 1)) * 100)}%
             </span>
             <span className={styles.kpiSubValue}>
-              {mockPerfil.materiasTotales - mockPerfil.materiasAprobadas} pendientes
+              {perfil.materiasTotales - perfil.materiasAprobadas} pendientes
             </span>
           </div>
           <div className={styles.progressBarBg}>
             <div
               className={styles.progressBarFill}
-              style={{ width: `${(mockPerfil.materiasAprobadas / mockPerfil.materiasTotales) * 100}%` }}
+              style={{ width: `${(perfil.materiasAprobadas / (perfil.materiasTotales || 1)) * 100}%` }}
             />
           </div>
         </div>
         <div className={styles.kpiFooter}>
           <span>Tesina habilitada al 75%</span>
-          <span>Faltan 5 materias</span>
+          <span>{perfil.materiasTotales - perfil.materiasAprobadas} materias para graduación</span>
         </div>
       </div>
 
@@ -93,18 +101,19 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         </div>
         <div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue}>4</span>
+            <span className={styles.kpiMainValue}>{activeSubjects.length}</span>
             <span style={{ fontSize: '12px', color: 'var(--emerald)' }}>Todas regulares al día</span>
           </div>
           <div className={styles.subjectPills}>
-            <span className={styles.subjectMiniPill}>SD</span>
-            <span className={styles.subjectMiniPill}>BD-II</span>
-            <span className={styles.subjectMiniPill}>ALGO-3</span>
-            <span className={styles.subjectMiniPill}>REDES</span>
+            {activeSubjects.slice(0, 4).map(subj => (
+              <span key={subj.id} className={styles.subjectMiniPill} title={subj.nombre}>
+                {subj.codigo || subj.nombre.slice(0, 4)}
+              </span>
+            ))}
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          <span>Carga semanal: 24 hs</span>
+          <span>Carga semanal: {activeSubjects.length * 6} hs</span>
           <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={onGoToMaterias}>
             Ver detalle →
           </span>
@@ -116,7 +125,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         <div className={styles.kpiHeader}>
           <div className={styles.kpiTitleGroup}>
             <span className={styles.kpiLabel} style={{ color: 'var(--red)' }}>Atención Inmediata</span>
-            <span className={styles.kpiSub}>Ventana crítica de 7 días</span>
+            <span className={styles.kpiSub}>Próxima evaluación crítica</span>
           </div>
           <div className={styles.kpiIconBox} style={{ color: 'var(--red)' }}>
             <Flame size={15} />
@@ -124,8 +133,12 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         </div>
         <div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue} style={{ color: 'var(--red)' }}>4 Días</span>
-            <span className={styles.kpiSubValue}>1° Parcial Sist. Dist.</span>
+            <span className={styles.kpiMainValue} style={{ color: 'var(--red)' }}>
+              {nextCritical ? `${nextCritical.peso}%` : 'Al día'}
+            </span>
+            <span className={styles.kpiSubValue}>
+              {nextCritical ? `${nextCritical.titulo}` : 'Sin exámenes pendientes'}
+            </span>
           </div>
           <div className={styles.sparklineContainer}>
             <svg viewBox="0 0 100 20" className={styles.sparklineSvg}>
