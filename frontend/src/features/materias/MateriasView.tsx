@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styles from './MateriasView.module.css';
 import { BookOpen, Plus } from 'lucide-react';
-import type { Materia, MaterialEstudio } from '../../types/academic';
-import { useMaterias, useEvaluaciones } from '../../hooks';
-import { materialesService } from '../../services';
+import type { Materia } from '../../types/academic';
+import { useMaterias, useEvaluaciones, useMateriales } from '../../hooks';
 import {
   MateriasHeader,
   MateriasFilterBar,
@@ -14,7 +13,7 @@ import {
   CorrelativesCard,
   MaterialsManager
 } from './components';
-import { AccreditationRulesModal } from '../../components/modals';
+import { AccreditationRulesModal, UploadMaterialModal } from '../../components/modals';
 
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
@@ -33,8 +32,8 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const [selectedEstado, setSelectedEstado] = useState<string>('TODOS');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>('');
-  const [materiaMaterials, setMateriaMaterials] = useState<MaterialEstudio[]>([]);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const { materias, isLoading: isMateriasLoading, deleteMateria, updateMateria } = useMaterias();
 
@@ -77,6 +76,13 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   // Evaluations for this materia
   const { evaluaciones: materiaEvaluations, deleteEvaluacion } = useEvaluaciones(selectedMateria?.id);
 
+  // Materials for this materia
+  const {
+    materiales: materiaMaterials,
+    uploadMaterial,
+    deleteMaterial
+  } = useMateriales(selectedMateria?.id);
+
   const handleDeleteEvaluation = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
       `¿Estás seguro de que deseas eliminar la evaluación "${titulo}"?`
@@ -91,12 +97,19 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     }
   };
 
-  // Load materials for selected materia
-  useEffect(() => {
-    if (selectedMateria?.id) {
-      materialesService.getMateriales(selectedMateria.id).then(setMateriaMaterials);
+  const handleDeleteMaterial = async (id: string, titulo: string) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar el material "${titulo}"?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await deleteMaterial(id);
+    } catch (err) {
+      console.error('Error al eliminar material:', err);
+      alert('Ocurrió un error al eliminar el material.');
     }
-  }, [selectedMateria?.id]);
+  };
 
   // Set initial selected id when materias load
   useEffect(() => {
@@ -220,6 +233,8 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
               materials={materiaMaterials}
               materiaNombre={selectedMateria.nombre}
               onViewPdf={onViewPdf}
+              onOpenUploadModal={() => setIsUploadModalOpen(true)}
+              onDeleteMaterial={handleDeleteMaterial}
             />
           </div>
         ) : (
@@ -250,6 +265,18 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           onSave={async (newReglas) => {
             await updateMateria(selectedMateria.id, { reglasAcreditacion: newReglas });
           }}
+        />
+      )}
+
+      {/* Modal para subir PDFs de materiales de estudio */}
+      {selectedMateria && (
+        <UploadMaterialModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          materiaId={selectedMateria.id}
+          materiaNombre={selectedMateria.nombre}
+          materiaCodigo={selectedMateria.codigo}
+          onUpload={(file, titulo, categoria) => uploadMaterial(file, titulo, categoria)}
         />
       )}
     </div>

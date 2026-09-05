@@ -29,6 +29,7 @@ export const materialesService = {
   ): Promise<MaterialEstudio> {
     try {
       const formData = new FormData();
+      formData.append('file', file);
       formData.append('archivo', file);
       formData.append('titulo', titulo);
       formData.append('categoria', categoria);

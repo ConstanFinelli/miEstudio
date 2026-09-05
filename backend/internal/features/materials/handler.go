@@ -52,7 +52,11 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 	materiaID := c.Params("materia_id")
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		return common.SendError(c, fiber.StatusBadRequest, "No se adjuntó ningún archivo", err.Error())
+		var err2 error
+		fileHeader, err2 = c.FormFile("archivo")
+		if err2 != nil {
+			return common.SendError(c, fiber.StatusBadRequest, "No se adjuntó ningún archivo (campo 'file' o 'archivo')", err.Error())
+		}
 	}
 
 	file, err := fileHeader.Open()

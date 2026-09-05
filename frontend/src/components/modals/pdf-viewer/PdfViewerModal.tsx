@@ -6,7 +6,8 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  BookOpen
+  BookOpen,
+  ExternalLink
 } from 'lucide-react';
 
 interface PdfViewerModalProps {
@@ -21,6 +22,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
   isOpen,
   onClose,
   pdfTitle,
+  pdfUrl,
   onOpenSplitNote
 }) => {
   const [page, setPage] = useState(1);
@@ -37,43 +39,64 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
       >
         {/* Top bar */}
         <div className={styles.topBar}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
             <span className={styles.pdfBadge}>PDF</span>
-            <span className={styles.titleText}>
-              {pdfTitle || 'Paper Raft: In Search of an Understandable Consensus Algorithm'}
+            <span
+              className={styles.titleText}
+              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              title={pdfTitle}
+            >
+              {pdfTitle || 'Visualizador de Documento'}
             </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Page controls */}
-            <div className={styles.controlPill}>
-              <button
-                className={styles.iconBtn}
-                disabled={page <= 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <span>{page} / {totalPages}</span>
-              <button
-                className={styles.iconBtn}
-                disabled={page >= totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
+            {/* Page & Zoom controls only when no native iframe URL is active */}
+            {!pdfUrl && (
+              <>
+                <div className={styles.controlPill}>
+                  <button
+                    className={styles.iconBtn}
+                    disabled={page <= 1}
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span>{page} / {totalPages}</span>
+                  <button
+                    className={styles.iconBtn}
+                    disabled={page >= totalPages}
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
 
-            {/* Zoom controls */}
-            <div className={styles.controlPill}>
-              <button className={styles.iconBtn} onClick={() => setZoom(z => Math.max(50, z - 10))}>
-                <ZoomOut size={13} />
-              </button>
-              <span>{zoom}%</span>
-              <button className={styles.iconBtn} onClick={() => setZoom(z => Math.min(200, z + 10))}>
-                <ZoomIn size={13} />
-              </button>
-            </div>
+                <div className={styles.controlPill}>
+                  <button className={styles.iconBtn} onClick={() => setZoom(z => Math.max(50, z - 10))}>
+                    <ZoomOut size={13} />
+                  </button>
+                  <span>{zoom}%</span>
+                  <button className={styles.iconBtn} onClick={() => setZoom(z => Math.min(200, z + 10))}>
+                    <ZoomIn size={13} />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.btnAction}
+                style={{ textDecoration: 'none' }}
+                title="Abrir en ventana completa"
+              >
+                <ExternalLink size={12} />
+                <span>Abrir Completo</span>
+              </a>
+            )}
 
             {/* Split view trigger */}
             {onOpenSplitNote && (
@@ -85,7 +108,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
                 }}
               >
                 <BookOpen size={12} color="var(--primary)" />
-                <span>Modo Estudio Split</span>
+                <span>Modo Estudio</span>
               </button>
             )}
 
@@ -93,18 +116,28 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               className={styles.iconBtn}
               onClick={onClose}
               style={{ marginLeft: '4px' }}
+              title="Cerrar (Esc)"
             >
               <X size={16} />
             </button>
           </div>
         </div>
 
-        {/* Paper Document Canvas */}
-        <div className={styles.canvasArea}>
-          <div
-            className={styles.paperSheet}
-            style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
-          >
+        {/* Real PDF iframe or Paper Document Canvas */}
+        {pdfUrl ? (
+          <div className={styles.iframeContainer}>
+            <iframe
+              src={pdfUrl}
+              className={styles.pdfIframe}
+              title={pdfTitle}
+            />
+          </div>
+        ) : (
+          <div className={styles.canvasArea}>
+            <div
+              className={styles.paperSheet}
+              style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+            >
             {/* Paper Header */}
             <div className={styles.paperHeader}>
               <h1 className={styles.paperTitle}>
@@ -178,6 +211,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
