@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './MateriasView.module.css';
 import { BookOpen, Plus } from 'lucide-react';
 import type { Materia } from '../../types/academic';
-import { useMaterias, useEvaluaciones, useMateriales } from '../../hooks';
+import { useMaterias, useEvaluaciones, useMateriales, useHorarios } from '../../hooks';
 import {
   MateriasHeader,
   MateriasFilterBar,
@@ -11,8 +11,10 @@ import {
   AccreditationRulesCard,
   EvaluationsList,
   CorrelativesCard,
-  MaterialsManager
+  MaterialsManager,
+  MateriaSchedulesCard
 } from './components';
+
 import { AccreditationRulesModal, UploadMaterialModal, MateriaModal } from '../../components/modals';
 
 interface MateriasViewProps {
@@ -83,6 +85,14 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     uploadMaterial,
     deleteMaterial
   } = useMateriales(selectedMateria?.id);
+
+  // Schedules for this materia
+  const {
+    horarios: materiaHorarios,
+    refresh: refreshHorarios,
+    deleteHorario: deleteHorarioCursada
+  } = useHorarios(selectedMateria?.id);
+
 
   const handleDeleteEvaluation = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
@@ -218,10 +228,18 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
               onDeleteMateria={handleDeleteMateria}
             />
 
+            <MateriaSchedulesCard
+              materia={selectedMateria}
+              horarios={materiaHorarios}
+              onRefreshHorarios={refreshHorarios}
+              onDeleteHorario={deleteHorarioCursada}
+            />
+
             <AccreditationRulesCard
               reglas={selectedMateria.reglasAcreditacion}
               onConfigure={() => setIsRulesModalOpen(true)}
             />
+
 
             <EvaluationsList
               evaluations={materiaEvaluations}

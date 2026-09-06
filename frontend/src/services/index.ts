@@ -7,3 +7,5 @@ export * from './apuntesService';
 export * from './materialesService';
 export * from './perfilService';
 export * from './calendarioService';
+export * from './horariosService';
+

@@ -5,3 +5,5 @@ export { MateriaModal } from './materia/MateriaModal';
 export { AccreditationRulesModal } from './materia/AccreditationRulesModal';
 export { UploadMaterialModal } from './material/UploadMaterialModal';
 export { DeleteConfirmModal } from './common/DeleteConfirmModal';
+export { HorarioModal } from './schedule/HorarioModal';
+

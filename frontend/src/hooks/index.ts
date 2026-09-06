@@ -4,3 +4,5 @@ export * from './useEvaluaciones';
 export * from './useApuntes';
 export * from './useCalendario';
 export * from './useMateriales';
+export * from './useHorarios';
+

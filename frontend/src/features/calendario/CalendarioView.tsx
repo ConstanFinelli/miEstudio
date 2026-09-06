@@ -6,12 +6,14 @@ import {
   CalendarTopNav,
   CalendarFiltersBar,
   CalendarMonthGrid,
-  CalendarEventDetail
+  CalendarEventDetail,
+  WeeklyScheduleGrid
 } from './components';
 
 interface CalendarioViewProps {
   onOpenEvaluationModal: () => void;
 }
+
 
 export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluationModal }) => {
   const { eventos } = useCalendario();
@@ -150,46 +152,54 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
         onOpenEvaluationModal={onOpenEvaluationModal}
       />
 
-      {/* 2. Filters Row */}
-      <CalendarFiltersBar
-        selectedFilter={selectedFilter}
-        onSelectFilter={setSelectedFilter}
-        selectedYear={selectedYear}
-        onSelectYear={setSelectedYear}
-        selectedCuatri={selectedCuatri}
-        onSelectCuatri={setSelectedCuatri}
-      />
+      {/* 2. Content based on View Mode */}
+      {viewMode === 'semana' ? (
+        <WeeklyScheduleGrid />
+      ) : (
+        <>
+          {/* Filters Row */}
+          <CalendarFiltersBar
+            selectedFilter={selectedFilter}
+            onSelectFilter={setSelectedFilter}
+            selectedYear={selectedYear}
+            onSelectYear={setSelectedYear}
+            selectedCuatri={selectedCuatri}
+            onSelectCuatri={setSelectedCuatri}
+          />
 
-      {/* 3. Calendar Grid + Detail Sidebar Split */}
-      <div className={styles.calendarSplit}>
-        <CalendarMonthGrid
-          currentDate={currentDate}
-          events={filteredEvents}
-          selectedEventId={selectedEventId}
-          onSelectEventId={(id) => {
-            setSelectedEventId(id);
-            setSelectedDateStr(null);
-          }}
-          selectedDateStr={selectedDateStr}
-          onSelectDate={(dateStr) => {
-            setSelectedDateStr(dateStr);
-            setSelectedEventId(null);
-          }}
-        />
+          {/* Calendar Grid + Detail Sidebar Split */}
+          <div className={styles.calendarSplit}>
+            <CalendarMonthGrid
+              currentDate={currentDate}
+              events={filteredEvents}
+              selectedEventId={selectedEventId}
+              onSelectEventId={(id) => {
+                setSelectedEventId(id);
+                setSelectedDateStr(null);
+              }}
+              selectedDateStr={selectedDateStr}
+              onSelectDate={(dateStr) => {
+                setSelectedDateStr(dateStr);
+                setSelectedEventId(null);
+              }}
+            />
 
-        <CalendarEventDetail
-          selectedEvent={selectedEvent}
-          allEvents={combinedEvents}
-          onSelectEventId={(id) => {
-            setSelectedEventId(id);
-            setSelectedDateStr(null);
-          }}
-          onOpenEvaluationModal={onOpenEvaluationModal}
-          onDeleteEvent={handleDeleteEvent}
-        />
-      </div>
+            <CalendarEventDetail
+              selectedEvent={selectedEvent}
+              allEvents={combinedEvents}
+              onSelectEventId={(id) => {
+                setSelectedEventId(id);
+                setSelectedDateStr(null);
+              }}
+              onOpenEvaluationModal={onOpenEvaluationModal}
+              onDeleteEvent={handleDeleteEvent}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };
+
 
 export default CalendarioView;

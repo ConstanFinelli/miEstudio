@@ -1,0 +1,53 @@
+import { useState, useEffect, useCallback } from 'react';
+import type { HorarioCursada } from '../types/academic';
+import { horariosService } from '../services';
+
+export const useHorarios = (materiaId?: string, diaSemana?: string) => {
+  const [horarios, setHorarios] = useState<HorarioCursada[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchHorarios = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await horariosService.getHorarios(materiaId, diaSemana);
+      setHorarios(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al cargar horarios de cursada');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [materiaId, diaSemana]);
+
+  useEffect(() => {
+    fetchHorarios();
+  }, [fetchHorarios]);
+
+  const createHorario = async (horarioData: Partial<HorarioCursada>) => {
+    const created = await horariosService.createHorario(horarioData);
+    setHorarios(prev => [...prev, created]);
+    return created;
+  };
+
+  const updateHorario = async (id: string, horarioData: Partial<HorarioCursada>) => {
+    const updated = await horariosService.updateHorario(id, horarioData);
+    setHorarios(prev => prev.map(h => (h.id === id ? updated : h)));
+    return updated;
+  };
+
+  const deleteHorario = async (id: string) => {
+    await horariosService.deleteHorario(id);
+    setHorarios(prev => prev.filter(h => h.id !== id));
+  };
+
+  return {
+    horarios,
+    isLoading,
+    error,
+    refresh: fetchHorarios,
+    createHorario,
+    updateHorario,
+    deleteHorario
+  };
+};

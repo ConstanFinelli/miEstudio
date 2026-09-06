@@ -117,8 +117,25 @@ export interface PerfilDTO {
   promedio_historico?: { cuatrimestre: string; promedio: number }[];
 }
 
+export interface HorarioCursadaDTO {
+  id: string;
+  materia_id: string;
+  materia?: MateriaDTO;
+  dia_semana: 'LUNES' | 'MARTES' | 'MIERCOLES' | 'JUEVES' | 'VIERNES' | 'SABADO';
+  hora_inicio: string;
+  hora_fin: string;
+  facultad_sede?: string;
+  aula?: string;
+  tipo_clase?: string;
+  modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
+  observaciones?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;
   success: boolean;
 }
+

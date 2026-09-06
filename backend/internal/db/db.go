@@ -14,6 +14,7 @@ import (
 	"miestudio/backend/internal/features/materials"
 	"miestudio/backend/internal/features/notes"
 	"miestudio/backend/internal/features/profile"
+	"miestudio/backend/internal/features/schedules"
 	"miestudio/backend/internal/features/subjects"
 )
 
@@ -36,6 +37,7 @@ func Init(cfg *config.Config) (*gorm.DB, error) {
 		&calendar.EventoCalendario{},
 		&materials.Material{},
 		&profile.Perfil{},
+		&schedules.HorarioCursada{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error durante migraciones: %w", err)

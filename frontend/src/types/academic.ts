@@ -125,3 +125,22 @@ export interface PerfilEstudiante {
   percentil: number;
   deltaPromedio: number;
 }
+
+export type DiaSemana = 'LUNES' | 'MARTES' | 'MIERCOLES' | 'JUEVES' | 'VIERNES' | 'SABADO';
+
+export interface HorarioCursada {
+  id: string;
+  materiaId: string;
+  materiaNombre?: string;
+  materiaCodigo?: string;
+  materiaColor?: string;
+  diaSemana: DiaSemana;
+  horaInicio: string; // "08:30"
+  horaFin: string; // "12:45"
+  facultadSede?: string; // ej: "UTN FRBA - Medrano" o "UBA FCEyN"
+  aula?: string;
+  tipoClase?: 'Teoría' | 'Práctica' | 'Laboratorio' | 'Taller' | string;
+  modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
+  observaciones?: string;
+}
+
