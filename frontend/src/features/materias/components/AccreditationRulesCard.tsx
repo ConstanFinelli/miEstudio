@@ -1,16 +1,16 @@
-import React from 'react';
-import styles from '../MateriasView.module.css';
-import { CheckCircle, AlertCircle, SlidersHorizontal } from 'lucide-react';
-import type { Materia } from '../../../types/academic';
+import React from "react";
+import styles from "../MateriasView.module.css";
+import { CheckCircle, AlertCircle, SlidersHorizontal } from "lucide-react";
+import type { Materia } from "../../../types/academic";
 
 interface AccreditationRulesCardProps {
-  reglas: Materia['reglasAcreditacion'];
+  reglas: Materia["reglasAcreditacion"];
   onConfigure?: () => void;
 }
 
 export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
   reglas,
-  onConfigure
+  onConfigure,
 }) => {
   const promo = reglas?.promocion;
   const regu = reglas?.regularidad;
@@ -19,7 +19,7 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
   return (
     <div className={styles.sectionBox}>
       <div className={styles.boxHeader}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span>=≠ REGLAS DE ACREDITACIÓN CONFIGURADAS</span>
           {onConfigure && (
             <button
@@ -32,12 +32,13 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
             </button>
           )}
         </div>
-        <span style={{ color: 'var(--emerald)', fontSize: '10px' }}>ALGORITMO ACTIVO</span>
       </div>
 
       <div className={styles.rulesGrid}>
         {/* Card 1: Promoción Directa */}
-        <div className={`${styles.ruleCard} ${!isPromoEnabled ? styles.ruleCardDisabled : ''}`}>
+        <div
+          className={`${styles.ruleCard} ${!isPromoEnabled ? styles.ruleCardDisabled : ""}`}
+        >
           <div className={styles.ruleCardTitle}>
             {isPromoEnabled ? (
               <CheckCircle size={13} color="var(--emerald)" />
@@ -48,16 +49,17 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
             {isPromoEnabled ? (
               <span className={styles.ruleBadgeActive}>PROMOCIONABLE</span>
             ) : (
-              <span className={styles.ruleBadgeDisabled}>FINAL OBLIGATORIO</span>
+              <span className={styles.ruleBadgeDisabled}>
+                FINAL OBLIGATORIO
+              </span>
             )}
           </div>
 
           <p className={styles.ruleCardDesc}>
-            {promo?.descripcion || (
-              isPromoEnabled
-                ? 'Promedio ≥ 8.0, parciales ≥ 7.0 sin recuperatorio.'
-                : 'Sin promoción directa. Examen final obligatorio para acreditar la materia.'
-            )}
+            {promo?.descripcion ||
+              (isPromoEnabled
+                ? "Promedio ≥ 8.0, parciales ≥ 7.0 sin recuperatorio."
+                : "Sin promoción directa. Examen final obligatorio para acreditar la materia.")}
           </p>
 
           <div className={styles.rulePills}>
@@ -73,12 +75,18 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
                   Asistencia: <strong>≥ {promo?.minAsistencia ?? 80}%</strong>
                 </span>
                 <span className={styles.rulePill}>
-                  Recuperatorio: <strong>{promo?.permiteRecuperatorio ? 'Permitido' : 'No admite'}</strong>
+                  Recuperatorio:{" "}
+                  <strong>
+                    {promo?.permiteRecuperatorio ? "Permitido" : "No admite"}
+                  </strong>
                 </span>
               </>
             ) : (
               <>
-                <span className={styles.rulePill} style={{ color: 'var(--amber)' }}>
+                <span
+                  className={styles.rulePill}
+                  style={{ color: "var(--amber)" }}
+                >
                   🚫 No admite promoción directa
                 </span>
                 <span className={styles.rulePill}>
@@ -98,7 +106,8 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
           </div>
 
           <p className={styles.ruleCardDesc}>
-            {regu?.descripcion || 'Todas las evaluaciones ≥ 4.0 y 75% de asistencia mínima requerida.'}
+            {regu?.descripcion ||
+              "Todas las evaluaciones ≥ 4.0 y 75% de asistencia mínima requerida."}
           </p>
 
           <div className={styles.rulePills}>
@@ -106,10 +115,16 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
               Parciales: <strong>≥ {regu?.minNota ?? 4.0}</strong>
             </span>
             <span className={styles.rulePill}>
-              Asistencia requerida: <strong>≥ {regu?.minAsistencia ?? 75}%</strong>
+              Asistencia requerida:{" "}
+              <strong>≥ {regu?.minAsistencia ?? 75}%</strong>
             </span>
             <span className={styles.rulePill}>
-              Recuperatorio: <strong>{regu?.permiteRecuperatorio !== false ? 'Permitido' : 'No admite'}</strong>
+              Recuperatorio:{" "}
+              <strong>
+                {regu?.permiteRecuperatorio !== false
+                  ? "Permitido"
+                  : "No admite"}
+              </strong>
             </span>
           </div>
         </div>

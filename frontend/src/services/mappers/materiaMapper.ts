@@ -65,9 +65,9 @@ export const materiaMapper = {
       comision: dto.comision || 'Comisión Única',
       modalidad: dto.modalidad || 'Presencial',
       promedio: dto.promedio ?? 0,
-      profesores: extra?.profesores || {
-        titular: 'Docente Titular',
-        jtp: 'Docente Auxiliar'
+      profesores: {
+        titular: dto.profesor_titular !== undefined ? dto.profesor_titular : (extra?.profesores?.titular || ''),
+        jtp: dto.profesor_jtp !== undefined ? dto.profesor_jtp : (extra?.profesores?.jtp || '')
       },
       reglasAcreditacion,
       correlativas: extra?.correlativas || {
@@ -95,6 +95,8 @@ export const materiaMapper = {
       comision: materia.comision,
       modalidad: materia.modalidad,
       promedio: materia.promedio,
+      profesor_titular: materia.profesores?.titular,
+      profesor_jtp: materia.profesores?.jtp,
       reglas_acreditacion: materia.reglasAcreditacion ? {
         promocion: {
           permite_promocion: materia.reglasAcreditacion.promocion.permitePromocion ?? true,

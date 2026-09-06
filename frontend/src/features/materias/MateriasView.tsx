@@ -13,7 +13,7 @@ import {
   CorrelativesCard,
   MaterialsManager
 } from './components';
-import { AccreditationRulesModal, UploadMaterialModal } from '../../components/modals';
+import { AccreditationRulesModal, UploadMaterialModal, MateriaModal } from '../../components/modals';
 
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
@@ -34,6 +34,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>('');
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isEditMateriaModalOpen, setIsEditMateriaModalOpen] = useState(false);
 
   const { materias, isLoading: isMateriasLoading, deleteMateria, updateMateria } = useMaterias();
 
@@ -213,6 +214,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           <div className={styles.detailColumn}>
             <MateriaDetailHeader
               materia={selectedMateria}
+              onEditMateria={() => setIsEditMateriaModalOpen(true)}
               onDeleteMateria={handleDeleteMateria}
             />
 
@@ -277,6 +279,19 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           materiaNombre={selectedMateria.nombre}
           materiaCodigo={selectedMateria.codigo}
           onUpload={(file, titulo, categoria) => uploadMaterial(file, titulo, categoria)}
+        />
+      )}
+
+      {/* Modal para editar datos de la materia */}
+      {selectedMateria && isEditMateriaModalOpen && (
+        <MateriaModal
+          isOpen={isEditMateriaModalOpen}
+          onClose={() => setIsEditMateriaModalOpen(false)}
+          materiaToEdit={selectedMateria}
+          onSuccess={async (updated) => {
+            setIsEditMateriaModalOpen(false);
+            await updateMateria(updated.id, updated);
+          }}
         />
       )}
     </div>

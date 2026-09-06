@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './MateriaModal.module.css';
-import { X, BookOpen, Plus, Award } from 'lucide-react';
+import { X, BookOpen, Plus, Award, Save } from 'lucide-react';
 import type { Materia, EstadoMateria } from '../../../types/academic';
 import { materiasService } from '../../../services';
 
 interface MateriaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (created: Materia) => void;
+  onSuccess: (materia: Materia) => void;
+  materiaToEdit?: Materia | null;
 }
 
 const PRESET_COLORS = [
@@ -24,8 +25,11 @@ const PRESET_COLORS = [
 export const MateriaModal: React.FC<MateriaModalProps> = ({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
+  materiaToEdit
 }) => {
+  const isEditing = Boolean(materiaToEdit);
+
   const [nombre, setNombre] = useState('');
   const [codigo, setCodigo] = useState('');
   const [anio, setAnio] = useState<number>(3);
@@ -46,6 +50,42 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (materiaToEdit) {
+      setNombre(materiaToEdit.nombre || '');
+      setCodigo(materiaToEdit.codigo || '');
+      setAnio(materiaToEdit.anio || 3);
+      setCuatrimestre(materiaToEdit.cuatrimestre || '1C');
+      setEstado(materiaToEdit.estado || 'CURSANDO');
+      setColor(materiaToEdit.color || '#3b82f6');
+      setComision(materiaToEdit.comision || '');
+      setModalidad(materiaToEdit.modalidad || 'Presencial');
+      setProfesorTitular(materiaToEdit.profesores?.titular || '');
+      setProfesorJtp(materiaToEdit.profesores?.jtp || '');
+      setPermitePromocion(materiaToEdit.reglasAcreditacion?.promocion?.permitePromocion ?? true);
+      setMinPromedio(materiaToEdit.reglasAcreditacion?.promocion?.minPromedio ?? 8.0);
+      setMinParcial(materiaToEdit.reglasAcreditacion?.promocion?.minParcial ?? 7.0);
+      setMinNotaRegular(materiaToEdit.reglasAcreditacion?.regularidad?.minNota ?? 4.0);
+      setMinAsistencia(materiaToEdit.reglasAcreditacion?.regularidad?.minAsistencia ?? 75);
+    } else {
+      setNombre('');
+      setCodigo('');
+      setAnio(3);
+      setCuatrimestre('1C');
+      setEstado('CURSANDO');
+      setColor('#3b82f6');
+      setComision('');
+      setModalidad('Presencial');
+      setProfesorTitular('');
+      setProfesorJtp('');
+      setPermitePromocion(true);
+      setMinPromedio(8.0);
+      setMinParcial(7.0);
+      setMinNotaRegular(4.0);
+      setMinAsistencia(75);
+    }
+  }, [materiaToEdit, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +94,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
 
     try {
       setIsSubmitting(true);
-      const created = await materiasService.createMateria({
+      const payload: Partial<Materia> = {
         nombre: nombre.trim(),
         codigo: codigo.trim() || `MAT-${Math.floor(100 + Math.random() * 900)}`,
         anio,
@@ -64,10 +104,9 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         comision: comision.trim() || 'Comisión Única',
         modalidad,
         profesores: {
-          titular: profesorTitular.trim() || 'Docente Titular',
-          jtp: profesorJtp.trim() || 'Docente Auxiliar'
+          titular: profesorTitular.trim(),
+          jtp: profesorJtp.trim()
         },
-        promedio: 0,
         reglasAcreditacion: {
           promocion: {
             permitePromocion,
@@ -86,15 +125,22 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
             descripcion: `Evaluaciones ≥ ${minNotaRegular.toFixed(1)} y ${minAsistencia}% de asistencia mínima.`
           }
         }
-      });
+      };
 
-      // Reset form
-      setNombre('');
-      setCodigo('');
-      onSuccess(created);
+      let result: Materia;
+      if (materiaToEdit) {
+        result = await materiasService.updateMateria(materiaToEdit.id, payload);
+      } else {
+        result = await materiasService.createMateria({
+          ...payload,
+          promedio: 0
+        });
+      }
+
+      onSuccess(result);
       onClose();
     } catch (err) {
-      console.error('Error al registrar materia:', err);
+      console.error('Error al guardar materia:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +153,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         <div className={styles.modalTopBar}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span className={styles.tagBadge}>CURSADA</span>
-            <span>NUEVA MATERIA</span>
+            <span>{isEditing ? 'EDITAR MATERIA' : 'NUEVA MATERIA'}</span>
           </div>
           <button className={styles.closeBtn} onClick={onClose} title="Cerrar (Esc)">
             <X size={14} />
@@ -119,10 +165,14 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         <div className={styles.modalHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BookOpen size={20} color="var(--primary)" />
-            <h2 className={styles.modalTitle}>Registrar Asignatura / Cursada</h2>
+            <h2 className={styles.modalTitle}>
+              {isEditing ? `Editar: ${materiaToEdit?.nombre}` : 'Registrar Asignatura / Cursada'}
+            </h2>
           </div>
           <p className={styles.modalSub}>
-            Ingresá los datos académicos para comenzar a registrar notas, fechas de examen, apuntes y bibliografía.
+            {isEditing
+              ? 'Modificá los datos académicos, profesores y reglas de acreditación de la materia.'
+              : 'Ingresá los datos académicos para comenzar a registrar notas, fechas de examen, apuntes y bibliografía.'}
           </p>
         </div>
 
@@ -356,8 +406,12 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
               className={styles.btnSubmit}
               disabled={!nombre.trim() || isSubmitting}
             >
-              <Plus size={14} />
-              <span>{isSubmitting ? 'Registrando...' : 'Registrar Materia'}</span>
+              {isEditing ? <Save size={14} /> : <Plus size={14} />}
+              <span>
+                {isSubmitting
+                  ? (isEditing ? 'Guardando...' : 'Registrando...')
+                  : (isEditing ? 'Guardar Cambios' : 'Registrar Materia')}
+              </span>
             </button>
           </div>
         </form>

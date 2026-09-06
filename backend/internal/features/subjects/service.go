@@ -77,6 +77,8 @@ func (s *service) CreateMateria(ctx context.Context, dto CreateMateriaDTO) (*Mat
 		Comision:           dto.Comision,
 		Modalidad:          dto.Modalidad,
 		Promedio:           dto.Promedio,
+		ProfesorTitular:    dto.ProfesorTitular,
+		ProfesorJTP:        dto.ProfesorJTP,
 		ReglasAcreditacion: reglas,
 	}
 
@@ -119,6 +121,12 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 	}
 	if dto.Promedio != nil {
 		materia.Promedio = *dto.Promedio
+	}
+	if dto.ProfesorTitular != nil {
+		materia.ProfesorTitular = *dto.ProfesorTitular
+	}
+	if dto.ProfesorJTP != nil {
+		materia.ProfesorJTP = *dto.ProfesorJTP
 	}
 	if dto.ReglasAcreditacion != nil {
 		materia.ReglasAcreditacion = dto.ReglasAcreditacion

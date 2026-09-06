@@ -87,6 +87,8 @@ type Materia struct {
 	Comision           string                 `gorm:"type:varchar(50)" json:"comision"`
 	Modalidad          string                 `gorm:"type:varchar(50);default:'Presencial'" json:"modalidad"`
 	Promedio           float64                `gorm:"default:0" json:"promedio"`
+	ProfesorTitular    string                 `gorm:"type:varchar(255);default:''" json:"profesor_titular"`
+	ProfesorJTP        string                 `gorm:"type:varchar(255);default:''" json:"profesor_jtp"`
 	ReglasAcreditacion *ReglasAcreditacionDTO `gorm:"type:text" json:"reglas_acreditacion"`
 	CreatedAt          time.Time              `json:"created_at"`
 	UpdatedAt          time.Time              `json:"updated_at"`
@@ -103,6 +105,8 @@ type CreateMateriaDTO struct {
 	Comision           string                 `json:"comision"`
 	Modalidad          string                 `json:"modalidad"`
 	Promedio           float64                `json:"promedio"`
+	ProfesorTitular    string                 `json:"profesor_titular"`
+	ProfesorJTP        string                 `json:"profesor_jtp"`
 	ReglasAcreditacion *ReglasAcreditacionDTO `json:"reglas_acreditacion"`
 }
 
@@ -116,5 +120,7 @@ type UpdateMateriaDTO struct {
 	Comision           *string                `json:"comision"`
 	Modalidad          *string                `json:"modalidad"`
 	Promedio           *float64               `json:"promedio"`
+	ProfesorTitular    *string                `json:"profesor_titular"`
+	ProfesorJTP        *string                `json:"profesor_jtp"`
 	ReglasAcreditacion *ReglasAcreditacionDTO `json:"reglas_acreditacion"`
 }

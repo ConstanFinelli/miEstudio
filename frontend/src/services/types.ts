@@ -36,6 +36,8 @@ export interface MateriaDTO {
   comision?: string;
   modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
   promedio?: number;
+  profesor_titular?: string;
+  profesor_jtp?: string;
   reglas_acreditacion?: ReglasAcreditacionDTO | null;
   created_at?: string;
   updated_at?: string;
