@@ -29,7 +29,15 @@ const parseTimeToMinutes = (timeStr: string): number => {
   return (h || 0) * 60 + (m || 0);
 };
 
-export const WeeklyScheduleGrid: React.FC = () => {
+interface WeeklyScheduleGridProps {
+  filterYear?: number | 'TODOS';
+  filterCuatri?: 'TODOS' | '1C' | '2C' | 'Anual';
+}
+
+export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
+  filterYear = 'TODOS',
+  filterCuatri = 'TODOS'
+}) => {
   const { horarios, deleteHorario, refresh } = useHorarios();
   const { materias } = useMaterias();
 
@@ -44,18 +52,28 @@ export const WeeklyScheduleGrid: React.FC = () => {
   // Check today's day of week (0=Sunday, 1=Monday ... 6=Saturday)
   const currentDayIndex = new Date().getDay();
 
+  // Filter horarios according to year and cuatrimestre
+  const filteredHorarios = useMemo(() => {
+    return horarios.filter(h => {
+      const mat = materias.find(m => m.id === h.materiaId);
+      if (filterYear !== 'TODOS' && mat && mat.anio !== filterYear) return false;
+      if (filterCuatri !== 'TODOS' && mat && mat.cuatrimestre !== filterCuatri) return false;
+      return true;
+    });
+  }, [horarios, materias, filterYear, filterCuatri]);
+
   // Active days list (Mon-Fri or Mon-Sat)
   const activeDays = useMemo(() => {
-    const hasSabado = showSaturday || horarios.some(h => h.diaSemana === 'SABADO');
+    const hasSabado = showSaturday || filteredHorarios.some(h => h.diaSemana === 'SABADO');
     return hasSabado ? ALL_DAYS : ALL_DAYS.slice(0, 5);
-  }, [showSaturday, horarios]);
+  }, [showSaturday, filteredHorarios]);
 
   // Dynamic time bounds
   const { minHour, maxHour, totalMinutes } = useMemo(() => {
     let minH = 8;
     let maxH = 22;
 
-    horarios.forEach(h => {
+    filteredHorarios.forEach(h => {
       const startMin = parseTimeToMinutes(h.horaInicio);
       const endMin = parseTimeToMinutes(h.horaFin);
       const startH = Math.floor(startMin / 60);
@@ -67,7 +85,8 @@ export const WeeklyScheduleGrid: React.FC = () => {
 
     const totMins = (maxH - minH) * 60;
     return { minHour: minH, maxHour: maxH, totalMinutes: totMins || 60 };
-  }, [horarios]);
+  }, [filteredHorarios]);
+
 
   // Array of hours for horizontal grid lines
   const hourMarks = useMemo(() => {
@@ -84,7 +103,7 @@ export const WeeklyScheduleGrid: React.FC = () => {
     const sedesSet = new Set<string>();
     const materiasSet = new Set<string>();
 
-    horarios.forEach(h => {
+    filteredHorarios.forEach(h => {
       const diff = parseTimeToMinutes(h.horaFin) - parseTimeToMinutes(h.horaInicio);
       if (diff > 0) totalMins += diff;
       if (h.facultadSede?.trim()) sedesSet.add(h.facultadSede.trim());
@@ -100,11 +119,11 @@ export const WeeklyScheduleGrid: React.FC = () => {
       distinctMateriasCount: materiasSet.size,
       distinctSedes: Array.from(sedesSet)
     };
-  }, [horarios]);
+  }, [filteredHorarios]);
 
   // Enrich horarios with materia details (color, name, code)
   const enrichedHorarios = useMemo(() => {
-    return horarios.map(h => {
+    return filteredHorarios.map(h => {
       const mat = materias.find(m => m.id === h.materiaId);
       return {
         ...h,
@@ -113,7 +132,8 @@ export const WeeklyScheduleGrid: React.FC = () => {
         materiaColor: mat?.color || h.materiaColor || '#6366f1'
       };
     });
-  }, [horarios, materias]);
+  }, [filteredHorarios, materias]);
+
 
   // Overlap and layout calculation per day
   const dayLayouts = useMemo(() => {
@@ -249,7 +269,18 @@ export const WeeklyScheduleGrid: React.FC = () => {
             <span>Configurar Primer Horario</span>
           </button>
         </div>
+      ) : filteredHorarios.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIconCircle}>
+            <Clock size={28} />
+          </div>
+          <h3 className={styles.emptyTitle}>Sin clases para los filtros seleccionados</h3>
+          <p className={styles.emptyDesc}>
+            No hay materias con horarios de cursada en el año o cuatrimestre seleccionado.
+          </p>
+        </div>
       ) : (
+
         <div className={styles.gridWrapper}>
           {/* Header Row: Days */}
           <div

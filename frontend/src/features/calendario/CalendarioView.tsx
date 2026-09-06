@@ -6,14 +6,12 @@ import {
   CalendarTopNav,
   CalendarFiltersBar,
   CalendarMonthGrid,
-  CalendarEventDetail,
-  WeeklyScheduleGrid
+  CalendarEventDetail
 } from './components';
 
 interface CalendarioViewProps {
   onOpenEvaluationModal: () => void;
 }
-
 
 export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluationModal }) => {
   const { eventos } = useCalendario();
@@ -26,7 +24,8 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
   const [selectedYear, setSelectedYear] = useState<number | 'TODOS'>('TODOS');
   const [selectedCuatri, setSelectedCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
-  const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'agenda'>('mes');
+  const [viewMode, setViewMode] = useState<'mes' | 'agenda'>('mes');
+
 
   const handleDeleteEvent = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
@@ -152,54 +151,48 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
         onOpenEvaluationModal={onOpenEvaluationModal}
       />
 
-      {/* 2. Content based on View Mode */}
-      {viewMode === 'semana' ? (
-        <WeeklyScheduleGrid />
-      ) : (
-        <>
-          {/* Filters Row */}
-          <CalendarFiltersBar
-            selectedFilter={selectedFilter}
-            onSelectFilter={setSelectedFilter}
-            selectedYear={selectedYear}
-            onSelectYear={setSelectedYear}
-            selectedCuatri={selectedCuatri}
-            onSelectCuatri={setSelectedCuatri}
-          />
+      {/* 2. Filters Row */}
+      <CalendarFiltersBar
+        selectedFilter={selectedFilter}
+        onSelectFilter={setSelectedFilter}
+        selectedYear={selectedYear}
+        onSelectYear={setSelectedYear}
+        selectedCuatri={selectedCuatri}
+        onSelectCuatri={setSelectedCuatri}
+      />
 
-          {/* Calendar Grid + Detail Sidebar Split */}
-          <div className={styles.calendarSplit}>
-            <CalendarMonthGrid
-              currentDate={currentDate}
-              events={filteredEvents}
-              selectedEventId={selectedEventId}
-              onSelectEventId={(id) => {
-                setSelectedEventId(id);
-                setSelectedDateStr(null);
-              }}
-              selectedDateStr={selectedDateStr}
-              onSelectDate={(dateStr) => {
-                setSelectedDateStr(dateStr);
-                setSelectedEventId(null);
-              }}
-            />
+      {/* 3. Calendar Grid + Detail Sidebar Split */}
+      <div className={styles.calendarSplit}>
+        <CalendarMonthGrid
+          currentDate={currentDate}
+          events={filteredEvents}
+          selectedEventId={selectedEventId}
+          onSelectEventId={(id) => {
+            setSelectedEventId(id);
+            setSelectedDateStr(null);
+          }}
+          selectedDateStr={selectedDateStr}
+          onSelectDate={(dateStr) => {
+            setSelectedDateStr(dateStr);
+            setSelectedEventId(null);
+          }}
+        />
 
-            <CalendarEventDetail
-              selectedEvent={selectedEvent}
-              allEvents={combinedEvents}
-              onSelectEventId={(id) => {
-                setSelectedEventId(id);
-                setSelectedDateStr(null);
-              }}
-              onOpenEvaluationModal={onOpenEvaluationModal}
-              onDeleteEvent={handleDeleteEvent}
-            />
-          </div>
-        </>
-      )}
+        <CalendarEventDetail
+          selectedEvent={selectedEvent}
+          allEvents={combinedEvents}
+          onSelectEventId={(id) => {
+            setSelectedEventId(id);
+            setSelectedDateStr(null);
+          }}
+          onOpenEvaluationModal={onOpenEvaluationModal}
+          onDeleteEvent={handleDeleteEvent}
+        />
+      </div>
     </div>
   );
 };
+
 
 
 export default CalendarioView;

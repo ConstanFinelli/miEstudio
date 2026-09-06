@@ -5,8 +5,10 @@ import {
   LayoutDashboard,
   BookOpen,
   Calendar,
+  Clock,
   FileText,
   Bell,
+
   Settings,
   PlusCircle,
   User,
@@ -55,6 +57,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     const path = location.pathname;
     if (path.startsWith('/dashboard')) return 'Dashboard General';
     if (path.startsWith('/materias')) return 'Materias & Cursadas';
+    if (path.startsWith('/horarios')) return 'Horarios de Cursada';
     if (path.startsWith('/calendario')) return 'Calendario Académico';
     if (path.startsWith('/apuntes')) return 'Repositorio de Apuntes';
     return 'Workspace';
@@ -99,6 +102,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <span>Materias y Evaluaciones</span>
             </NavLink>
             <NavLink
+              to="/horarios"
+              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+            >
+              <Clock className={styles.navIcon} />
+              <span>Horarios de Cursada</span>
+            </NavLink>
+            <NavLink
               to="/calendario"
               className={({ isActive }) => `${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
@@ -114,6 +124,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             </NavLink>
           </nav>
         </div>
+
 
         {/* Sidebar Footer */}
         <div className={styles.sidebarFooter}>

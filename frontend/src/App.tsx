@@ -4,7 +4,9 @@ import { AppLayout } from './components/layout/AppLayout';
 import { DashboardView } from './features/dashboard/DashboardView';
 import { MateriasView } from './features/materias/MateriasView';
 import { CalendarioView } from './features/calendario/CalendarioView';
+import { HorariosView } from './features/horarios';
 import { ApuntesView } from './features/apuntes/ApuntesView';
+
 import { EvaluationModal, NoteModal, PdfViewerModal, MateriaModal } from './components/modals';
 import { Toast } from './features/components';
 
@@ -75,6 +77,10 @@ export const App: React.FC = () => {
           }
         />
         <Route
+          path="/horarios"
+          element={<HorariosView />}
+        />
+        <Route
           path="/calendario"
           element={
             <CalendarioView
@@ -82,6 +88,7 @@ export const App: React.FC = () => {
             />
           }
         />
+
         <Route
           path="/apuntes"
           element={

@@ -7,8 +7,8 @@ interface CalendarTopNavProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
-  viewMode: 'mes' | 'semana' | 'agenda';
-  onViewModeChange: (mode: 'mes' | 'semana' | 'agenda') => void;
+  viewMode: 'mes' | 'agenda';
+  onViewModeChange: (mode: 'mes' | 'agenda') => void;
   onOpenEvaluationModal: () => void;
 }
 
@@ -42,7 +42,7 @@ export const CalendarTopNav: React.FC<CalendarTopNavProps> = ({
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div className={styles.viewModeGroup}>
-          {(['mes', 'semana', 'agenda'] as const).map(mode => (
+          {(['mes', 'agenda'] as const).map(mode => (
             <button
               key={mode}
               className={`${styles.viewBtn} ${viewMode === mode ? styles.viewBtnActive : ''}`}
@@ -52,6 +52,7 @@ export const CalendarTopNav: React.FC<CalendarTopNavProps> = ({
             </button>
           ))}
         </div>
+
 
         <button className={styles.btnNewEvent} onClick={onOpenEvaluationModal}>
           <Plus size={14} />
