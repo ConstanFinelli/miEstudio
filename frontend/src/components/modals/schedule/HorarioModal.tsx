@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import styles from './HorarioModal.module.css';
+import React, { useState, useEffect, useMemo } from "react";
+import styles from "./HorarioModal.module.css";
 import {
   X,
   Clock,
@@ -8,11 +8,11 @@ import {
   Layers,
   Save,
   Trash2,
-  AlertCircle
-} from 'lucide-react';
-import type { HorarioCursada, DiaSemana } from '../../../types/academic';
-import { useMaterias } from '../../../hooks';
-import { horariosService } from '../../../services';
+  AlertCircle,
+} from "lucide-react";
+import type { HorarioCursada, DiaSemana } from "../../../types/academic";
+import { useMaterias } from "../../../hooks";
+import { horariosService } from "../../../services";
 
 interface HorarioModalProps {
   isOpen: boolean;
@@ -24,38 +24,61 @@ interface HorarioModalProps {
 }
 
 const DIAS: { id: DiaSemana; label: string; short: string }[] = [
-  { id: 'LUNES', label: 'Lunes', short: 'Lun' },
-  { id: 'MARTES', label: 'Martes', short: 'Mar' },
-  { id: 'MIERCOLES', label: 'Miércoles', short: 'Mié' },
-  { id: 'JUEVES', label: 'Jueves', short: 'Jue' },
-  { id: 'VIERNES', label: 'Viernes', short: 'Vie' },
-  { id: 'SABADO', label: 'Sábado', short: 'Sáb' },
+  { id: "LUNES", label: "Lunes", short: "Lun" },
+  { id: "MARTES", label: "Martes", short: "Mar" },
+  { id: "MIERCOLES", label: "Miércoles", short: "Mié" },
+  { id: "JUEVES", label: "Jueves", short: "Jue" },
+  { id: "VIERNES", label: "Viernes", short: "Vie" },
+  { id: "SABADO", label: "Sábado", short: "Sáb" },
 ];
 
-const TIPOS_CLASE = ['Teoría', 'Práctica', 'Laboratorio', 'Taller', 'Teórico-Práctico'];
-const MODALIDADES: ('Presencial' | 'Virtual' | 'Híbrida')[] = ['Presencial', 'Virtual', 'Híbrida'];
+const TIPOS_CLASE = [
+  "Teoría",
+  "Práctica",
+  "Laboratorio",
+  "Taller",
+  "Teórico-Práctico",
+];
+const MODALIDADES: ("Presencial" | "Virtual" | "Híbrida")[] = [
+  "Presencial",
+  "Virtual",
+  "Híbrida",
+];
 
 export const HorarioModal: React.FC<HorarioModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
   horarioToEdit,
-  defaultDiaSemana = 'LUNES',
-  defaultMateriaId
+  defaultDiaSemana = "LUNES",
+  defaultMateriaId,
 }) => {
   const { materias } = useMaterias();
 
-  const [materiaId, setMateriaId] = useState('');
+  const [materiaId, setMateriaId] = useState("");
   const [diaSemana, setDiaSemana] = useState<DiaSemana>(defaultDiaSemana);
-  const [horaInicio, setHoraInicio] = useState('08:00');
-  const [horaFin, setHoraFin] = useState('12:00');
-  const [facultadSede, setFacultadSede] = useState('');
-  const [aula, setAula] = useState('');
-  const [tipoClase, setTipoClase] = useState('Teoría');
-  const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual' | 'Híbrida'>('Presencial');
-  const [observaciones, setObservaciones] = useState('');
+  const [horaInicio, setHoraInicio] = useState("08:00");
+  const [horaFin, setHoraFin] = useState("12:00");
+  const [facultadSede, setFacultadSede] = useState("");
+  const [aula, setAula] = useState("");
+  const [tipoClase, setTipoClase] = useState("Teoría");
+  const [modalidad, setModalidad] = useState<
+    "Presencial" | "Virtual" | "Híbrida"
+  >("Presencial");
+  const [observaciones, setObservaciones] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const availableMaterias = useMemo(() => {
+    const cursando = materias.filter((m) => m.estado === "CURSANDO");
+    if (horarioToEdit) {
+      const current = materias.find((m) => m.id === horarioToEdit.materiaId);
+      if (current && !cursando.some((m) => m.id === current.id)) {
+        return [current, ...cursando];
+      }
+    }
+    return cursando.length > 0 ? cursando : materias;
+  }, [materias, horarioToEdit]);
 
   // Sync state on open / change
   useEffect(() => {
@@ -64,41 +87,46 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       setDiaSemana(horarioToEdit.diaSemana);
       setHoraInicio(horarioToEdit.horaInicio);
       setHoraFin(horarioToEdit.horaFin);
-      setFacultadSede(horarioToEdit.facultadSede || '');
-      setAula(horarioToEdit.aula || '');
-      setTipoClase(horarioToEdit.tipoClase || 'Teoría');
-      setModalidad(horarioToEdit.modalidad || 'Presencial');
-      setObservaciones(horarioToEdit.observaciones || '');
+      setFacultadSede(horarioToEdit.facultadSede || "");
+      setAula(horarioToEdit.aula || "");
+      setTipoClase(horarioToEdit.tipoClase || "Teoría");
+      setModalidad(horarioToEdit.modalidad || "Presencial");
+      setObservaciones(horarioToEdit.observaciones || "");
       setShowDeleteConfirm(false);
     } else {
-      setMateriaId(defaultMateriaId || materias[0]?.id || '');
+      setMateriaId(defaultMateriaId || availableMaterias[0]?.id || "");
       setDiaSemana(defaultDiaSemana);
-      setHoraInicio('08:00');
-      setHoraFin('12:00');
-      setFacultadSede('');
-      setAula('');
-      setTipoClase('Teoría');
-      setModalidad('Presencial');
-      setObservaciones('');
+      setHoraInicio("08:00");
+      setHoraFin("12:00");
+      setFacultadSede("");
+      setAula("");
+      setTipoClase("Teoría");
+      setModalidad("Presencial");
+      setObservaciones("");
       setShowDeleteConfirm(false);
     }
-  }, [isOpen, horarioToEdit, defaultDiaSemana, defaultMateriaId, materias]);
+  }, [isOpen, horarioToEdit, defaultDiaSemana, defaultMateriaId, availableMaterias]);
 
   const selectedMateria = useMemo(() => {
-    return materias.find(m => m.id === materiaId);
+    return materias.find((m) => m.id === materiaId);
   }, [materias, materiaId]);
+
 
   // Compute duration
   const { durationText, isValidTimeRange } = useMemo(() => {
-    if (!horaInicio || !horaFin) return { durationText: '', isValidTimeRange: true };
-    const [h1, m1] = horaInicio.split(':').map(Number);
-    const [h2, m2] = horaFin.split(':').map(Number);
+    if (!horaInicio || !horaFin)
+      return { durationText: "", isValidTimeRange: true };
+    const [h1, m1] = horaInicio.split(":").map(Number);
+    const [h2, m2] = horaFin.split(":").map(Number);
     const mins1 = h1 * 60 + m1;
     const mins2 = h2 * 60 + m2;
     const diff = mins2 - mins1;
 
     if (diff <= 0) {
-      return { durationText: 'Hora de fin debe ser posterior', isValidTimeRange: false };
+      return {
+        durationText: "Hora de fin debe ser posterior",
+        isValidTimeRange: false,
+      };
     }
 
     const hours = Math.floor(diff / 60);
@@ -117,9 +145,9 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       setIsSubmitting(true);
       const payload: Partial<HorarioCursada> = {
         materiaId,
-        materiaNombre: selectedMateria?.nombre || 'Materia',
-        materiaCodigo: selectedMateria?.codigo || 'MAT',
-        materiaColor: selectedMateria?.color || 'var(--primary)',
+        materiaNombre: selectedMateria?.nombre || "Materia",
+        materiaCodigo: selectedMateria?.codigo || "MAT",
+        materiaColor: selectedMateria?.color || "var(--primary)",
         diaSemana,
         horaInicio,
         horaFin,
@@ -127,7 +155,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
         aula: aula.trim(),
         tipoClase,
         modalidad,
-        observaciones: observaciones.trim()
+        observaciones: observaciones.trim(),
       };
 
       if (horarioToEdit) {
@@ -139,7 +167,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       onSuccess();
       onClose();
     } catch (err) {
-      console.error('Error al guardar horario:', err);
+      console.error("Error al guardar horario:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +181,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       onSuccess();
       onClose();
     } catch (err) {
-      console.error('Error al eliminar horario:', err);
+      console.error("Error al eliminar horario:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -161,12 +189,12 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         {/* Top bar */}
         <div className={styles.modalTopBar}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span className={styles.tagBadge}>
-              {horarioToEdit ? 'EDITAR HORARIO' : 'NUEVO HORARIO'}
+              {horarioToEdit ? "EDITAR HORARIO" : "NUEVO HORARIO"}
             </span>
             <span>GESTOR DE CURSADA SEMANAL</span>
           </div>
@@ -179,10 +207,13 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
         {/* Title */}
         <div className={styles.titleGroup}>
           <h2 className={styles.modalTitle}>
-            {horarioToEdit ? 'Modificar Horario de Cursada' : 'Agregar Horario de Cursada'}
+            {horarioToEdit
+              ? "Modificar Horario de Cursada"
+              : "Agregar Horario de Cursada"}
           </h2>
           <p className={styles.modalSubtitle}>
-            Configurá el día, banda horaria y sede/facultad con total flexibilidad para tu cronograma.
+            Configurá el día, banda horaria y sede/facultad con total
+            flexibilidad para tu cronograma.
           </p>
         </div>
 
@@ -191,22 +222,27 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
           <div className={styles.fieldGroup}>
             <label className={styles.label}>
               <Layers size={13} />
-              Materia <span className={styles.required}>*</span>
+              Materia (en Cursada) <span className={styles.required}>*</span>
             </label>
             <select
               value={materiaId}
-              onChange={e => setMateriaId(e.target.value)}
+              onChange={(e) => setMateriaId(e.target.value)}
               className={styles.select}
               required
             >
-              <option value="" disabled>Seleccionar materia...</option>
-              {materias.map(m => (
+              <option value="" disabled>
+                Seleccionar materia...
+              </option>
+              {availableMaterias.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.codigo ? `[${m.codigo}] ` : ''}{m.nombre} ({m.anio}° Año - {m.cuatrimestre})
+                  {m.codigo ? `[${m.codigo}] ` : ""}
+                  {m.nombre} ({m.anio}° Año - {m.cuatrimestre})
+                  {m.estado !== "CURSANDO" ? ` - (${m.estado})` : ""}
                 </option>
               ))}
             </select>
           </div>
+
 
           {/* Día de la semana */}
           <div className={styles.fieldGroup}>
@@ -214,11 +250,11 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               Día de Cursada <span className={styles.required}>*</span>
             </label>
             <div className={styles.dayPillsContainer}>
-              {DIAS.map(d => (
+              {DIAS.map((d) => (
                 <button
                   key={d.id}
                   type="button"
-                  className={`${styles.dayPill} ${diaSemana === d.id ? styles.dayPillActive : ''}`}
+                  className={`${styles.dayPill} ${diaSemana === d.id ? styles.dayPillActive : ""}`}
                   onClick={() => setDiaSemana(d.id)}
                 >
                   {d.label}
@@ -237,7 +273,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               <input
                 type="time"
                 value={horaInicio}
-                onChange={e => setHoraInicio(e.target.value)}
+                onChange={(e) => setHoraInicio(e.target.value)}
                 className={styles.input}
                 required
               />
@@ -254,13 +290,16 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               <input
                 type="time"
                 value={horaFin}
-                onChange={e => setHoraFin(e.target.value)}
+                onChange={(e) => setHoraFin(e.target.value)}
                 className={styles.input}
                 required
               />
               {!isValidTimeRange && (
                 <div className={styles.durationWarning}>
-                  <AlertCircle size={12} style={{ display: 'inline', marginRight: 4 }} />
+                  <AlertCircle
+                    size={12}
+                    style={{ display: "inline", marginRight: 4 }}
+                  />
                   {durationText}
                 </div>
               )}
@@ -277,22 +316,10 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               <input
                 type="text"
                 value={facultadSede}
-                onChange={e => setFacultadSede(e.target.value)}
-                placeholder="Ej: UTN FRBA - Medrano / UBA FCEyN"
+                onChange={(e) => setFacultadSede(e.target.value)}
+                placeholder="Ej: UTN FRRO / UBA FCEyN"
                 className={styles.input}
               />
-              <div className={styles.chipsContainer}>
-                {['UTN FRBA - Medrano', 'UTN FRBA - Campus', 'UBA FCEyN', 'UBA FIUBA'].map(preset => (
-                  <button
-                    key={preset}
-                    type="button"
-                    className={`${styles.chip} ${facultadSede === preset ? styles.chipActive : ''}`}
-                    onClick={() => setFacultadSede(preset)}
-                  >
-                    {preset}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div className={styles.fieldGroup}>
@@ -303,7 +330,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               <input
                 type="text"
                 value={aula}
-                onChange={e => setAula(e.target.value)}
+                onChange={(e) => setAula(e.target.value)}
                 placeholder="Ej: Aula 214, Lab Sistemas, Aula Magna"
                 className={styles.input}
               />
@@ -315,11 +342,11 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Tipo de Clase</label>
               <div className={styles.chipsContainer}>
-                {TIPOS_CLASE.map(tc => (
+                {TIPOS_CLASE.map((tc) => (
                   <button
                     key={tc}
                     type="button"
-                    className={`${styles.chip} ${tipoClase === tc ? styles.chipActive : ''}`}
+                    className={`${styles.chip} ${tipoClase === tc ? styles.chipActive : ""}`}
                     onClick={() => setTipoClase(tc)}
                   >
                     {tc}
@@ -331,11 +358,11 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
             <div className={styles.fieldGroup}>
               <label className={styles.label}>Modalidad</label>
               <div className={styles.chipsContainer}>
-                {MODALIDADES.map(m => (
+                {MODALIDADES.map((m) => (
                   <button
                     key={m}
                     type="button"
-                    className={`${styles.chip} ${modalidad === m ? styles.chipActive : ''}`}
+                    className={`${styles.chip} ${modalidad === m ? styles.chipActive : ""}`}
                     onClick={() => setModalidad(m)}
                   >
                     {m}
@@ -347,11 +374,13 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
 
           {/* Observaciones */}
           <div className={styles.fieldGroup}>
-            <label className={styles.label}>Observaciones / Notas de Cursada</label>
+            <label className={styles.label}>
+              Observaciones / Notas de Cursada
+            </label>
             <input
               type="text"
               value={observaciones}
-              onChange={e => setObservaciones(e.target.value)}
+              onChange={(e) => setObservaciones(e.target.value)}
               placeholder="Ej: Asistencia estricta los primeros 15 min, llevar calculadora"
               className={styles.input}
             />
@@ -361,7 +390,9 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
           <div className={styles.actions}>
             {horarioToEdit ? (
               showDeleteConfirm ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <button
                     type="button"
                     className={styles.deleteBtn}
@@ -408,7 +439,11 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
                 disabled={!materiaId || !isValidTimeRange || isSubmitting}
               >
                 <Save size={14} />
-                {isSubmitting ? 'Guardando...' : horarioToEdit ? 'Guardar Cambios' : 'Registrar Horario'}
+                {isSubmitting
+                  ? "Guardando..."
+                  : horarioToEdit
+                    ? "Guardar Cambios"
+                    : "Registrar Horario"}
               </button>
             </div>
           </div>

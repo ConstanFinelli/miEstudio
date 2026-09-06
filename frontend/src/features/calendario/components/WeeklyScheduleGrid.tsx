@@ -30,12 +30,10 @@ const parseTimeToMinutes = (timeStr: string): number => {
 };
 
 interface WeeklyScheduleGridProps {
-  filterYear?: number | 'TODOS';
   filterCuatri?: 'TODOS' | '1C' | '2C' | 'Anual';
 }
 
 export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
-  filterYear = 'TODOS',
   filterCuatri = 'TODOS'
 }) => {
   const { horarios, deleteHorario, refresh } = useHorarios();
@@ -52,15 +50,17 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
   // Check today's day of week (0=Sunday, 1=Monday ... 6=Saturday)
   const currentDayIndex = new Date().getDay();
 
-  // Filter horarios according to year and cuatrimestre
+  // El horario se forma solo con materias con estado 'CURSANDO'
   const filteredHorarios = useMemo(() => {
     return horarios.filter(h => {
       const mat = materias.find(m => m.id === h.materiaId);
-      if (filterYear !== 'TODOS' && mat && mat.anio !== filterYear) return false;
+      // Si la materia existe y no está CURSANDO, se excluye del horario
+      if (mat && mat.estado !== 'CURSANDO') return false;
       if (filterCuatri !== 'TODOS' && mat && mat.cuatrimestre !== filterCuatri) return false;
       return true;
     });
-  }, [horarios, materias, filterYear, filterCuatri]);
+  }, [horarios, materias, filterCuatri]);
+
 
   // Active days list (Mon-Fri or Mon-Sat)
   const activeDays = useMemo(() => {
@@ -274,12 +274,13 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
           <div className={styles.emptyIconCircle}>
             <Clock size={28} />
           </div>
-          <h3 className={styles.emptyTitle}>Sin clases para los filtros seleccionados</h3>
+          <h3 className={styles.emptyTitle}>Sin materias activas en cursada</h3>
           <p className={styles.emptyDesc}>
-            No hay materias con horarios de cursada en el año o cuatrimestre seleccionado.
+            El cronograma semanal se forma únicamente con materias con estado <strong>Cursando</strong>.
           </p>
         </div>
       ) : (
+
 
         <div className={styles.gridWrapper}>
           {/* Header Row: Days */}

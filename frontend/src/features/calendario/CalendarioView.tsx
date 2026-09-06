@@ -24,7 +24,7 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
   const [selectedYear, setSelectedYear] = useState<number | 'TODOS'>('TODOS');
   const [selectedCuatri, setSelectedCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
-  const [viewMode, setViewMode] = useState<'mes' | 'agenda'>('mes');
+
 
 
   const handleDeleteEvent = async (id: string, titulo: string) => {
@@ -146,10 +146,9 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({ onOpenEvaluation
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
         onToday={handleToday}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
         onOpenEvaluationModal={onOpenEvaluationModal}
       />
+
 
       {/* 2. Filters Row */}
       <CalendarFiltersBar
