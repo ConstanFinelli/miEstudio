@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  min-height: 700px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Schedule Grid Layout */
+.gridWrapper {
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+}
+
+.gridBody {
+  display: grid;
+  position: relative;
+  min-height: 640px;
+}

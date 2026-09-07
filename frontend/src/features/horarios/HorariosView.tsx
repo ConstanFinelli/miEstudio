@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import styles from "./HorariosView.module.css";
 import { Clock, Plus, Filter } from "lucide-react";
-import { WeeklyScheduleGrid } from "../calendario/components/WeeklyScheduleGrid";
+import { WeeklyScheduleGrid } from "./components";
+
 import { HorarioModal } from "../../components/modals";
 import { useHorarios, useMaterias } from "../../hooks";
 
@@ -45,7 +46,7 @@ export const HorariosView: React.FC = () => {
             onClick={() => setIsModalOpen(true)}
           >
             <Plus size={15} />
-            <span>+ Nuevo Horario de Cursada</span>
+            <span>Nuevo Horario de Cursada</span>
           </button>
         </div>
       </div>

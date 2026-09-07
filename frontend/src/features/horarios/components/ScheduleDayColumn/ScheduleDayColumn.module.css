@@ -1,0 +1,17 @@
+.dayColumn {
+  position: relative;
+  border-right: 1px solid var(--border-subtle);
+  min-width: 150px;
+}
+
+.dayColumnToday {
+  background-color: rgba(99, 102, 241, 0.02);
+}
+
+.hourLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
