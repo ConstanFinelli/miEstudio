@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import styles from '../CalendarioView.module.css';
+import styles from './CalendarEventDetail.module.css';
 import { AlertTriangle, CheckCircle2, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
-import type { EventoCalendario } from '../../../types/academic';
+import type { EventoCalendario } from '../../../../types/academic';
 
 interface CalendarEventDetailProps {
   selectedEvent: EventoCalendario | null;

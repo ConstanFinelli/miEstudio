@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import styles from '../CalendarioView.module.css';
-import type { EventoCalendario } from '../../../types/academic';
+import styles from './CalendarMonthGrid.module.css';
+import type { EventoCalendario } from '../../../../types/academic';
 
 interface CalendarMonthGridProps {
   currentDate: Date;

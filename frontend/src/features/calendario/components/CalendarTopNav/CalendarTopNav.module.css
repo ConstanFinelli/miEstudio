@@ -1,0 +1,63 @@
+.topNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.monthControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.monthTitle {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.arrowBtn {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.1s;
+}
+
+.arrowBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.todayBtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.btnNewEvent {
+  background: linear-gradient(135deg, var(--primary), #4f46e5);
+  border: 1px solid var(--primary-glow);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../CalendarioView.module.css";
+import styles from "./CalendarTopNav.module.css";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 interface CalendarTopNavProps {

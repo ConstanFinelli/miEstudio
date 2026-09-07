@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../CalendarioView.module.css';
+import styles from './CalendarFiltersBar.module.css';
 
 interface CalendarFiltersBarProps {
   selectedFilter: string;

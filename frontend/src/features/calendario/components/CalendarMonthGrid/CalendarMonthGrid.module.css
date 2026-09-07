@@ -1,0 +1,135 @@
+/* Calendar Grid */
+.gridWrapper {
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.daysHeaderRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--surface-2);
+}
+
+.dayColHeader {
+  padding: 8px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.cellsGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  flex: 1;
+}
+
+.dayCell {
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 80px;
+  background-color: var(--surface-1);
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.dayCell:nth-child(7n) {
+  border-right: none;
+}
+
+.dayCell:hover {
+  background-color: var(--surface-2);
+}
+
+.dayCellOutside {
+  opacity: 0.35;
+}
+
+.dayCellSelected {
+  background-color: var(--surface-2);
+  outline: 1px solid var(--primary);
+}
+
+.dayCellHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dayCellToday {
+  background-color: var(--primary-alpha);
+  color: var(--primary-glow);
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+}
+
+.eventBadgeExam {
+  background-color: var(--red-alpha);
+  border: 1px solid var(--red-border);
+  color: var(--red);
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventBadgeTP {
+  background-color: var(--purple-alpha);
+  border: 1px solid var(--purple-border);
+  color: var(--purple);
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventBadgeStudy {
+  background-color: var(--emerald-alpha);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventBadgeLab {
+  background-color: var(--blue-alpha);
+  border: 1px solid var(--blue-border);
+  color: var(--blue);
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

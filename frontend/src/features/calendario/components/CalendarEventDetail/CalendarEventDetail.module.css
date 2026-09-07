@@ -1,0 +1,249 @@
+.sideDetailColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.eventDetailBox {
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detailTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.detailTagExam {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  background-color: var(--red-alpha);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.detailEventTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.eventInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 10px;
+}
+
+.infoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.infoLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.infoVal {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.academicImpactBox {
+  background-color: var(--bg-canvas);
+  border: 1px solid var(--red-border);
+  border-radius: var(--radius-xs);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.impactHeader {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--red);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.impactNotice {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Hitos Section */
+.hitosSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hitosHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.hitoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.btnLinkHito {
+  width: 100%;
+  padding: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.btnLinkHito:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* Próximos 7 Días */
+.upcomingCard {
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upcomingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.upcomingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.upcomingItem:hover {
+  border-color: var(--border-hover);
+}
+
+.upcomingLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upcomingTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.upcomingMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.btnNewEvent {
+  background: linear-gradient(135deg, var(--primary), #4f46e5);
+  border: 1px solid var(--primary-glow);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+}
+
+.btnDeleteEvent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: var(--red-alpha);
+  border: 1px solid var(--red-border);
+  color: var(--red);
+  padding: 8px 14px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.btnDeleteEvent:hover {
+  background-color: var(--red);
+  color: white;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+}
+
+.iconBtnDelete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  opacity: 0.6;
+}
+
+.iconBtnDelete:hover {
+  color: var(--red);
+  background-color: var(--red-alpha);
+  opacity: 1;
+}

@@ -1,0 +1,46 @@
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+.viewModeGroup {
+  display: flex;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 2px;
+}
+
+.viewBtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+
+.viewBtnActive {
+  background-color: var(--surface-3);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.filterColorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
