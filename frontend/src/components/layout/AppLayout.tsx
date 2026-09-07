@@ -1,5 +1,5 @@
-import React from "react";
-import { NavLink, useLocation, Outlet } from "react-router-dom";
+import React, { useState } from "react";
+import { NavLink, useLocation, Outlet, useNavigate } from "react-router-dom";
 import styles from "./AppLayout.module.css";
 import {
   LayoutDashboard,
@@ -13,11 +13,17 @@ import {
   User,
   Sun,
   Moon,
+  ChevronDown,
+  LogOut,
+  Plus,
+  Award,
 } from "lucide-react";
 import { mockPerfil } from "../../data/mockData";
 import { isMocksEnabled } from "../../config/mockConfig";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 import { usePerfil } from "../../hooks";
+import { CarreraModal, AprobacionHistoricaModal } from "../modals";
 
 const defaultEmptyPerfil = {
   nombre: "Estudiante",
@@ -48,10 +54,22 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   children,
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { perfil } = usePerfil();
+  const { user, activeCarrera, carreras, selectCarrera, logout } = useAuth();
+
+  const [isCareerMenuOpen, setIsCareerMenuOpen] = useState(false);
+  const [isCarreraModalOpen, setIsCarreraModalOpen] = useState(false);
+  const [isAprobacionModalOpen, setIsAprobacionModalOpen] = useState(false);
+
   const currentPerfil =
     perfil || (isMocksEnabled() ? mockPerfil : defaultEmptyPerfil);
+
+  const displayNombre = user?.nombre || currentPerfil.nombre;
+  const displayLegajo = activeCarrera?.legajo || currentPerfil.legajo;
+  const displayCarrera = activeCarrera?.nombre || currentPerfil.carrera;
+  const displayPromedio = activeCarrera?.promedio_general ?? currentPerfil.promedioGeneral;
 
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
@@ -61,6 +79,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     if (path.startsWith("/calendario")) return "Calendario Académico";
     if (path.startsWith("/apuntes")) return "Repositorio de Apuntes";
     return "Workspace";
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
   };
 
   return (
@@ -77,9 +100,99 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <div className={styles.brandTitleRow}>
                 <span className={styles.brandName}>miEstudio</span>
               </div>
-              <div className={styles.careerTag}>
-                <span className={styles.liveDot} />
-                <span>{currentPerfil.carrera}</span>
+              <div className={styles.careerSelectorWrapper}>
+                <button
+                  type="button"
+                  className={styles.careerTagBtn}
+                  onClick={() => setIsCareerMenuOpen(!isCareerMenuOpen)}
+                  title="Cambiar carrera o gestionar carreras"
+                  aria-expanded={isCareerMenuOpen}
+                >
+                  <span className={styles.liveDot} />
+                  <span className={styles.careerText}>{displayCarrera}</span>
+                  <ChevronDown
+                    size={11}
+                    className={`${styles.chevron} ${
+                      isCareerMenuOpen ? styles.chevronOpen : ""
+                    }`}
+                  />
+                </button>
+
+                {isCareerMenuOpen && (
+                  <div className={styles.careerDropdown}>
+                    <div className={styles.dropdownHeader}>
+                      <span>Tus Carreras</span>
+                    </div>
+                    <div className={styles.dropdownList}>
+                      {carreras.length > 0 ? (
+                        carreras.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            className={`${styles.careerOption} ${
+                              c.id === activeCarrera?.id
+                                ? styles.careerOptionActive
+                                : ""
+                            }`}
+                            onClick={async () => {
+                              await selectCarrera(c.id);
+                              setIsCareerMenuOpen(false);
+                            }}
+                          >
+                            <div className={styles.careerOptionInfo}>
+                              <span className={styles.careerOptionName}>
+                                {c.nombre}
+                              </span>
+                              <span className={styles.careerOptionSub}>
+                                {c.facultad_sede} • Prom:{" "}
+                                {c.promedio_general > 0
+                                  ? c.promedio_general.toFixed(2)
+                                  : "---"}
+                              </span>
+                            </div>
+                            {c.id === activeCarrera?.id && (
+                              <span className={styles.activeBadge}>Activa</span>
+                            )}
+                          </button>
+                        ))
+                      ) : (
+                        <div
+                          style={{
+                            padding: "8px",
+                            fontSize: "11px",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          {displayCarrera}
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.dropdownActions}>
+                      <button
+                        type="button"
+                        className={styles.dropdownActionBtn}
+                        onClick={() => {
+                          setIsCareerMenuOpen(false);
+                          setIsCarreraModalOpen(true);
+                        }}
+                      >
+                        <Plus size={13} />
+                        <span>Nueva Carrera</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.dropdownActionBtn}
+                        onClick={() => {
+                          setIsCareerMenuOpen(false);
+                          setIsAprobacionModalOpen(true);
+                        }}
+                      >
+                        <Award size={13} />
+                        <span>Cargar Aprobada Previa</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -140,7 +253,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           <div className={styles.cycleInfo}>
             <span className={styles.cycleTitle}>Promedio General</span>
             <span className={styles.cycleScore}>
-              {currentPerfil.promedioGeneral.toFixed(2)}
+              {displayPromedio.toFixed(2)}
             </span>
           </div>
 
@@ -149,7 +262,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               {isMocksEnabled() ? (
                 <img
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-                  alt={currentPerfil.nombre}
+                  alt={displayNombre}
                   className={styles.avatar}
                 />
               ) : (
@@ -170,15 +283,25 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 </div>
               )}
               <div className={styles.userDetails}>
-                <span className={styles.userName}>{currentPerfil.nombre}</span>
+                <span className={styles.userName}>{displayNombre}</span>
                 <span className={styles.userSub}>
-                  Legajo: {currentPerfil.legajo}
+                  Legajo: {displayLegajo}
                 </span>
               </div>
             </div>
-            <button className={styles.settingsBtn} title="Configuración">
-              <Settings size={15} />
-            </button>
+            <div className={styles.userActions}>
+              <button className={styles.settingsBtn} title="Configuración">
+                <Settings size={15} />
+              </button>
+              <button
+                className={styles.logoutBtn}
+                onClick={handleLogout}
+                title="Cerrar Sesión"
+                aria-label="Cerrar sesión"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -233,7 +356,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             {isMocksEnabled() ? (
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-                alt="Sofía Chen"
+                alt={displayNombre}
                 className={styles.avatar}
                 style={{ cursor: "pointer" }}
               />
@@ -249,7 +372,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                   border: "1px solid var(--border-subtle)",
                   cursor: "pointer",
                 }}
-                title={currentPerfil.nombre}
+                title={displayNombre}
               >
                 <User size={14} />
               </div>
@@ -260,6 +383,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         {/* Content Body */}
         <main className={styles.contentBody}>{children || <Outlet />}</main>
       </div>
+
+      {/* Carrera & Aprobaciones Modals */}
+      <CarreraModal
+        isOpen={isCarreraModalOpen}
+        onClose={() => setIsCarreraModalOpen(false)}
+      />
+      <AprobacionHistoricaModal
+        isOpen={isAprobacionModalOpen}
+        onClose={() => setIsAprobacionModalOpen(false)}
+      />
     </div>
   );
 };

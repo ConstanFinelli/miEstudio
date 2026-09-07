@@ -6,6 +6,8 @@ import { MateriasView } from './features/materias/MateriasView';
 import { CalendarioView } from './features/calendario/CalendarioView';
 import { HorariosView } from './features/horarios';
 import { ApuntesView } from './features/apuntes/ApuntesView';
+import { LoginView, RegisterView } from './features/auth';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 import { EvaluationModal, NoteModal, PdfViewerModal, MateriaModal } from './components/modals';
 import { Toast } from './features/components';
@@ -21,7 +23,6 @@ export const App: React.FC = () => {
   // Keyboard Shortcuts Listener (⌘N, ⌘E, ⌘M)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check for Cmd (Mac) or Ctrl (Windows/Linux)
       const isMeta = e.metaKey || e.ctrlKey;
 
       if (isMeta && e.key.toLowerCase() === 'm') {
@@ -46,100 +47,109 @@ export const App: React.FC = () => {
   };
 
   return (
-    <AppLayout
-      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-      onOpenNoteModal={() => setIsNoteModalOpen(true)}
-    >
-      {/* Toast Notification */}
-      <Toast message={toastMessage} />
+    <Routes>
+      {/* Public Auth Routes */}
+      <Route path="/login" element={<LoginView />} />
+      <Route path="/register" element={<RegisterView />} />
 
-      {/* Main Routed Views */}
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardView
+      {/* Protected Academic Workspace Routes */}
+      <Route
+        path="/*"
+        element={
+          <ProtectedRoute>
+            <AppLayout
               onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
               onOpenNoteModal={() => setIsNoteModalOpen(true)}
-            />
-          }
-        />
-        <Route
-          path="/materias"
-          element={
-            <MateriasView
-              onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-              onOpenMateriaModal={() => setIsMateriaModalOpen(true)}
-              onOpenNoteModal={() => setIsNoteModalOpen(true)}
-              onViewPdf={(title, url) => setActivePdf({ title, url })}
-            />
-          }
-        />
-        <Route
-          path="/horarios"
-          element={<HorariosView />}
-        />
-        <Route
-          path="/calendario"
-          element={
-            <CalendarioView
-              onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-            />
-          }
-        />
+            >
+              {/* Toast Notification */}
+              <Toast message={toastMessage} />
 
-        <Route
-          path="/apuntes"
-          element={
-            <ApuntesView
-              onOpenNoteModal={() => setIsNoteModalOpen(true)}
-            />
-          }
-        />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+              {/* Main Routed Views */}
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <DashboardView
+                      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+                      onOpenNoteModal={() => setIsNoteModalOpen(true)}
+                    />
+                  }
+                />
+                <Route
+                  path="/materias"
+                  element={
+                    <MateriasView
+                      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+                      onOpenMateriaModal={() => setIsMateriaModalOpen(true)}
+                      onOpenNoteModal={() => setIsNoteModalOpen(true)}
+                      onViewPdf={(title, url) => setActivePdf({ title, url })}
+                    />
+                  }
+                />
+                <Route path="/horarios" element={<HorariosView />} />
+                <Route
+                  path="/calendario"
+                  element={
+                    <CalendarioView
+                      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+                    />
+                  }
+                />
+                <Route
+                  path="/apuntes"
+                  element={
+                    <ApuntesView
+                      onOpenNoteModal={() => setIsNoteModalOpen(true)}
+                    />
+                  }
+                />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
 
+              {/* Materia Modal (⌘M / Registro de Cursada) */}
+              <MateriaModal
+                isOpen={isMateriaModalOpen}
+                onClose={() => setIsMateriaModalOpen(false)}
+                onSuccess={(created) => {
+                  showToast(`✓ Materia "${created.nombre}" registrada con éxito`);
+                  navigate('/materias');
+                }}
+              />
 
-      {/* Materia Modal (⌘M / Registro de Cursada) */}
-      <MateriaModal
-        isOpen={isMateriaModalOpen}
-        onClose={() => setIsMateriaModalOpen(false)}
-        onSuccess={(created) => {
-          showToast(`✓ Materia "${created.nombre}" registrada con éxito`);
-          navigate('/materias');
-        }}
+              {/* Evaluation Modal (⌘E) */}
+              <EvaluationModal
+                isOpen={isEvaluationModalOpen}
+                onClose={() => setIsEvaluationModalOpen(false)}
+                onSuccess={() => showToast('✓ Nueva instancia de evaluación registrada')}
+              />
+
+              {/* Note Modal (⌘N) */}
+              <NoteModal
+                isOpen={isNoteModalOpen}
+                onClose={() => setIsNoteModalOpen(false)}
+                onSuccess={(title) => {
+                  showToast(`✓ Apunte "${title.slice(0, 25)}..." creado`);
+                  navigate('/apuntes');
+                }}
+              />
+
+              {/* PDF Viewer Modal */}
+              <PdfViewerModal
+                isOpen={!!activePdf}
+                onClose={() => setActivePdf(null)}
+                pdfTitle={activePdf?.title || ''}
+                pdfUrl={activePdf?.url}
+                onOpenSplitNote={() => {
+                  setActivePdf(null);
+                  navigate('/apuntes');
+                }}
+              />
+            </AppLayout>
+          </ProtectedRoute>
+        }
       />
-
-      {/* Evaluation Modal (⌘E / screen 5.png) */}
-      <EvaluationModal
-        isOpen={isEvaluationModalOpen}
-        onClose={() => setIsEvaluationModalOpen(false)}
-        onSuccess={() => showToast('✓ Nueva instancia de evaluación registrada')}
-      />
-
-      {/* Note Modal (⌘N / screen 6.png) */}
-      <NoteModal
-        isOpen={isNoteModalOpen}
-        onClose={() => setIsNoteModalOpen(false)}
-        onSuccess={(title) => {
-          showToast(`✓ Apunte "${title.slice(0, 25)}..." creado`);
-          navigate('/apuntes');
-        }}
-      />
-
-      {/* PDF Viewer Modal */}
-      <PdfViewerModal
-        isOpen={!!activePdf}
-        onClose={() => setActivePdf(null)}
-        pdfTitle={activePdf?.title || ''}
-        pdfUrl={activePdf?.url}
-        onOpenSplitNote={() => {
-          setActivePdf(null);
-          navigate('/apuntes');
-        }}
-      />
-    </AppLayout>
+    </Routes>
   );
 };
 

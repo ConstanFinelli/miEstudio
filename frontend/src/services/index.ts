@@ -8,4 +8,6 @@ export * from './materialesService';
 export * from './perfilService';
 export * from './calendarioService';
 export * from './horariosService';
+export * from './authService';
+export * from './carrerasService';
 
