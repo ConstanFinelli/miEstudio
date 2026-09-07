@@ -51,7 +51,7 @@ export const CalendarTopNav: React.FC<CalendarTopNavProps> = ({
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <button className={styles.btnNewEvent} onClick={onOpenEvaluationModal}>
           <Plus size={14} />
-          <span>+ Nueva Fecha / Examen</span>
+          <span>Nueva Fecha / Examen</span>
         </button>
       </div>
     </div>
