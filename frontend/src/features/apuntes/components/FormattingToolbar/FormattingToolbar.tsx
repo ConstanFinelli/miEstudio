@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from '../ApuntesView.module.css';
+import styles from './FormattingToolbar.module.css';
 import { X, Plus } from 'lucide-react';
 
 interface FormattingToolbarProps {

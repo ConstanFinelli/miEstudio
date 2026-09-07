@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import styles from '../ApuntesView.module.css';
+import styles from './NoteReaderContent.module.css';
 import { Flame, Check, Copy, FileText, Plus } from 'lucide-react';
 import katex from 'katex';
-import type { ApunteNota } from '../../../types/academic';
+import type { ApunteNota } from '../../../../types/academic';
 
 interface NoteReaderContentProps {
   activeNote: ApunteNota | null;

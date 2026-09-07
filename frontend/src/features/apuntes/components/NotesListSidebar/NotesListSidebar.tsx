@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../ApuntesView.module.css';
+import styles from './NotesListSidebar.module.css';
 import { BookOpen, ChevronLeft, Search, Plus, Trash2 } from 'lucide-react';
-import type { ApunteNota } from '../../../types/academic';
+import type { ApunteNota } from '../../../../types/academic';
 
 interface NotesListSidebarProps {
   isCollapsed: boolean;

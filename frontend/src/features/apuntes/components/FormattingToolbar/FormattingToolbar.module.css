@@ -1,0 +1,49 @@
+.formattingToolbar {
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--surface-1);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbarGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolBtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.toolBtn:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.toolBtnKatex {
+  color: var(--emerald);
+  border-color: var(--emerald-border);
+  background-color: var(--emerald-alpha);
+}
+
+.miniTag {
+  color: var(--emerald);
+  background-color: rgba(16, 185, 129, 0.08);
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}

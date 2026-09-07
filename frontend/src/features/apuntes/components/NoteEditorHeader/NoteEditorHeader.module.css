@@ -1,0 +1,92 @@
+.editorTopBar {
+  height: 48px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--surface-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.editorBreadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.parcialBadge {
+  background-color: var(--emerald-alpha);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-border);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.editorActionsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewModeToggle {
+  display: flex;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 2px;
+}
+
+.viewModeBtn {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background-color: var(--surface-2);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.viewModeBtn:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.viewModeBtnActive {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  border: 1px solid var(--primary-glow);
+  border-radius: var(--radius-sm);
+  color: #fff;
+}
+
+.btnNewFolder {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnNewFolder:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.btnDangerAction:hover {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  color: var(--red) !important;
+}

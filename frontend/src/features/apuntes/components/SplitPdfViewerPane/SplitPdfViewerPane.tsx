@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import styles from '../ApuntesView.module.css';
+import styles from './SplitPdfViewerPane.module.css';
 import { X, ExternalLink, UploadCloud, FileText, Loader2 } from 'lucide-react';
-import type { MaterialEstudio } from '../../../types/academic';
-import { materialesService } from '../../../services';
+import type { MaterialEstudio } from '../../../../types/academic';
+import { materialesService } from '../../../../services';
 
 interface SplitPdfViewerPaneProps {
   onClose: () => void;

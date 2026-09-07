@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../ApuntesView.module.css";
+import styles from "./NoteEditorHeader.module.css";
 import {
   Cloud,
   Eye,
@@ -8,7 +8,7 @@ import {
   BookOpen,
   Trash2,
 } from "lucide-react";
-import type { ApunteNota } from "../../../types/academic";
+import type { ApunteNota } from "../../../../types/academic";
 
 interface NoteEditorHeaderProps {
   activeNote: ApunteNota | null;
