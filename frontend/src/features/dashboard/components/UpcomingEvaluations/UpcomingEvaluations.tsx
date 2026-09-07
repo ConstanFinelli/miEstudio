@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../DashboardView.module.css';
+import styles from './UpcomingEvaluations.module.css';
 import { CalendarClock, ArrowRight } from 'lucide-react';
-import { useEvaluaciones } from '../../../hooks';
+import { useEvaluaciones } from '../../../../hooks';
 
 interface UpcomingEvaluationsProps {
   onGoToMaterias: () => void;
@@ -70,63 +70,64 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
         </div>
       ) : (
         proximas.slice(0, 3).map((ev, index) => {
-        const isUrgent = index === 0;
-        return (
-          <div
-            key={ev.id}
-            className={`${styles.evalCard} ${isUrgent ? styles.evalCardUrgent : ''}`}
-          >
-            <div className={styles.evalCardHeader}>
-              <div className={styles.evalBadges}>
-                <span className={isUrgent ? styles.badgeUrgent : styles.badgeTag}>
-                  {getDaysRemaining(ev.fecha)}
-                </span>
-                <span className={styles.badgeTag}>#{ev.tipo}</span>
-                <span className={styles.badgeCode}>Código: {ev.materiaCodigo}</span>
-              </div>
-              <div className={styles.evalWeightGroup}>
-                <span>Peso: <strong>{ev.peso}%</strong></span>
-                <span style={{ color: ev.nota !== null ? 'var(--emerald)' : 'var(--amber)' }}>
-                  {ev.nota !== null ? `Nota: ${ev.nota}` : 'Estado: Pendiente'}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <h3 className={styles.evalTitle}>{ev.titulo}</h3>
-              <p className={styles.evalSub}>
-                {formatDate(ev.fecha, ev.horario)} · {ev.aula} ({ev.modalidad})
-              </p>
-            </div>
-
-            {ev.temario && ev.temario.length > 0 && (
-              <div className={styles.temarioRow}>
-                <span>Temario:</span>
-                {ev.temario.map((tema, i) => (
-                  <span key={i} className={styles.temarioChip}>
-                    {tema}
+          const isUrgent = index === 0;
+          return (
+            <div
+              key={ev.id}
+              className={`${styles.evalCard} ${isUrgent ? styles.evalCardUrgent : ''}`}
+            >
+              <div className={styles.evalCardHeader}>
+                <div className={styles.evalBadges}>
+                  <span className={isUrgent ? styles.badgeUrgent : styles.badgeTag}>
+                    {getDaysRemaining(ev.fecha)}
                   </span>
-                ))}
+                  <span className={styles.badgeTag}>#{ev.tipo}</span>
+                  <span className={styles.badgeCode}>Código: {ev.materiaCodigo}</span>
+                </div>
+                <div className={styles.evalWeightGroup}>
+                  <span>Peso: <strong>{ev.peso}%</strong></span>
+                  <span style={{ color: ev.nota !== null ? 'var(--emerald)' : 'var(--amber)' }}>
+                    {ev.nota !== null ? `Nota: ${ev.nota}` : 'Estado: Pendiente'}
+                  </span>
+                </div>
               </div>
-            )}
 
-            <div className={styles.evalFooter}>
-              <div className={styles.evalMetrics}>
-                <span>Asistencia: <strong className={styles.evalMetricHighlight}>{ev.asistencia}%</strong></span>
-                <span>·</span>
-                <span>Guías: <strong className={styles.evalMetricHighlight}>{ev.guiasCompletadas}</strong></span>
+              <div>
+                <h3 className={styles.evalTitle}>{ev.titulo}</h3>
+                <p className={styles.evalSub}>
+                  {formatDate(ev.fecha, ev.horario)} · {ev.aula} ({ev.modalidad})
+                </p>
               </div>
-              <button
-                className={styles.evalActionLink}
-                onClick={index === 1 ? onGoToApuntes : onGoToMaterias}
-              >
-                <span>{index === 1 ? 'Abrir guía de estudio' : 'Ver materia'}</span>
-                <ArrowRight size={13} />
-              </button>
+
+              {ev.temario && ev.temario.length > 0 && (
+                <div className={styles.temarioRow}>
+                  <span>Temario:</span>
+                  {ev.temario.map((tema, i) => (
+                    <span key={i} className={styles.temarioChip}>
+                      {tema}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className={styles.evalFooter}>
+                <div className={styles.evalMetrics}>
+                  <span>Asistencia: <strong className={styles.evalMetricHighlight}>{ev.asistencia}%</strong></span>
+                  <span>·</span>
+                  <span>Guías: <strong className={styles.evalMetricHighlight}>{ev.guiasCompletadas}</strong></span>
+                </div>
+                <button
+                  className={styles.evalActionLink}
+                  onClick={index === 1 ? onGoToApuntes : onGoToMaterias}
+                >
+                  <span>{index === 1 ? 'Abrir guía de estudio' : 'Ver materia'}</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
             </div>
-          </div>
-        );
-      }))}
+          );
+        })
+      )}
     </div>
   );
 };

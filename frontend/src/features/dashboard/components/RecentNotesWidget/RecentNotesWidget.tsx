@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../DashboardView.module.css';
+import styles from './RecentNotesWidget.module.css';
 import { BookOpen, ExternalLink } from 'lucide-react';
-import { useApuntes } from '../../../hooks';
+import { useApuntes } from '../../../../hooks';
 
 interface RecentNotesWidgetProps {
   onGoToApuntes: () => void;

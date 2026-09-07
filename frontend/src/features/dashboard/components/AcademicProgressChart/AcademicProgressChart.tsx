@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../DashboardView.module.css';
+import styles from './AcademicProgressChart.module.css';
 import { TrendingUp } from 'lucide-react';
-import { usePerfil } from '../../../hooks';
+import { usePerfil } from '../../../../hooks';
 
 export const AcademicProgressChart: React.FC = () => {
   const { perfil } = usePerfil();

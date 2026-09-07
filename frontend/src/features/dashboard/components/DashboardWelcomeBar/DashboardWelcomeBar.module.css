@@ -1,0 +1,68 @@
+.welcomeSection {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.welcomeLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcomeTitle {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.semesterPill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-hover);
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.welcomeRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterPill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.filterPill:hover, .filterPillActive {
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.filterPillSuccess {
+  background-color: var(--emerald-alpha);
+  border-color: var(--emerald-border);
+  color: var(--emerald);
+}

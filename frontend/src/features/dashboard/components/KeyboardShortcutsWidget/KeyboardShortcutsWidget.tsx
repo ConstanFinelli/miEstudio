@@ -1,6 +1,6 @@
 import React from 'react';
-import styles from '../DashboardView.module.css';
-import { useTheme } from '../../../context/ThemeContext';
+import styles from './KeyboardShortcutsWidget.module.css';
+import { useTheme } from '../../../../context/ThemeContext';
 
 interface KeyboardShortcutsWidgetProps {
   onOpenNoteModal: () => void;

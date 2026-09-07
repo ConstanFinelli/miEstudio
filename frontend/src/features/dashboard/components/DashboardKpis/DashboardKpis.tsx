@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../DashboardView.module.css';
+import styles from './DashboardKpis.module.css';
 import {
   Calculator,
   GraduationCap,
@@ -7,7 +7,7 @@ import {
   Flame,
   TrendingUp
 } from 'lucide-react';
-import { usePerfil, useMaterias, useEvaluaciones } from '../../../hooks';
+import { usePerfil, useMaterias, useEvaluaciones } from '../../../../hooks';
 
 interface DashboardKpisProps {
   onGoToMaterias: () => void;

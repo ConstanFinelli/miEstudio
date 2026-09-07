@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../DashboardView.module.css';
+import styles from './ScheduleBanner.module.css';
 import { CalendarClock, ArrowRight } from 'lucide-react';
-import { useEvaluaciones } from '../../../hooks';
+import { useEvaluaciones } from '../../../../hooks';
 
 interface ScheduleBannerProps {
   onGoToCalendario: () => void;

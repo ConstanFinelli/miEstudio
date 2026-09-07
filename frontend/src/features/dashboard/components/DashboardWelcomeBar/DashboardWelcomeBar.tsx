@@ -1,7 +1,7 @@
 import React from "react";
-import styles from "../DashboardView.module.css";
-import type { PerfilEstudiante } from "../../../types/academic";
-import { usePerfil } from "../../../hooks";
+import styles from "./DashboardWelcomeBar.module.css";
+import type { PerfilEstudiante } from "../../../../types/academic";
+import { usePerfil } from "../../../../hooks";
 
 interface DashboardWelcomeBarProps {
   perfil?: PerfilEstudiante | null;
