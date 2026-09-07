@@ -8,6 +8,7 @@ import (
 
 type EventoCalendario struct {
 	ID               string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID        string         `gorm:"type:varchar(36);index" json:"usuario_id"`
 	MateriaID        *string        `gorm:"type:varchar(36);index" json:"materia_id"`
 	Titulo           string         `gorm:"type:varchar(255);not null" json:"titulo"`
 	FechaInicio      time.Time      `gorm:"not null" json:"fecha_inicio"`
@@ -23,6 +24,7 @@ type EventoCalendario struct {
 }
 
 type CreateEventoDTO struct {
+	UsuarioID        string  `json:"usuario_id"`
 	MateriaID        *string `json:"materia_id"`
 	Titulo           string  `json:"titulo"`
 	FechaInicio      string  `json:"fecha_inicio"`

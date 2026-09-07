@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(ctx context.Context, materiaID, carpeta, search string) ([]Apunte, error)
+	GetAll(ctx context.Context, usuarioID, materiaID, carpeta, search string) ([]Apunte, error)
 	GetByID(ctx context.Context, id string) (*Apunte, error)
 	Create(ctx context.Context, apunte *Apunte) error
 	Update(ctx context.Context, apunte *Apunte) error
@@ -22,10 +22,13 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetAll(ctx context.Context, materiaID, carpeta, search string) ([]Apunte, error) {
+func (r *repository) GetAll(ctx context.Context, usuarioID, materiaID, carpeta, search string) ([]Apunte, error) {
 	var notes []Apunte
 	q := r.db.WithContext(ctx).Order("updated_at desc")
 
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
 	if materiaID != "" {
 		q = q.Where("materia_id = ?", materiaID)
 	}

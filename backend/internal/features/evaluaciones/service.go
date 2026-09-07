@@ -12,8 +12,8 @@ import (
 )
 
 type Service interface {
-	ListEvaluaciones(ctx context.Context, materiaID string) ([]Evaluacion, error)
-	ListProximas(ctx context.Context, limit int) ([]Evaluacion, error)
+	ListEvaluaciones(ctx context.Context, usuarioID string, materiaID string) ([]Evaluacion, error)
+	ListProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error)
 	GetEvaluacion(ctx context.Context, id string) (*Evaluacion, error)
 	CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO) (*Evaluacion, error)
 	UpdateNota(ctx context.Context, id string, nota float64) (*Evaluacion, error)
@@ -28,12 +28,12 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) ListEvaluaciones(ctx context.Context, materiaID string) ([]Evaluacion, error) {
-	return s.repo.GetByMateria(ctx, materiaID)
+func (s *service) ListEvaluaciones(ctx context.Context, usuarioID string, materiaID string) ([]Evaluacion, error) {
+	return s.repo.GetByMateria(ctx, usuarioID, materiaID)
 }
 
-func (s *service) ListProximas(ctx context.Context, limit int) ([]Evaluacion, error) {
-	return s.repo.GetProximas(ctx, limit)
+func (s *service) ListProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error) {
+	return s.repo.GetProximas(ctx, usuarioID, limit)
 }
 
 func (s *service) GetEvaluacion(ctx context.Context, id string) (*Evaluacion, error) {
@@ -104,6 +104,7 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 
 	evaluacion := &Evaluacion{
 		ID:            uuid.New().String(),
+		UsuarioID:     dto.UsuarioID,
 		MateriaID:     dto.MateriaID,
 		Titulo:        dto.Titulo,
 		Tipo:          tipo,

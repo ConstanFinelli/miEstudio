@@ -21,7 +21,8 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 }
 
 func (h *Handler) GetAll(c *fiber.Ctx) error {
-	eventos, err := h.service.ListEventos(c.Context())
+	userID := common.GetUserID(c)
+	eventos, err := h.service.ListEventos(c.Context(), userID)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener eventos de calendario", err.Error())
 	}
@@ -32,6 +33,11 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var dto CreateEventoDTO
 	if err := c.BodyParser(&dto); err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, "Datos de evento inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if dto.UsuarioID == "" {
+		dto.UsuarioID = userID
 	}
 
 	created, err := h.service.CreateEvento(c.Context(), dto)

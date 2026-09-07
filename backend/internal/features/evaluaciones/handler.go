@@ -27,7 +27,8 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 
 func (h *Handler) GetAll(c *fiber.Ctx) error {
 	materiaID := c.Query("materia_id")
-	evaluaciones, err := h.service.ListEvaluaciones(c.Context(), materiaID)
+	userID := common.GetUserID(c)
+	evaluaciones, err := h.service.ListEvaluaciones(c.Context(), userID, materiaID)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener evaluaciones", err.Error())
 	}
@@ -43,7 +44,8 @@ func (h *Handler) GetProximas(c *fiber.Ctx) error {
 		}
 	}
 
-	proximas, err := h.service.ListProximas(c.Context(), limit)
+	userID := common.GetUserID(c)
+	proximas, err := h.service.ListProximas(c.Context(), userID, limit)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener próximas evaluaciones", err.Error())
 	}
@@ -63,6 +65,11 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var dto CreateEvaluacionDTO
 	if err := c.BodyParser(&dto); err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, "Datos de evaluación inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if dto.UsuarioID == "" {
+		dto.UsuarioID = userID
 	}
 
 	created, err := h.service.CreateEvaluacion(c.Context(), dto)

@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(ctx context.Context) ([]EventoCalendario, error)
+	GetAll(ctx context.Context, usuarioID string) ([]EventoCalendario, error)
 	GetByID(ctx context.Context, id string) (*EventoCalendario, error)
 	Create(ctx context.Context, evento *EventoCalendario) error
 	Delete(ctx context.Context, id string) error
@@ -21,9 +21,13 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetAll(ctx context.Context) ([]EventoCalendario, error) {
+func (r *repository) GetAll(ctx context.Context, usuarioID string) ([]EventoCalendario, error) {
 	var eventos []EventoCalendario
-	if err := r.db.WithContext(ctx).Order("fecha_inicio asc").Find(&eventos).Error; err != nil {
+	q := r.db.WithContext(ctx).Order("fecha_inicio asc")
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
+	if err := q.Find(&eventos).Error; err != nil {
 		return nil, err
 	}
 	return eventos, nil

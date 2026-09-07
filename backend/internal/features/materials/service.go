@@ -11,10 +11,10 @@ import (
 )
 
 type Service interface {
-	ListMateriales(ctx context.Context, materiaID, categoria string) ([]Material, error)
+	ListMateriales(ctx context.Context, usuarioID, materiaID, categoria string) ([]Material, error)
 	GetMaterial(ctx context.Context, id string) (*Material, error)
 	GetFilePath(ctx context.Context, id string) (string, *Material, error)
-	UploadMaterial(ctx context.Context, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error)
+	UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error)
 	UpdateMaterial(ctx context.Context, id string, dto UpdateMaterialDTO) (*Material, error)
 	DeleteMaterial(ctx context.Context, id string) error
 }
@@ -28,8 +28,8 @@ func NewService(repo Repository, storage storage.StorageService) Service {
 	return &service{repo: repo, storage: storage}
 }
 
-func (s *service) ListMateriales(ctx context.Context, materiaID, categoria string) ([]Material, error) {
-	return s.repo.GetByMateria(ctx, materiaID, categoria)
+func (s *service) ListMateriales(ctx context.Context, usuarioID, materiaID, categoria string) ([]Material, error) {
+	return s.repo.GetByMateria(ctx, usuarioID, materiaID, categoria)
 }
 
 func (s *service) GetMaterial(ctx context.Context, id string) (*Material, error) {
@@ -52,7 +52,7 @@ func (s *service) GetFilePath(ctx context.Context, id string) (string, *Material
 	return filePath, mat, nil
 }
 
-func (s *service) UploadMaterial(ctx context.Context, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error) {
+func (s *service) UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error) {
 	if materiaID == "" {
 		return nil, errors.New("materia_id es requerido")
 	}
@@ -73,6 +73,7 @@ func (s *service) UploadMaterial(ctx context.Context, materiaID, titulo, categor
 
 	material := &Material{
 		ID:                    uuid.New().String(),
+		UsuarioID:             usuarioID,
 		MateriaID:             materiaID,
 		Titulo:                titulo,
 		Categoria:             categoria,

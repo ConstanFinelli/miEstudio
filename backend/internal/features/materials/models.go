@@ -8,6 +8,7 @@ import (
 
 type Material struct {
 	ID                    string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID             string         `gorm:"type:varchar(36);index" json:"usuario_id"`
 	MateriaID             string         `gorm:"type:varchar(36);not null;index" json:"materia_id"`
 	Titulo                string         `gorm:"type:varchar(255);not null" json:"titulo"`
 	Categoria             string         `gorm:"type:varchar(50);not null;default:'TEORIA'" json:"categoria"`

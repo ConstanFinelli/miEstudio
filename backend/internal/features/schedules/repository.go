@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(ctx context.Context, materiaID, diaSemana string) ([]HorarioCursada, error)
+	GetAll(ctx context.Context, usuarioID, materiaID, diaSemana string) ([]HorarioCursada, error)
 	GetByID(ctx context.Context, id string) (*HorarioCursada, error)
 	Create(ctx context.Context, horario *HorarioCursada) error
 	Update(ctx context.Context, horario *HorarioCursada) error
@@ -22,10 +22,13 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetAll(ctx context.Context, materiaID, diaSemana string) ([]HorarioCursada, error) {
+func (r *repository) GetAll(ctx context.Context, usuarioID, materiaID, diaSemana string) ([]HorarioCursada, error) {
 	var list []HorarioCursada
 	q := r.db.WithContext(ctx).Preload("Materia").Order("hora_inicio asc")
 
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
 	if materiaID != "" {
 		q = q.Where("materia_id = ?", materiaID)
 	}

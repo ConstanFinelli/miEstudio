@@ -18,6 +18,7 @@ type Config struct {
 	DBName      string
 	StorageDir  string
 	CORSOrigins []string
+	JWTSecret   string
 }
 
 func Load() *Config {
@@ -31,6 +32,7 @@ func Load() *Config {
 	dbPort := getEnv("DB_PORT", "3306")
 	dbName := getEnv("DB_NAME", "miestudio")
 	storageDir := getEnv("STORAGE_DIR", "./uploads")
+	jwtSecret := getEnv("JWT_SECRET", "miestudio-super-secret-jwt-key-change-in-production-32bytes")
 
 	corsStr := getEnv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 	corsOrigins := strings.Split(corsStr, ",")
@@ -45,6 +47,7 @@ func Load() *Config {
 		DBName:      dbName,
 		StorageDir:  storageDir,
 		CORSOrigins: corsOrigins,
+		JWTSecret:   jwtSecret,
 	}
 }
 

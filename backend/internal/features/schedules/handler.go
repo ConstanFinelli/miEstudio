@@ -25,8 +25,9 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 func (h *Handler) GetAll(c *fiber.Ctx) error {
 	materiaID := c.Query("materia_id")
 	diaSemana := c.Query("dia_semana")
+	userID := common.GetUserID(c)
 
-	list, err := h.service.ListHorarios(c.Context(), materiaID, diaSemana)
+	list, err := h.service.ListHorarios(c.Context(), userID, materiaID, diaSemana)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener horarios de cursada", err.Error())
 	}
@@ -46,6 +47,11 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var dto CreateHorarioDTO
 	if err := c.BodyParser(&dto); err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, "Datos de horario inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if dto.UsuarioID == "" {
+		dto.UsuarioID = userID
 	}
 
 	created, err := h.service.CreateHorario(c.Context(), dto)

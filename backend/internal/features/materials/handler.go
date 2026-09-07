@@ -31,8 +31,9 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 func (h *Handler) GetByMateria(c *fiber.Ctx) error {
 	materiaID := c.Params("materia_id")
 	categoria := c.Query("categoria")
+	userID := common.GetUserID(c)
 
-	materials, err := h.service.ListMateriales(c.Context(), materiaID, categoria)
+	materials, err := h.service.ListMateriales(c.Context(), userID, materiaID, categoria)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener materiales", err.Error())
 	}
@@ -65,6 +66,7 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 	}
 	defer file.Close()
 
+	userID := common.GetUserID(c)
 	titulo := c.FormValue("titulo", fileHeader.Filename)
 	categoria := c.FormValue("categoria", "TEORIA")
 	mimeType := fileHeader.Header.Get("Content-Type")
@@ -72,7 +74,7 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 		mimeType = "application/pdf"
 	}
 
-	material, err := h.service.UploadMaterial(c.Context(), materiaID, titulo, categoria, file, fileHeader.Filename, mimeType)
+	material, err := h.service.UploadMaterial(c.Context(), userID, materiaID, titulo, categoria, file, fileHeader.Filename, mimeType)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al guardar material", err.Error())
 	}

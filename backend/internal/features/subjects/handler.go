@@ -32,7 +32,13 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 		anio, _ = strconv.Atoi(anioStr)
 	}
 
-	materias, err := h.service.ListMaterias(c.Context(), estado, anio)
+	userID := common.GetUserID(c)
+	carreraID := c.Query("carrera_id")
+	if carreraID == "" {
+		carreraID = common.GetActiveCarreraID(c)
+	}
+
+	materias, err := h.service.ListMaterias(c.Context(), userID, carreraID, estado, anio)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener materias", err.Error())
 	}
@@ -52,6 +58,14 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var dto CreateMateriaDTO
 	if err := c.BodyParser(&dto); err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, "Datos de materia inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if dto.UsuarioID == "" {
+		dto.UsuarioID = userID
+	}
+	if dto.CarreraID == "" {
+		dto.CarreraID = common.GetActiveCarreraID(c)
 	}
 
 	created, err := h.service.CreateMateria(c.Context(), dto)

@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	ListMaterias(ctx context.Context, estado string, anio int) ([]Materia, error)
+	ListMaterias(ctx context.Context, usuarioID string, carreraID string, estado string, anio int) ([]Materia, error)
 	GetMateria(ctx context.Context, id string) (*Materia, error)
 	CreateMateria(ctx context.Context, dto CreateMateriaDTO) (*Materia, error)
 	UpdateMateria(ctx context.Context, id string, dto UpdateMateriaDTO) (*Materia, error)
@@ -25,8 +25,8 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) ListMaterias(ctx context.Context, estado string, anio int) ([]Materia, error) {
-	return s.repo.GetAll(ctx, estado, anio)
+func (s *service) ListMaterias(ctx context.Context, usuarioID string, carreraID string, estado string, anio int) ([]Materia, error) {
+	return s.repo.GetAll(ctx, usuarioID, carreraID, estado, anio)
 }
 
 func (s *service) GetMateria(ctx context.Context, id string) (*Materia, error) {
@@ -68,6 +68,8 @@ func (s *service) CreateMateria(ctx context.Context, dto CreateMateriaDTO) (*Mat
 
 	materia := &Materia{
 		ID:                 uuid.New().String(),
+		UsuarioID:          dto.UsuarioID,
+		CarreraID:          dto.CarreraID,
 		Codigo:             dto.Codigo,
 		Nombre:             dto.Nombre,
 		Anio:               dto.Anio,

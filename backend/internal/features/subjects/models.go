@@ -78,6 +78,8 @@ func (r *ReglasAcreditacionDTO) Scan(value interface{}) error {
 
 type Materia struct {
 	ID                 string                 `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID          string                 `gorm:"type:varchar(36);index" json:"usuario_id"`
+	CarreraID          string                 `gorm:"type:varchar(36);index" json:"carrera_id"`
 	Codigo             string                 `gorm:"type:varchar(50)" json:"codigo"`
 	Nombre             string                 `gorm:"type:varchar(255);not null" json:"nombre"`
 	Anio               int                    `gorm:"not null" json:"anio"`
@@ -96,6 +98,8 @@ type Materia struct {
 }
 
 type CreateMateriaDTO struct {
+	UsuarioID          string                 `json:"usuario_id"`
+	CarreraID          string                 `json:"carrera_id"`
 	Codigo             string                 `json:"codigo"`
 	Nombre             string                 `json:"nombre"`
 	Anio               int                    `json:"anio"`
@@ -111,6 +115,7 @@ type CreateMateriaDTO struct {
 }
 
 type UpdateMateriaDTO struct {
+	CarreraID          *string                `json:"carrera_id"`
 	Codigo             *string                `json:"codigo"`
 	Nombre             *string                `json:"nombre"`
 	Anio               *int                   `json:"anio"`

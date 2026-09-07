@@ -26,8 +26,9 @@ func (h *Handler) GetAll(c *fiber.Ctx) error {
 	materiaID := c.Query("materia_id")
 	carpeta := c.Query("carpeta")
 	search := c.Query("search")
+	userID := common.GetUserID(c)
 
-	apuntes, err := h.service.ListApuntes(c.Context(), materiaID, carpeta, search)
+	apuntes, err := h.service.ListApuntes(c.Context(), userID, materiaID, carpeta, search)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al obtener apuntes", err.Error())
 	}
@@ -47,6 +48,11 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	var dto CreateApunteDTO
 	if err := c.BodyParser(&dto); err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, "Datos de apunte inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if dto.UsuarioID == "" {
+		dto.UsuarioID = userID
 	}
 
 	created, err := h.service.CreateApunte(c.Context(), dto)

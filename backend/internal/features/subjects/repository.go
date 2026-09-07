@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetAll(ctx context.Context, estado string, anio int) ([]Materia, error)
+	GetAll(ctx context.Context, usuarioID string, carreraID string, estado string, anio int) ([]Materia, error)
 	GetByID(ctx context.Context, id string) (*Materia, error)
 	Create(ctx context.Context, materia *Materia) error
 	Update(ctx context.Context, materia *Materia) error
@@ -22,9 +22,15 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetAll(ctx context.Context, estado string, anio int) ([]Materia, error) {
+func (r *repository) GetAll(ctx context.Context, usuarioID string, carreraID string, estado string, anio int) ([]Materia, error) {
 	var materias []Materia
 	q := r.db.WithContext(ctx).Order("anio desc, nombre asc")
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
+	if carreraID != "" {
+		q = q.Where("carrera_id = ? OR carrera_id = '' OR carrera_id IS NULL", carreraID)
+	}
 	if estado != "" {
 		q = q.Where("estado = ?", estado)
 	}

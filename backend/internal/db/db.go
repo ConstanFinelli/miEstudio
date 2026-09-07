@@ -9,7 +9,9 @@ import (
 	"gorm.io/gorm/logger"
 
 	"miestudio/backend/internal/config"
+	"miestudio/backend/internal/features/auth"
 	"miestudio/backend/internal/features/calendar"
+	"miestudio/backend/internal/features/carreras"
 	"miestudio/backend/internal/features/evaluaciones"
 	"miestudio/backend/internal/features/materials"
 	"miestudio/backend/internal/features/notes"
@@ -31,6 +33,10 @@ func Init(cfg *config.Config) (*gorm.DB, error) {
 
 	log.Println("[DB] Conexión establecida. Ejecutando migraciones automáticas...")
 	err = db.AutoMigrate(
+		&auth.Usuario{},
+		&auth.RefreshToken{},
+		&carreras.Carrera{},
+		&carreras.AprobacionHistorica{},
 		&subjects.Materia{},
 		&evaluaciones.Evaluacion{},
 		&notes.Apunte{},

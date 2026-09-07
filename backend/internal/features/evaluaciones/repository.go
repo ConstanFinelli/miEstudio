@@ -7,8 +7,8 @@ import (
 )
 
 type Repository interface {
-	GetByMateria(ctx context.Context, materiaID string) ([]Evaluacion, error)
-	GetProximas(ctx context.Context, limit int) ([]Evaluacion, error)
+	GetByMateria(ctx context.Context, usuarioID string, materiaID string) ([]Evaluacion, error)
+	GetProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error)
 	GetByID(ctx context.Context, id string) (*Evaluacion, error)
 	Create(ctx context.Context, evaluacion *Evaluacion) error
 	Update(ctx context.Context, evaluacion *Evaluacion) error
@@ -23,9 +23,12 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetByMateria(ctx context.Context, materiaID string) ([]Evaluacion, error) {
+func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materiaID string) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
 	q := r.db.WithContext(ctx).Order("fecha asc")
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
 	if materiaID != "" {
 		q = q.Where("materia_id = ?", materiaID)
 	}
@@ -35,9 +38,12 @@ func (r *repository) GetByMateria(ctx context.Context, materiaID string) ([]Eval
 	return evaluaciones, nil
 }
 
-func (r *repository) GetProximas(ctx context.Context, limit int) ([]Evaluacion, error) {
+func (r *repository) GetProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
 	q := r.db.WithContext(ctx).Order("fecha asc")
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
 	if limit > 0 {
 		q = q.Limit(limit)
 	}

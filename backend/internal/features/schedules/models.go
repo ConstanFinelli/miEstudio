@@ -9,6 +9,7 @@ import (
 
 type HorarioCursada struct {
 	ID           string           `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID    string           `gorm:"type:varchar(36);index" json:"usuario_id"`
 	MateriaID    string           `gorm:"type:varchar(36);not null;index" json:"materia_id"`
 	Materia      *subjects.Materia `gorm:"foreignKey:MateriaID" json:"materia,omitempty"`
 	DiaSemana    string           `gorm:"type:varchar(20);not null" json:"dia_semana"` // LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO
@@ -28,6 +29,7 @@ func (HorarioCursada) TableName() string {
 }
 
 type CreateHorarioDTO struct {
+	UsuarioID    string `json:"usuario_id"`
 	MateriaID    string `json:"materia_id"`
 	DiaSemana    string `json:"dia_semana"`
 	HoraInicio   string `json:"hora_inicio"`

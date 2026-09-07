@@ -8,6 +8,7 @@ import (
 
 type Apunte struct {
 	ID        string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID string         `gorm:"type:varchar(36);index" json:"usuario_id"`
 	MateriaID string         `gorm:"type:varchar(36);not null;index" json:"materia_id"`
 	Titulo    string         `gorm:"type:varchar(255);not null" json:"titulo"`
 	Contenido string         `gorm:"type:longtext" json:"contenido"`
@@ -21,6 +22,7 @@ type Apunte struct {
 }
 
 type CreateApunteDTO struct {
+	UsuarioID string   `json:"usuario_id"`
 	MateriaID string   `json:"materia_id"`
 	Titulo    string   `json:"titulo"`
 	Contenido string   `json:"contenido"`

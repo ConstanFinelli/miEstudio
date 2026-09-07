@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	ListApuntes(ctx context.Context, materiaID, carpeta, search string) ([]Apunte, error)
+	ListApuntes(ctx context.Context, usuarioID, materiaID, carpeta, search string) ([]Apunte, error)
 	GetApunte(ctx context.Context, id string) (*Apunte, error)
 	CreateApunte(ctx context.Context, dto CreateApunteDTO) (*Apunte, error)
 	UpdateApunte(ctx context.Context, id string, dto UpdateApunteDTO) (*Apunte, error)
@@ -25,8 +25,8 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) ListApuntes(ctx context.Context, materiaID, carpeta, search string) ([]Apunte, error) {
-	notes, err := s.repo.GetAll(ctx, materiaID, carpeta, search)
+func (s *service) ListApuntes(ctx context.Context, usuarioID, materiaID, carpeta, search string) ([]Apunte, error) {
+	notes, err := s.repo.GetAll(ctx, usuarioID, materiaID, carpeta, search)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +88,7 @@ func (s *service) CreateApunte(ctx context.Context, dto CreateApunteDTO) (*Apunt
 
 	apunte := &Apunte{
 		ID:        uuid.New().String(),
+		UsuarioID: dto.UsuarioID,
 		MateriaID: dto.MateriaID,
 		Titulo:    dto.Titulo,
 		Contenido: dto.Contenido,

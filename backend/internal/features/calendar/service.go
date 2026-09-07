@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	ListEventos(ctx context.Context) ([]EventoCalendario, error)
+	ListEventos(ctx context.Context, usuarioID string) ([]EventoCalendario, error)
 	CreateEvento(ctx context.Context, dto CreateEventoDTO) (*EventoCalendario, error)
 	DeleteEvento(ctx context.Context, id string) error
 }
@@ -22,8 +22,8 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) ListEventos(ctx context.Context) ([]EventoCalendario, error) {
-	return s.repo.GetAll(ctx)
+func (s *service) ListEventos(ctx context.Context, usuarioID string) ([]EventoCalendario, error) {
+	return s.repo.GetAll(ctx, usuarioID)
 }
 
 func (s *service) CreateEvento(ctx context.Context, dto CreateEventoDTO) (*EventoCalendario, error) {
@@ -58,6 +58,7 @@ func (s *service) CreateEvento(ctx context.Context, dto CreateEventoDTO) (*Event
 
 	evento := &EventoCalendario{
 		ID:               uuid.New().String(),
+		UsuarioID:        dto.UsuarioID,
 		MateriaID:        dto.MateriaID,
 		Titulo:           dto.Titulo,
 		FechaInicio:      inicio,

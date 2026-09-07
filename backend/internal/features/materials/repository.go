@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	GetByMateria(ctx context.Context, materiaID, categoria string) ([]Material, error)
+	GetByMateria(ctx context.Context, usuarioID, materiaID, categoria string) ([]Material, error)
 	GetByID(ctx context.Context, id string) (*Material, error)
 	Create(ctx context.Context, material *Material) error
 	Update(ctx context.Context, material *Material) error
@@ -22,9 +22,15 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) GetByMateria(ctx context.Context, materiaID, categoria string) ([]Material, error) {
+func (r *repository) GetByMateria(ctx context.Context, usuarioID, materiaID, categoria string) ([]Material, error) {
 	var materials []Material
-	q := r.db.WithContext(ctx).Where("materia_id = ?", materiaID).Order("created_at desc")
+	q := r.db.WithContext(ctx).Order("created_at desc")
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
+	}
+	if materiaID != "" {
+		q = q.Where("materia_id = ?", materiaID)
+	}
 	if categoria != "" {
 		q = q.Where("categoria = ?", categoria)
 	}

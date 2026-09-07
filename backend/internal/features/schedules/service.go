@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	ListHorarios(ctx context.Context, materiaID, diaSemana string) ([]HorarioCursada, error)
+	ListHorarios(ctx context.Context, usuarioID, materiaID, diaSemana string) ([]HorarioCursada, error)
 	GetHorario(ctx context.Context, id string) (*HorarioCursada, error)
 	CreateHorario(ctx context.Context, dto CreateHorarioDTO) (*HorarioCursada, error)
 	UpdateHorario(ctx context.Context, id string, dto UpdateHorarioDTO) (*HorarioCursada, error)
@@ -25,8 +25,8 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) ListHorarios(ctx context.Context, materiaID, diaSemana string) ([]HorarioCursada, error) {
-	return s.repo.GetAll(ctx, materiaID, diaSemana)
+func (s *service) ListHorarios(ctx context.Context, usuarioID, materiaID, diaSemana string) ([]HorarioCursada, error) {
+	return s.repo.GetAll(ctx, usuarioID, materiaID, diaSemana)
 }
 
 func (s *service) GetHorario(ctx context.Context, id string) (*HorarioCursada, error) {
@@ -63,6 +63,7 @@ func (s *service) CreateHorario(ctx context.Context, dto CreateHorarioDTO) (*Hor
 
 	horario := &HorarioCursada{
 		ID:           uuid.New().String(),
+		UsuarioID:    dto.UsuarioID,
 		MateriaID:    dto.MateriaID,
 		DiaSemana:    dia,
 		HoraInicio:   dto.HoraInicio,

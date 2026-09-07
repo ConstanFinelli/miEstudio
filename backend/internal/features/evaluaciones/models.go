@@ -9,6 +9,7 @@ import (
 
 type Evaluacion struct {
 	ID            string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID     string         `gorm:"type:varchar(36);index" json:"usuario_id"`
 	MateriaID     string         `gorm:"type:varchar(36);not null;index" json:"materia_id"`
 	Titulo        string         `gorm:"type:varchar(255);not null" json:"titulo"`
 	Tipo          string         `gorm:"type:varchar(30);not null;default:'PARCIAL'" json:"tipo"`
@@ -27,6 +28,7 @@ type Evaluacion struct {
 
 type EvaluacionResponseDTO struct {
 	ID            string    `json:"id"`
+	UsuarioID     string    `json:"usuario_id"`
 	MateriaID     string    `json:"materia_id"`
 	Titulo        string    `json:"titulo"`
 	Tipo          string    `json:"tipo"`
@@ -52,6 +54,7 @@ func ToResponseDTO(e Evaluacion) EvaluacionResponseDTO {
 	}
 	return EvaluacionResponseDTO{
 		ID:            e.ID,
+		UsuarioID:     e.UsuarioID,
 		MateriaID:     e.MateriaID,
 		Titulo:        e.Titulo,
 		Tipo:          e.Tipo,
@@ -77,6 +80,7 @@ func ToResponseDTOList(evals []Evaluacion) []EvaluacionResponseDTO {
 }
 
 type CreateEvaluacionDTO struct {
+	UsuarioID     string   `json:"usuario_id"`
 	MateriaID     string   `json:"materia_id"`
 	Titulo        string   `json:"titulo"`
 	Tipo          string   `json:"tipo"`
