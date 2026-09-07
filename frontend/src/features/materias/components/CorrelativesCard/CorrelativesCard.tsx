@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../MateriasView.module.css';
+import styles from './CorrelativesCard.module.css';
 import { CheckCircle } from 'lucide-react';
-import type { Materia } from '../../../types/academic';
+import type { Materia } from '../../../../types/academic';
 
 interface CorrelativesCardProps {
   correlativas: Materia['correlativas'];

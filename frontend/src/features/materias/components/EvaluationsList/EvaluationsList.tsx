@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from '../MateriasView.module.css';
+import styles from './EvaluationsList.module.css';
 import { FileText, Plus, Edit2, Trash2 } from 'lucide-react';
-import type { InstanciaEvaluacion } from '../../../types/academic';
+import type { InstanciaEvaluacion } from '../../../../types/academic';
 
 interface EvaluationsListProps {
   evaluations: InstanciaEvaluacion[];
@@ -58,6 +58,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
                 Ingresar Nota
               </button>
             )}
+
             <button className={styles.iconBtnSmall} title="Editar">
               <Edit2 size={12} />
             </button>

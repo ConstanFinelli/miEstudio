@@ -1,8 +1,8 @@
 import React from 'react';
-import styles from '../MateriasView.module.css';
+import styles from './MateriasFilterBar.module.css';
 import { Search } from 'lucide-react';
-import type { Materia } from '../../../types/academic';
-import { useMaterias } from '../../../hooks';
+import type { Materia } from '../../../../types/academic';
+import { useMaterias } from '../../../../hooks';
 
 interface MateriasFilterBarProps {
   selectedYear: number | 'TODOS';

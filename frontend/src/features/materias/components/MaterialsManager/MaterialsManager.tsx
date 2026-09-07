@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import styles from '../MateriasView.module.css';
+import styles from './MaterialsManager.module.css';
 import { Eye, FileDown, Trash2, UploadCloud, FileText } from 'lucide-react';
-import type { MaterialEstudio, CategoriaMaterial } from '../../../types/academic';
+import type { MaterialEstudio, CategoriaMaterial } from '../../../../types/academic';
 
 interface MaterialsManagerProps {
   materials: MaterialEstudio[];

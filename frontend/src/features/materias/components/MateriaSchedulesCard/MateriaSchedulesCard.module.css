@@ -1,0 +1,116 @@
+/* Schedule Instances in Materia View */
+.evalListSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.evalListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, var(--primary), #4f46e5);
+  border: 1px solid var(--primary-glow);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+}
+
+.btnPrimary:hover {
+  filter: brightness(1.1);
+}
+
+.evalItemRow {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.15s;
+}
+
+.evalItemRow:hover {
+  border-color: var(--border-hover);
+}
+
+.evalItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.evalIconSquare {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.evalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evalMetaPills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.evalItemTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.evalItemSub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.evalItemRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iconBtnSmall {
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.iconBtnSmall:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}

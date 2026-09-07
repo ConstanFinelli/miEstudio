@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../MateriasView.module.css';
+import styles from './MateriasHeader.module.css';
 import { Plus } from 'lucide-react';
 
 interface MateriasHeaderProps {

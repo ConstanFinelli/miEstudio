@@ -1,7 +1,7 @@
 import React from "react";
-import styles from "../MateriasView.module.css";
+import styles from "./MateriaDetailHeader.module.css";
 import { Edit2, Trash2 } from "lucide-react";
-import type { Materia } from "../../../types/academic";
+import type { Materia } from "../../../../types/academic";
 
 interface MateriaDetailHeaderProps {
   materia: Materia;

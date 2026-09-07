@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import styles from '../MateriasView.module.css';
+import styles from './MateriaSchedulesCard.module.css';
 import { Clock, Plus, Building2, MapPin, Edit2, Trash2 } from 'lucide-react';
-import type { HorarioCursada, Materia } from '../../../types/academic';
-import { HorarioModal } from '../../../components/modals';
+import type { HorarioCursada, Materia } from '../../../../types/academic';
+import { HorarioModal } from '../../../../components/modals';
 
 interface MateriaSchedulesCardProps {
   materia: Materia;
@@ -151,3 +151,5 @@ export const MateriaSchedulesCard: React.FC<MateriaSchedulesCardProps> = ({
     </div>
   );
 };
+
+export default MateriaSchedulesCard;

@@ -1,7 +1,7 @@
 import React from "react";
-import styles from "../MateriasView.module.css";
+import styles from "./AccreditationRulesCard.module.css";
 import { CheckCircle, AlertCircle, SlidersHorizontal } from "lucide-react";
-import type { Materia } from "../../../types/academic";
+import type { Materia } from "../../../../types/academic";
 
 interface AccreditationRulesCardProps {
   reglas: Materia["reglasAcreditacion"];
