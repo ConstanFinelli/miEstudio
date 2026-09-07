@@ -3,12 +3,15 @@ import styles from './MateriaModal.module.css';
 import { X, BookOpen, Plus, Award, Save } from 'lucide-react';
 import type { Materia, EstadoMateria } from '../../../types/academic';
 import { materiasService } from '../../../services';
+import { useAuth } from '../../../context/AuthContext';
+import { carrerasService } from '../../../services/carrerasService';
 
 interface MateriaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (materia: Materia) => void;
   materiaToEdit?: Materia | null;
+  initialEstado?: EstadoMateria;
 }
 
 const PRESET_COLORS = [
@@ -26,8 +29,10 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
-  materiaToEdit
+  materiaToEdit,
+  initialEstado
 }) => {
+  const { activeCarrera, reloadCarreras } = useAuth();
   const isEditing = Boolean(materiaToEdit);
 
   const [nombre, setNombre] = useState('');
@@ -40,6 +45,15 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual' | 'Híbrida'>('Presencial');
   const [profesorTitular, setProfesorTitular] = useState('');
   const [profesorJtp, setProfesorJtp] = useState('');
+
+  // Campos de Aprobación Previa / Calificación Final
+  const [notaFinal, setNotaFinal] = useState<number>(8);
+  const [fechaAprobacion, setFechaAprobacion] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
+  const [tipoAprobacion, setTipoAprobacion] = useState<string>('FINAL');
+  const [libroActa, setLibroActa] = useState('');
+  const [folioActa, setFolioActa] = useState('');
 
   // Reglas de acreditación configurables
   const [permitePromocion, setPermitePromocion] = useState(true);
@@ -67,12 +81,17 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setMinParcial(materiaToEdit.reglasAcreditacion?.promocion?.minParcial ?? 7.0);
       setMinNotaRegular(materiaToEdit.reglasAcreditacion?.regularidad?.minNota ?? 4.0);
       setMinAsistencia(materiaToEdit.reglasAcreditacion?.regularidad?.minAsistencia ?? 75);
+      setNotaFinal(materiaToEdit.promedio && materiaToEdit.promedio > 0 ? materiaToEdit.promedio : 8);
+      setTipoAprobacion(materiaToEdit.estado === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
+      setLibroActa('');
+      setFolioActa('');
     } else {
       setNombre('');
       setCodigo('');
       setAnio(3);
       setCuatrimestre('1C');
-      setEstado('CURSANDO');
+      const defaultEst = initialEstado || 'CURSANDO';
+      setEstado(defaultEst);
       setColor('#3b82f6');
       setComision('');
       setModalidad('Presencial');
@@ -83,8 +102,13 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setMinParcial(7.0);
       setMinNotaRegular(4.0);
       setMinAsistencia(75);
+      setNotaFinal(8);
+      setFechaAprobacion(new Date().toISOString().split('T')[0]);
+      setTipoAprobacion(defaultEst === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
+      setLibroActa('');
+      setFolioActa('');
     }
-  }, [materiaToEdit, isOpen]);
+  }, [materiaToEdit, isOpen, initialEstado]);
 
   if (!isOpen) return null;
 
@@ -94,6 +118,9 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
 
     try {
       setIsSubmitting(true);
+      const isAprobada = estado === 'APROBADA' || estado === 'PROMOCIONADA';
+      const promedioFinal = isAprobada ? Number(notaFinal) : (materiaToEdit?.promedio || 0);
+
       const payload: Partial<Materia> = {
         nombre: nombre.trim(),
         codigo: codigo.trim() || `MAT-${Math.floor(100 + Math.random() * 900)}`,
@@ -103,6 +130,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         color,
         comision: comision.trim() || 'Comisión Única',
         modalidad,
+        promedio: promedioFinal,
         profesores: {
           titular: profesorTitular.trim(),
           jtp: profesorJtp.trim()
@@ -131,10 +159,25 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       if (materiaToEdit) {
         result = await materiasService.updateMateria(materiaToEdit.id, payload);
       } else {
-        result = await materiasService.createMateria({
-          ...payload,
-          promedio: 0
-        });
+        result = await materiasService.createMateria(payload);
+      }
+
+      // Si se cargó como aprobada/promocionada y hay carrera activa, registrar aprobación histórica
+      if (isAprobada && activeCarrera) {
+        try {
+          await carrerasService.registrarAprobacion({
+            carrera_id: activeCarrera.id,
+            materia_id: result.id,
+            nota_final: Number(notaFinal),
+            fecha_aprobacion: fechaAprobacion || new Date().toISOString().split('T')[0],
+            tipo_aprobacion: tipoAprobacion,
+            libro_acta: libroActa.trim() || undefined,
+            folio_acta: folioActa.trim() || undefined,
+          });
+          await reloadCarreras();
+        } catch (aprobErr) {
+          console.warn('[MateriaModal] Error al registrar aprobación histórica:', aprobErr);
+        }
       }
 
       onSuccess(result);
@@ -244,12 +287,20 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
               <select
                 className={styles.select}
                 value={estado}
-                onChange={e => setEstado(e.target.value as EstadoMateria)}
+                onChange={e => {
+                  const nextEstado = e.target.value as EstadoMateria;
+                  setEstado(nextEstado);
+                  if (nextEstado === 'PROMOCIONADA') {
+                    setTipoAprobacion('PROMOCION');
+                  } else if (nextEstado === 'APROBADA') {
+                    setTipoAprobacion('FINAL');
+                  }
+                }}
               >
                 <option value="CURSANDO">Cursando actualmente</option>
-                <option value="REGULAR">Regularizada</option>
-                <option value="APROBADA">Aprobada (con Final)</option>
-                <option value="PROMOCIONADA">Promocionada directa</option>
+                <option value="APROBADA">Aprobada (con Examen Final)</option>
+                <option value="PROMOCIONADA">Aprobada (Promoción Directa)</option>
+                <option value="REGULAR">Regularizada (Final pendiente)</option>
                 <option value="LIBRE">Libre</option>
               </select>
             </div>
@@ -267,6 +318,84 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
               </select>
             </div>
           </div>
+
+          {/* Bloque especial: Datos de Aprobación & Calificación */}
+          {(estado === 'APROBADA' || estado === 'PROMOCIONADA') && (
+            <div className={styles.aprobacionBox}>
+              <div className={styles.aprobacionHeader}>
+                <Award size={16} className={styles.aprobacionIcon} />
+                <span className={styles.aprobacionTitle}>
+                  Datos de Aprobación {estado === 'PROMOCIONADA' ? '(Promoción Directa)' : '(Examen Final)'}
+                  {activeCarrera ? ` • ${activeCarrera.nombre}` : ''}
+                </span>
+              </div>
+
+              <div className={styles.row2}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Calificación / Nota Final (1 al 10) *</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="1"
+                    max="10"
+                    className={styles.input}
+                    value={notaFinal}
+                    onChange={e => setNotaFinal(Number(e.target.value))}
+                    required
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Fecha de Aprobación</label>
+                  <input
+                    type="date"
+                    className={styles.input}
+                    value={fechaAprobacion}
+                    onChange={e => setFechaAprobacion(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className={styles.row3}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Modalidad de Aprobación</label>
+                  <select
+                    className={styles.select}
+                    value={tipoAprobacion}
+                    onChange={e => setTipoAprobacion(e.target.value)}
+                  >
+                    <option value="FINAL">Examen Final Regular</option>
+                    <option value="PROMOCION">Promoción Directa</option>
+                    <option value="LIBRE">Examen Final Libre</option>
+                    <option value="EQUIVALENCIA">Equivalencia / Reconocimiento</option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Libro / Tomo (Opcional)</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Ej: Tomo 14"
+                    value={libroActa}
+                    onChange={e => setLibroActa(e.target.value)}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Folio / Acta (Opcional)</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Ej: Folio 240"
+                    value={folioActa}
+                    onChange={e => setFolioActa(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Comisión y Docentes */}
           <div className={styles.row3}>

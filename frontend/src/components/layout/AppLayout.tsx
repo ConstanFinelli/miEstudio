@@ -23,7 +23,8 @@ import { isMocksEnabled } from "../../config/mockConfig";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import { usePerfil } from "../../hooks";
-import { CarreraModal, AprobacionHistoricaModal } from "../modals";
+import { CarreraModal } from "../modals";
+import type { EstadoMateria } from "../../types/academic";
 
 const defaultEmptyPerfil = {
   nombre: "Estudiante",
@@ -45,12 +46,14 @@ const defaultEmptyPerfil = {
 interface AppLayoutProps {
   onOpenEvaluationModal: () => void;
   onOpenNoteModal: () => void;
+  onOpenMateriaModal?: (initialEstado?: EstadoMateria) => void;
   children?: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
   onOpenEvaluationModal,
   onOpenNoteModal,
+  onOpenMateriaModal,
   children,
 }) => {
   const location = useLocation();
@@ -61,7 +64,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
   const [isCareerMenuOpen, setIsCareerMenuOpen] = useState(false);
   const [isCarreraModalOpen, setIsCarreraModalOpen] = useState(false);
-  const [isAprobacionModalOpen, setIsAprobacionModalOpen] = useState(false);
 
   const currentPerfil =
     perfil || (isMocksEnabled() ? mockPerfil : defaultEmptyPerfil);
@@ -184,11 +186,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                         className={styles.dropdownActionBtn}
                         onClick={() => {
                           setIsCareerMenuOpen(false);
-                          setIsAprobacionModalOpen(true);
+                          if (onOpenMateriaModal) {
+                            onOpenMateriaModal('APROBADA');
+                          }
                         }}
                       >
                         <Award size={13} />
-                        <span>Cargar Aprobada Previa</span>
+                        <span>Cargar Materia Aprobada</span>
                       </button>
                     </div>
                   </div>
@@ -384,14 +388,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         <main className={styles.contentBody}>{children || <Outlet />}</main>
       </div>
 
-      {/* Carrera & Aprobaciones Modals */}
+      {/* Carrera Modal */}
       <CarreraModal
         isOpen={isCarreraModalOpen}
         onClose={() => setIsCarreraModalOpen(false)}
-      />
-      <AprobacionHistoricaModal
-        isOpen={isAprobacionModalOpen}
-        onClose={() => setIsAprobacionModalOpen(false)}
       />
     </div>
   );

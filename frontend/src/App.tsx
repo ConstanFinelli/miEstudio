@@ -11,12 +11,14 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 import { EvaluationModal, NoteModal, PdfViewerModal, MateriaModal } from './components/modals';
 import { Toast } from './features/components';
+import type { EstadoMateria } from './types/academic';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMateriaModalOpen, setIsMateriaModalOpen] = useState(false);
+  const [materiaInitialEstado, setMateriaInitialEstado] = useState<EstadoMateria | undefined>(undefined);
   const [activePdf, setActivePdf] = useState<{ title: string; url: string } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -60,6 +62,10 @@ export const App: React.FC = () => {
             <AppLayout
               onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
               onOpenNoteModal={() => setIsNoteModalOpen(true)}
+              onOpenMateriaModal={(estado) => {
+                setMateriaInitialEstado(estado);
+                setIsMateriaModalOpen(true);
+              }}
             >
               {/* Toast Notification */}
               <Toast message={toastMessage} />
@@ -81,7 +87,10 @@ export const App: React.FC = () => {
                   element={
                     <MateriasView
                       onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-                      onOpenMateriaModal={() => setIsMateriaModalOpen(true)}
+                      onOpenMateriaModal={() => {
+                        setMateriaInitialEstado(undefined);
+                        setIsMateriaModalOpen(true);
+                      }}
                       onOpenNoteModal={() => setIsNoteModalOpen(true)}
                       onViewPdf={(title, url) => setActivePdf({ title, url })}
                     />
@@ -107,10 +116,14 @@ export const App: React.FC = () => {
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
 
-              {/* Materia Modal (⌘M / Registro de Cursada) */}
+              {/* Materia Modal (⌘M / Registro de Cursada & Materias Aprobadas) */}
               <MateriaModal
                 isOpen={isMateriaModalOpen}
-                onClose={() => setIsMateriaModalOpen(false)}
+                onClose={() => {
+                  setIsMateriaModalOpen(false);
+                  setMateriaInitialEstado(undefined);
+                }}
+                initialEstado={materiaInitialEstado}
                 onSuccess={(created) => {
                   showToast(`✓ Materia "${created.nombre}" registrada con éxito`);
                   navigate('/materias');
