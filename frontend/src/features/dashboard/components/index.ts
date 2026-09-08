@@ -4,4 +4,3 @@ export { UpcomingEvaluations } from './UpcomingEvaluations';
 export { ScheduleBanner } from './ScheduleBanner';
 export { AcademicProgressChart } from './AcademicProgressChart';
 export { RecentNotesWidget } from './RecentNotesWidget';
-export { KeyboardShortcutsWidget } from './KeyboardShortcutsWidget';

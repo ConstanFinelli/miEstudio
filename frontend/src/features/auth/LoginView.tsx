@@ -5,7 +5,6 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  Sparkles,
   AlertCircle,
   Eye,
   EyeOff,
@@ -16,7 +15,7 @@ import styles from "./LoginView.module.css";
 export const LoginView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,40 +46,6 @@ export const LoginView: React.FC = () => {
           ? err.message
           : "Credenciales inválidas o error de conexión";
       setErrorMessage(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    const demoEmail = "demo@miestudio.local";
-    const demoPass = "demo12345";
-
-    try {
-      // Intentar login con credenciales demo
-      await login({ email: demoEmail, password: demoPass });
-      navigate(from, { replace: true });
-    } catch {
-      // Si el usuario demo no existe todavía en la base de datos, registrarlo automáticamente
-      try {
-        await register({
-          email: demoEmail,
-          password: demoPass,
-          nombre: "Estudiante Demo",
-          carrera_nombre: "Ingeniería en Informática",
-          facultad_sede: "Facultad de Ingeniería",
-          legajo: "INFO-2026",
-        });
-        navigate(from, { replace: true });
-      } catch (regErr: unknown) {
-        setErrorMessage(
-          regErr instanceof Error
-            ? regErr.message
-            : "Error al inicializar sesión de demostración",
-        );
-      }
     } finally {
       setIsLoading(false);
     }

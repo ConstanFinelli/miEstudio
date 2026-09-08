@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './EditUserModal.module.css';
-import { X, Check, User, Mail, GraduationCap, Shield, UserCog, AlertCircle } from 'lucide-react';
+import { X, Check, User, GraduationCap, Shield, UserCog, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { usePerfil } from '../../../hooks/usePerfil';
 import { carrerasService } from '../../../services/carrerasService';

@@ -296,7 +296,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}
           >
             <Plus size={14} />
-            <span>Crear Primer Apunte (⌘N)</span>
+            <span>Crear Primer Apunte</span>
           </button>
         )}
       </div>

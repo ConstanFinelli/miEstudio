@@ -244,7 +244,7 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
       <div className={styles.foldersFooter}>
         <button className={styles.btnNewFolder} onClick={onOpenNoteModal}>
           <Plus size={12} />
-          <span>Nuevo Apunte (⌘N)</span>
+          <span>Nuevo Apunte</span>
         </button>
       </div>
     </aside>

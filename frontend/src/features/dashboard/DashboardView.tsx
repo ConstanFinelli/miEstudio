@@ -7,20 +7,15 @@ import {
   UpcomingEvaluations,
   ScheduleBanner,
   AcademicProgressChart,
-  RecentNotesWidget,
-  KeyboardShortcutsWidget
+  RecentNotesWidget
 } from './components';
 
 interface DashboardViewProps {
   onNavigate?: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
-  onOpenEvaluationModal: () => void;
-  onOpenNoteModal: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
-  onNavigate,
-  onOpenEvaluationModal,
-  onOpenNoteModal
+  onNavigate
 }) => {
   const navigate = useNavigate();
   const goTo = (view: string) => {
@@ -53,14 +48,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <AcademicProgressChart />
         </div>
 
-        {/* Right Column: Notas Recientes + Atajos */}
+        {/* Right Column: Notas Recientes */}
         <div className={styles.rightColumn}>
           <RecentNotesWidget onGoToApuntes={() => goTo('apuntes')} />
-
-          <KeyboardShortcutsWidget
-            onOpenNoteModal={onOpenNoteModal}
-            onOpenEvaluationModal={onOpenEvaluationModal}
-          />
         </div>
       </div>
     </div>

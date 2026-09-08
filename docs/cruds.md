@@ -7,19 +7,30 @@ Es la entidad raíz. Todo lo demás orbita alrededor de una materia.
 
 **Modelo de Datos:**
 * `id` (UUID, PK)
+* `carrera_id` (UUID, FK -> Carreras)
 * `nombre` (String, ej: "Sistemas de Información")
-* `anio` (Int, ej: 2026)
-* `cuatrimestre` (Enum: PRIMERO, SEGUNDO, ANUAL)
-* `estado` (Enum: CURSANDO, REGULAR, APROBADA, PROMOCIONADA)
-* `color` (String - Hex para el frontend)
+* `codigo` (String, ej: "ASI-204")
+* `anio` (Int, ej: 3)
+* `cuatrimestre` (Enum: 1C, 2C, Anual)
+* `estado` (Enum: CURSANDO, REGULAR, APROBADA, PROMOCIONADA, LIBRE)
+* `color` (String - Hex para el frontend, ej: "#3b82f6")
+* `comision` (String, ej: "3K1")
+* `modalidad` (Enum: Presencial, Virtual, Híbrida)
+* `profesor_titular` (String)
+* `profesor_jtp` (String)
+* `promedio` (Float, Nullable)
+* `reglas_acreditacion` (JSONB)
+  * `promocion`: `{ permite_promocion: bool, condicion: string, min_asistencia: int, descripcion: string }` (donde `condicion` es un string libre para reflejar los requisitos particulares de la cátedra)
+  * `regularidad`: `{ condicion: string, min_asistencia: int, descripcion: string }`
 * `created_at`, `updated_at`
 
 **Endpoints (Go):**
 * `POST /api/materias` - Crea una nueva materia.
-* `GET /api/materias` - Lista todas, con soporte para filtrado (por estado, por año).
-* `GET /api/materias/:id` - Detalle de la materia (incluye evaluaciones y conteo de apuntes).
-* `PUT /api/materias/:id` - Actualiza datos básicos o estado.
-* `DELETE /api/materias/:id` - Elimina materia (Soft delete recomendado para no perder historial).
+* `GET /api/materias` - Lista todas las materias de la carrera activa.
+* `GET /api/materias/:id` - Detalle de la materia (incluye evaluaciones, horarios y materiales).
+* `PUT /api/materias/:id` - Actualiza datos básicos, estado o notas finales.
+* `PUT /api/materias/:id/reglas` - Actualiza las reglas de acreditación de la materia.
+* `DELETE /api/materias/:id` - Elimina materia.
 
 ---
 
@@ -98,4 +109,62 @@ CRUD para la gestión de archivos bibliográficos y recursos asociados a cada ma
 * `GET /api/materiales/:id/archivo` - Descarga o visualización directa del binario. Soporta headers de `Content-Disposition: inline` y `Accept-Ranges: bytes` para permitir navegación por páginas en el visor web sin transferir el archivo completo de golpe.
 * `PUT /api/materiales/:id` - Actualización de metadatos (título, categoría).
 * `DELETE /api/materiales/:id` - Elimina el registro en la base de datos y borra el archivo físico correspondiente del storage.
+
+---
+
+## 6. Usuarios y Perfil (Auth & User Profile)
+Gestión de identidad, sesiones y datos personales del estudiante.
+
+**Modelo de Datos:**
+* `id` (UUID, PK)
+* `email` (String, Unique)
+* `password_hash` (String)
+* `nombre` (String, ej: "Estudiante")
+* `created_at`, `updated_at`
+
+**Endpoints (Go):**
+* `POST /api/auth/register` - Registro de usuario e inicialización de su primera carrera.
+* `POST /api/auth/login` - Autenticación con email/password y retorno de token JWT.
+* `GET /api/auth/me` - Perfil del usuario autenticado y su carrera activa seleccionada.
+* `PUT /api/auth/me` - Actualización de datos del usuario (`nombre`, `email`, `password` opcional).
+
+---
+
+## 7. Carreras Universitarias (Careers)
+Soporte multi-carrera para estudiantes cursando o graduados de múltiples planes de estudio.
+
+**Modelo de Datos:**
+* `id` (UUID, PK)
+* `usuario_id` (UUID, FK -> Users)
+* `nombre` (String, ej: "Ingeniería en Informática")
+* `facultad_sede` (String, ej: "Facultad de Ingeniería")
+* `legajo` (String, ej: "INFO-2026")
+* `plan_estudio` (String, ej: "Plan 2023")
+* `promedio_general` (Float)
+* `is_activa` (Boolean) - Identifica qué carrera está activa en la sesión.
+* `created_at`, `updated_at`
+
+**Endpoints (Go):**
+* `GET /api/carreras` - Lista de carreras pertenecientes al usuario autenticado.
+* `POST /api/carreras` - Registra una nueva carrera para el estudiante.
+* `POST /api/carreras/:id/seleccionar` - Establece la carrera como activa para la sesión.
+
+---
+
+## 8. Horarios de Cursada (Schedules)
+Organización semanal de cursado por materia.
+
+**Modelo de Datos:**
+* `id` (UUID, PK)
+* `materia_id` (UUID, FK -> Materias)
+* `dia_semana` (Enum: LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO)
+* `hora_inicio` (String, ej: "08:00")
+* `hora_fin` (String, ej: "12:00")
+* `aula` (String, ej: "Aula Magna / Lab 3")
+* `modalidad` (Enum: Presencial, Virtual, Híbrida)
+
+**Endpoints (Go):**
+* `GET /api/horarios` - Trae la grilla semanal completa de horarios de la carrera activa.
+* `POST /api/materias/:id/horarios` - Añade una franja horaria de cursado a una materia.
+* `DELETE /api/horarios/:id` - Elimina una franja horaria.
 

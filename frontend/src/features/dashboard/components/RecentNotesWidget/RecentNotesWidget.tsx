@@ -31,7 +31,7 @@ export const RecentNotesWidget: React.FC<RecentNotesWidgetProps> = ({ onGoToApun
           <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p style={{ fontSize: '12px', marginBottom: '4px' }}>No hay apuntes creados aún.</p>
             <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
-              Presiona ⌘N para crear tu primera nota de estudio.
+              Crea tu primera nota de estudio desde la sección de apuntes.
             </span>
           </div>
         ) : (

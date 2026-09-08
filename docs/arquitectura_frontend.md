@@ -6,26 +6,22 @@ En el frontend aplicaremos un enfoque similar al Vertical Slicing. En lugar de a
 
 ```text
 src/
-  app/                # Configuración global: Proveedores (React Query, Context), Enrutador principal.
-  assets/             # Imágenes, íconos globales.
-  components/         # Componentes UI reutilizables (Botones, Modales, Inputs). "Dumb components".
-  lib/                # Utilidades, configuración global (ej. axios, utilidades de fecha).
-  features/           # <-- FEATURE-DRIVEN
-    materias/
-      api/            # Funciones que llaman al backend de materias (fetchMaterias, createMateria)
-      components/     # Componentes ESPECÍFICOS de materias (MateriaCard, FormularioMateria)
-      hooks/          # Custom hooks (ej. useMaterias que envuelve a React Query)
-      types/          # Interfaces TS para Materias
-    evaluaciones/
-      ...
-    apuntes/
-      ...
-    materiales/       # Feature: Materiales y Visor de PDFs
-      api/            # uploadPdf, fetchMateriales, deleteMaterial
-      components/     # PdfViewer, PdfToolbar, MaterialList, UploadModal, SplitStudyView
-      hooks/          # usePdfViewer, useMateriales
-      types/          # Material, CategoriaMaterial
-  pages/              # Vistas a nivel de ruta que orquestan a los features (Dashboard, SubjectDetails, NotesEditor, StudyRoom)
+  components/           # Componentes UI compartidos y modales del sistema
+    auth/               # ProtectedRoute
+    layout/             # AppLayout (Sidebar, Topbar, Breadcrumbs, Selector de Carreras)
+    modals/             # Modales: MateriaModal, EvaluationModal, NoteModal, CarreraModal, EditUserModal, PdfViewerModal
+  context/              # AuthContext (sesión y carrera activa), ThemeContext (modo oscuro/claro)
+  data/                 # Datos mockeados y seeds demostrativos
+  features/             # <-- FEATURE-DRIVEN MODULES
+    auth/               # LoginView, RegisterView
+    dashboard/          # DashboardView, KPIs, Evaluaciones pendientes, Gráfico de progreso, Notas recientes
+    materias/           # MateriasView, MateriaDetail, Reglas de acreditación, Materiales, Horarios
+    horarios/           # HorariosView (grilla horaria semanal interactiva)
+    calendario/         # CalendarioView (agenda de exámenes, parciales y eventos)
+    apuntes/            # ApuntesView, FoldersSidebar, NoteEditor, NoteReader, Split PDF Study
+  hooks/                # Custom hooks (useMaterias, useEvaluaciones, useApuntes, usePerfil, etc.)
+  services/             # Clientes HTTP hacia el backend Go (apiClient, materiasService, apuntesService, etc.)
+  types/                # Definiciones TypeScript de dominio académico
 ```
 
 ### Visualización y Gestión de PDFs en el Frontend

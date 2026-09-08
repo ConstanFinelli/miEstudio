@@ -1,13 +1,6 @@
 import React from "react";
 import styles from "./NoteEditorHeader.module.css";
-import {
-  Cloud,
-  Eye,
-  Code,
-  Columns,
-  BookOpen,
-  Trash2,
-} from "lucide-react";
+import { Cloud, Eye, Code, Columns, BookOpen, Trash2 } from "lucide-react";
 import type { ApunteNota } from "../../../../types/academic";
 
 interface NoteEditorHeaderProps {

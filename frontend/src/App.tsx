@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { DashboardView } from './features/dashboard/DashboardView';
@@ -21,27 +21,6 @@ export const App: React.FC = () => {
   const [materiaInitialEstado, setMateriaInitialEstado] = useState<EstadoMateria | undefined>(undefined);
   const [activePdf, setActivePdf] = useState<{ title: string; url: string } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Keyboard Shortcuts Listener (⌘N, ⌘E, ⌘M)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMeta = e.metaKey || e.ctrlKey;
-
-      if (isMeta && e.key.toLowerCase() === 'm') {
-        e.preventDefault();
-        setIsMateriaModalOpen(true);
-      } else if (isMeta && e.key.toLowerCase() === 'n') {
-        e.preventDefault();
-        setIsNoteModalOpen(true);
-      } else if (isMeta && e.key.toLowerCase() === 'e') {
-        e.preventDefault();
-        setIsEvaluationModalOpen(true);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -75,12 +54,7 @@ export const App: React.FC = () => {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route
                   path="/dashboard"
-                  element={
-                    <DashboardView
-                      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
-                      onOpenNoteModal={() => setIsNoteModalOpen(true)}
-                    />
-                  }
+                  element={<DashboardView />}
                 />
                 <Route
                   path="/materias"
@@ -116,7 +90,7 @@ export const App: React.FC = () => {
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
 
-              {/* Materia Modal (⌘M / Registro de Cursada & Materias Aprobadas) */}
+              {/* Materia Modal (Registro de Cursada & Materias Aprobadas) */}
               <MateriaModal
                 isOpen={isMateriaModalOpen}
                 onClose={() => {
@@ -130,14 +104,14 @@ export const App: React.FC = () => {
                 }}
               />
 
-              {/* Evaluation Modal (⌘E) */}
+              {/* Evaluation Modal */}
               <EvaluationModal
                 isOpen={isEvaluationModalOpen}
                 onClose={() => setIsEvaluationModalOpen(false)}
                 onSuccess={() => showToast('✓ Nueva instancia de evaluación registrada')}
               />
 
-              {/* Note Modal (⌘N) */}
+              {/* Note Modal */}
               <NoteModal
                 isOpen={isNoteModalOpen}
                 onClose={() => setIsNoteModalOpen(false)}

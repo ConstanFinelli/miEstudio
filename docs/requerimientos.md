@@ -13,13 +13,14 @@ El objetivo del sistema es proveer a estudiantes universitarios una herramienta 
 - **RF1.1:** El usuario podrá registrar nuevas materias indicando nombre, año cursado, cuatrimestre y estado (Cursando, Regular, Aprobada, Promocionada, Libre).
 - **RF1.2:** El usuario podrá editar, archivar o eliminar materias.
 - **RF1.3:** El sistema deberá calcular el promedio general y el progreso de la carrera en base a las materias aprobadas.
+- **RF1.4:** El usuario podrá definir y consultar las Reglas de Acreditación (condición de promoción directa y condición de regularidad) mediante condiciones descriptivas en formato de texto (string), adaptándose a las exigencias particulares de cada cátedra (ej. asistencias, parciales mínimos, laboratorios aprobados).
 
 #### 2.2 Gestión de Instancias de Evaluación (Exámenes, TPs, etc.)
 
 - **RF2.1:** El usuario podrá crear "Instancias de Evaluación" asociadas a una materia.
 - **RF2.2:** Cada instancia deberá especificar su tipo: Parcial, Final, Trabajo Práctico (TP), Laboratorio, o Entregable.
 - **RF2.3:** Se podrá registrar la fecha de la evaluación y la nota obtenida (o pendiente).
-- **RF2.4:** El sistema calculará el estado de la materia (ej. si alcanza para promoción o regularidad) basado en un conjunto de reglas o pesos personalizables de las instancias de evaluación.
+- **RF2.4:** El sistema mostrará las ponderaciones y notas alcanzadas en relación con los criterios de acreditación de la materia.
 
 #### 2.3 Sistema de Calendario y Fechas
 
@@ -30,7 +31,7 @@ El objetivo del sistema es proveer a estudiantes universitarios una herramienta 
 #### 2.4 Toma de Notas y Apuntes
 
 - **RF4.1:** El usuario podrá crear apuntes (texto enriquecido / Markdown) vinculados a una materia específica.
-- **RF4.2:** Los apuntes deben soportar inserción de código, tablas y fórmulas básicas.
+- **RF4.2:** Los apuntes deben soportar inserción de código, tablas y fórmulas matemáticas (KaTeX / LaTeX).
 - **RF4.3:** Búsqueda global de texto dentro del contenido de todos los apuntes.
 
 #### 2.5 Gestión de Material de Estudio y Visor de PDFs
@@ -41,10 +42,14 @@ El objetivo del sistema es proveer a estudiantes universitarios una herramienta 
 - **RF5.4:** Modo Estudio (Split-View): capacidad de abrir un PDF en un panel lateral y el editor de apuntes en el otro, permitiendo estudiar y resumir sin cambiar de pestaña o ventana.
 - **RF5.5:** Descarga directa y eliminación segura (con borrado del almacenamiento físico) de archivos.
 
-#### 2.6 Nuevas Funcionalidades Sugeridas (Roadmap / V1.1+)
+#### 2.6 Gestión de Carreras y Perfil de Usuario
 
-- **RF6.1 (Árbol de Correlatividades y Plan de Carrera):** Grafo interactivo para visualizar dependencias entre materias (requisitos para cursar y para rendir final) y cálculo automático de materias habilitadas para el próximo ciclo lectivo.
-- **RF6.2 (Tarjetas de Memoria / Spaced Repetition - Flashcards):** Generación manual o asistida de tarjetas de repaso rápido basadas en los apuntes, con algoritmo de repaso espaciado (estilo Anki/Leitner) previo a los exámenes.
+- **RF6.1:** Soporte multi-carrera: el usuario puede registrar múltiples carreras universitarias indicando nombre, facultad/sede y legajo, y alternar fácilmente la carrera activa desde la barra lateral.
+- **RF6.2:** Edición de perfil de usuario: el usuario podrá actualizar su nombre, correo electrónico y contraseña de acceso desde el modal de ajustes del usuario accesible desde el dashboard.
+
+#### 2.7 Nuevas Funcionalidades Sugeridas (Roadmap / V1.1+)
+
+- **RF7.1 (Tarjetas de Memoria / Spaced Repetition - Flashcards):** Generación manual o asistida de tarjetas de repaso rápido basadas en los apuntes, con algoritmo de repaso espaciado (estilo Anki/Leitner) previo a los exámenes.
 
 ### 3. Requerimientos No Funcionales (RNF)
 

@@ -324,11 +324,11 @@ export const NoteModal: React.FC<NoteModalProps> = ({
           <div className={styles.modalFooter}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ color: 'var(--primary)' }}>⚡</span>
-              <span>Tip: Presiona <strong>⌘ + Enter</strong> para inicializar</span>
+              <span>Editor con soporte Markdown, fórmulas KaTeX y bloques de código</span>
             </div>
             <div className={styles.footerActions}>
               <button type="button" className={styles.btnCancel} onClick={onClose}>
-                Cancelar (Esc)
+                Cancelar
               </button>
               <button type="submit" className={styles.btnSubmit}>
                 <span>+ Crear y Abrir Editor</span>

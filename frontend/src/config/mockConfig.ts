@@ -6,7 +6,6 @@
  * -------------------------------------------------------------------------
  * 1. En código: Cambia DEFAULT_ENABLE_MOCKS a true o false abajo.
  * 2. En el navegador: Abre la consola y escribe: window.toggleMocks()
- * 3. En la app: Presiona ⌘K y selecciona "Activar/Desactivar Datos de Prueba".
  */
 
 export const DEFAULT_ENABLE_MOCKS = false; // <-- VARIABLE DE FÁCIL USO (false = inicia limpio, true = con datos de prueba)

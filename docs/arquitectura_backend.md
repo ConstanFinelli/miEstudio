@@ -9,26 +9,17 @@ cmd/
   api/
     main.go           # Punto de entrada, inicialización del servidor y BD.
 internal/
-  db/                 # Conexión a DB (ej. pgx, GORM, sqlc) y migraciones.
-  common/             # Middleware (auth, logger, errores), utilidades globales.
+  db/                 # Conexión a DB (PostgreSQL + GORM) y auto-migraciones.
+  common/             # Middleware (JWT auth, CORS, logger, errores), utilidades globales.
   storage/            # Adaptador de almacenamiento desacoplado (Local Disk / S3 / R2)
   features/           # <-- VERTICAL SLICES
-    subjects/         # Feature: Materias
-      handler.go      # Rutas HTTP para materias
-      service.go      # Lógica de negocio
-      repository.go   # Consultas a la base de datos
-      models.go       # Estructuras de datos (DTOs y DB models)
-    evaluations/      # Feature: Instancias de Evaluación
-      handler.go
-      ...
-    notes/            # Feature: Apuntes
-      handler.go
-      ...
-    materials/        # Feature: Materiales y Archivos (PDFs)
-      handler.go      # Subida multipart, streaming con HTTP Range
-      service.go      # Validación de MIME types y orquestación con storage
-      repository.go   # Metadatos del archivo en PostgreSQL
-      models.go
+    auth/             # Feature: Autenticación, JWT y edición de perfil (PUT /auth/me)
+    carreras/         # Feature: Multi-carrera y selección de carrera activa
+    subjects/         # Feature: Materias y Reglas de Acreditación (condición libre en string)
+    evaluations/      # Feature: Instancias de Evaluación (Parciales, TPs, Finales)
+    schedules/        # Feature: Grilla semanal de horarios de cursada
+    notes/            # Feature: Apuntes Markdown, carpetas y etiquetas
+    materials/        # Feature: Materiales y Archivos (subida multipart, streaming HTTP Range)
 ```
 
 ### Estrategia de Almacenamiento de Archivos (PDFs)

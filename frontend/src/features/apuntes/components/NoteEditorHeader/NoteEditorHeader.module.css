@@ -62,7 +62,7 @@
   background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   border: 1px solid var(--primary-glow);
   border-radius: var(--radius-sm);
-  color: #fff;
+  color: #fff !important; 
 }
 
 .btnNewFolder {
