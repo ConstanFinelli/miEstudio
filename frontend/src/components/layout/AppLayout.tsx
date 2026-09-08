@@ -15,6 +15,7 @@ import {
   ChevronDown,
   LogOut,
   Plus,
+  TrendingUp,
 } from "lucide-react";
 import { mockPerfil } from "../../data/mockData";
 import { isMocksEnabled } from "../../config/mockConfig";
@@ -75,6 +76,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
     if (path.startsWith("/dashboard")) return "Dashboard";
+    if (path.startsWith("/progreso")) return "Progreso & Estadísticas";
     if (path.startsWith("/materias")) return "Materias";
     if (path.startsWith("/horarios")) return "Horarios";
     if (path.startsWith("/calendario")) return "Calendario";
@@ -207,6 +209,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             >
               <BookOpen className={styles.navIcon} />
               <span>Materias</span>
+            </NavLink>
+            <NavLink
+              to="/progreso"
+              className={({ isActive }) =>
+                `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
+              }
+            >
+              <TrendingUp className={styles.navIcon} />
+              <span>Progreso & Estadísticas</span>
             </NavLink>
             <NavLink
               to="/horarios"

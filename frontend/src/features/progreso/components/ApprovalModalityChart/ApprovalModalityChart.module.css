@@ -1,0 +1,212 @@
+.card {
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-default);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.totalBadge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  background-color: var(--surface-2);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Insight highlight banner */
+.insightBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+
+.insightIcon {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.insightText {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.insightBold {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Multi-segmented stacked bar */
+.stackedBarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stackedBar {
+  height: 14px;
+  width: 100%;
+  background-color: var(--surface-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: flex;
+}
+
+.segmentPromo {
+  background-color: #22c55e;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 3px;
+}
+
+.segmentFinal {
+  background-color: #3b82f6;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 3px;
+}
+
+.segmentEquiv {
+  background-color: #a855f7;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 3px;
+}
+
+/* Grid of 3 modality cards */
+.modalitiesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .modalitiesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modalityCard {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.modalityCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-default);
+}
+
+.modalityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalityType {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.modalityPromo .modalityType {
+  color: #22c55e;
+}
+
+.modalityFinal .modalityType {
+  color: #3b82f6;
+}
+
+.modalityEquiv .modalityType {
+  color: #a855f7;
+}
+
+.modalityCount {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.modalityUnit {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.modalityFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 6px;
+}
+
+.modalityPercent {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.emptyState {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
