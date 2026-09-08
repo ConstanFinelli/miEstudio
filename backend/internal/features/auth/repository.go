@@ -15,6 +15,7 @@ type Repository interface {
 	FindRefreshToken(tokenHash string) (*RefreshToken, error)
 	RevokeRefreshToken(id string) error
 	RevokeAllUserTokens(userID string) error
+	UpdateUser(user *Usuario) error
 }
 
 type repository struct {
@@ -75,4 +76,8 @@ func (r *repository) RevokeRefreshToken(id string) error {
 
 func (r *repository) RevokeAllUserTokens(userID string) error {
 	return r.db.Model(&RefreshToken{}).Where("usuario_id = ?", userID).Update("revoked", true).Error
+}
+
+func (r *repository) UpdateUser(user *Usuario) error {
+	return r.db.Save(user).Error
 }

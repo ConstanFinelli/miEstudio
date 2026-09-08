@@ -7,3 +7,4 @@ export { UploadMaterialModal } from './material/UploadMaterialModal';
 export { DeleteConfirmModal } from './common/DeleteConfirmModal';
 export { HorarioModal } from './schedule/HorarioModal';
 export { CarreraModal } from './carrera';
+export { EditUserModal } from './user';

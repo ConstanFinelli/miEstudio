@@ -23,7 +23,7 @@ import { isMocksEnabled } from "../../config/mockConfig";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import { usePerfil } from "../../hooks";
-import { CarreraModal } from "../modals";
+import { CarreraModal, EditUserModal } from "../modals";
 import type { EstadoMateria } from "../../types/academic";
 
 const defaultEmptyPerfil = {
@@ -53,7 +53,6 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({
   onOpenEvaluationModal,
   onOpenNoteModal,
-  onOpenMateriaModal,
   children,
 }) => {
   const location = useLocation();
@@ -64,6 +63,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
   const [isCareerMenuOpen, setIsCareerMenuOpen] = useState(false);
   const [isCarreraModalOpen, setIsCarreraModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
 
   const currentPerfil =
     perfil || (isMocksEnabled() ? mockPerfil : defaultEmptyPerfil);
@@ -71,15 +71,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const displayNombre = user?.nombre || currentPerfil.nombre;
   const displayLegajo = activeCarrera?.legajo || currentPerfil.legajo;
   const displayCarrera = activeCarrera?.nombre || currentPerfil.carrera;
-  const displayPromedio = activeCarrera?.promedio_general ?? currentPerfil.promedioGeneral;
+  const displayPromedio =
+    activeCarrera?.promedio_general ?? currentPerfil.promedioGeneral;
 
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
-    if (path.startsWith("/dashboard")) return "Dashboard General";
-    if (path.startsWith("/materias")) return "Materias & Cursadas";
-    if (path.startsWith("/horarios")) return "Horarios de Cursada";
-    if (path.startsWith("/calendario")) return "Calendario Académico";
-    if (path.startsWith("/apuntes")) return "Repositorio de Apuntes";
+    if (path.startsWith("/dashboard")) return "Dashboard";
+    if (path.startsWith("/materias")) return "Materias";
+    if (path.startsWith("/horarios")) return "Horarios";
+    if (path.startsWith("/calendario")) return "Calendario";
+    if (path.startsWith("/apuntes")) return "Apuntes";
     return "Workspace";
   };
 
@@ -181,19 +182,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                         <Plus size={13} />
                         <span>Nueva Carrera</span>
                       </button>
-                      <button
-                        type="button"
-                        className={styles.dropdownActionBtn}
-                        onClick={() => {
-                          setIsCareerMenuOpen(false);
-                          if (onOpenMateriaModal) {
-                            onOpenMateriaModal('APROBADA');
-                          }
-                        }}
-                      >
-                        <Award size={13} />
-                        <span>Cargar Materia Aprobada</span>
-                      </button>
                     </div>
                   </div>
                 )}
@@ -220,7 +208,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               }
             >
               <BookOpen className={styles.navIcon} />
-              <span>Materias y Evaluaciones</span>
+              <span>Materias</span>
             </NavLink>
             <NavLink
               to="/horarios"
@@ -238,7 +226,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               }
             >
               <Calendar className={styles.navIcon} />
-              <span>Calendario y Fechas</span>
+              <span>Calendario</span>
             </NavLink>
             <NavLink
               to="/apuntes"
@@ -288,13 +276,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               )}
               <div className={styles.userDetails}>
                 <span className={styles.userName}>{displayNombre}</span>
-                <span className={styles.userSub}>
-                  Legajo: {displayLegajo}
-                </span>
+                <span className={styles.userSub}>Legajo: {displayLegajo}</span>
               </div>
             </div>
             <div className={styles.userActions}>
-              <button className={styles.settingsBtn} title="Configuración">
+              <button
+                className={styles.settingsBtn}
+                onClick={() => setIsEditUserModalOpen(true)}
+                title="Editar Usuario y Perfil"
+                aria-label="Editar usuario"
+              >
                 <Settings size={15} />
               </button>
               <button
@@ -352,35 +343,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             >
               {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-
-            <button className={styles.iconBtn} title="Notificaciones">
-              <Bell size={16} />
-            </button>
-
-            {isMocksEnabled() ? (
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-                alt={displayNombre}
-                className={styles.avatar}
-                style={{ cursor: "pointer" }}
-              />
-            ) : (
-              <div
-                className={styles.avatar}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "var(--surface-2)",
-                  color: "var(--text-secondary)",
-                  border: "1px solid var(--border-subtle)",
-                  cursor: "pointer",
-                }}
-                title={displayNombre}
-              >
-                <User size={14} />
-              </div>
-            )}
           </div>
         </header>
 
@@ -392,6 +354,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <CarreraModal
         isOpen={isCarreraModalOpen}
         onClose={() => setIsCarreraModalOpen(false)}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={isEditUserModalOpen}
+        onClose={() => setIsEditUserModalOpen(false)}
       />
     </div>
   );

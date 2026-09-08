@@ -19,6 +19,7 @@ type Service interface {
 	RefreshToken(refreshTokenStr string) (*AuthResponse, error)
 	Logout(refreshTokenStr string) error
 	GetMe(userID string) (*Usuario, interface{}, error)
+	UpdateMe(userID string, req UpdateUserRequest) (*Usuario, error)
 }
 
 type service struct {
@@ -200,4 +201,53 @@ func (s *service) generateAuthResponse(user *Usuario, activeCarreraID string, ac
 		User:         user.ToDTO(),
 		Carrera:      activeCarreraData,
 	}, nil
+}
+
+func (s *service) UpdateMe(userID string, req UpdateUserRequest) (*Usuario, error) {
+	user, err := s.repo.FindByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, errors.New("usuario no encontrado")
+	}
+
+	if req.Nombre != nil && strings.TrimSpace(*req.Nombre) != "" {
+		user.Nombre = strings.TrimSpace(*req.Nombre)
+	}
+
+	if req.Email != nil && strings.TrimSpace(*req.Email) != "" {
+		newEmail := strings.TrimSpace(strings.ToLower(*req.Email))
+		if newEmail != user.Email {
+			existing, err := s.repo.FindByEmail(newEmail)
+			if err != nil {
+				return nil, err
+			}
+			if existing != nil && existing.ID != user.ID {
+				return nil, errors.New("el correo electrónico ya está en uso")
+			}
+			user.Email = newEmail
+		}
+	}
+
+	if req.AvatarURL != nil {
+		user.AvatarURL = strings.TrimSpace(*req.AvatarURL)
+	}
+
+	if req.Password != nil && len(*req.Password) > 0 {
+		if len(*req.Password) < 6 {
+			return nil, errors.New("la contraseña debe contener al menos 6 caracteres")
+		}
+		hash, err := HashPassword(*req.Password)
+		if err != nil {
+			return nil, errors.New("error al encriptar la contraseña")
+		}
+		user.PasswordHash = hash
+	}
+
+	if err := s.repo.UpdateUser(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

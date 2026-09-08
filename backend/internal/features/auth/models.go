@@ -76,3 +76,10 @@ type AuthResponse struct {
 	User         UserDTO     `json:"user"`
 	Carrera      interface{} `json:"carrera_activa,omitempty"`
 }
+
+type UpdateUserRequest struct {
+	Nombre    *string `json:"nombre"`
+	Email     *string `json:"email"`
+	AvatarURL *string `json:"avatar_url"`
+	Password  *string `json:"password,omitempty"`
+}

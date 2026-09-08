@@ -23,6 +23,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 	authGroup.Post("/refresh", h.Refresh)
 	authGroup.Post("/logout", h.Logout)
 	authGroup.Get("/me", authMiddleware, h.GetMe)
+	authGroup.Put("/me", authMiddleware, h.UpdateMe)
 }
 
 func (h *Handler) Register(c *fiber.Ctx) error {
@@ -112,6 +113,27 @@ func (h *Handler) GetMe(c *fiber.Ctx) error {
 	return common.SendSuccess(c, fiber.Map{
 		"user":           user.ToDTO(),
 		"carrera_activa": carrera,
+	})
+}
+
+func (h *Handler) UpdateMe(c *fiber.Ctx) error {
+	userID := common.GetUserID(c)
+	if userID == "" {
+		return common.SendError(c, fiber.StatusUnauthorized, "Usuario no autenticado")
+	}
+
+	var req UpdateUserRequest
+	if err := c.BodyParser(&req); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Datos de usuario inválidos")
+	}
+
+	user, err := h.service.UpdateMe(userID, req)
+	if err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"user": user.ToDTO(),
 	})
 }
 

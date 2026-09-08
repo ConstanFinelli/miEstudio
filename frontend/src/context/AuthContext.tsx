@@ -15,6 +15,7 @@ interface AuthContextType {
   selectCarrera: (carreraId: string) => Promise<void>;
   reloadProfile: () => Promise<void>;
   reloadCarreras: () => Promise<void>;
+  updateUser: (data: { nombre?: string; email?: string; avatar_url?: string; password?: string }) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -120,6 +121,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await reloadCarreras();
   };
 
+  const updateUser = async (data: { nombre?: string; email?: string; avatar_url?: string; password?: string }) => {
+    try {
+      const updated = await authService.updateMe(data);
+      setUser(updated);
+      return updated;
+    } catch {
+      // Fallback local en desarrollo/offline
+      if (user) {
+        const localUpdated: User = {
+          ...user,
+          nombre: data.nombre ?? user.nombre,
+          email: data.email ?? user.email,
+          avatar_url: data.avatar_url ?? user.avatar_url,
+        };
+        setUser(localUpdated);
+        return localUpdated;
+      }
+      throw new Error('No hay usuario autenticado');
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -134,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectCarrera,
         reloadProfile,
         reloadCarreras,
+        updateUser,
       }}
     >
       {children}
