@@ -1,7 +1,7 @@
-import React from 'react';
-import styles from './NotesListSidebar.module.css';
-import { BookOpen, ChevronLeft, Search, Plus, Trash2 } from 'lucide-react';
-import type { ApunteNota } from '../../../../types/academic';
+import React from "react";
+import styles from "./NotesListSidebar.module.css";
+import { BookOpen, ChevronLeft, Search, Plus, Trash2 } from "lucide-react";
+import type { ApunteNota } from "../../../../types/academic";
 
 interface NotesListSidebarProps {
   isCollapsed: boolean;
@@ -24,7 +24,7 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
   searchQuery,
   onSearchChange,
   onOpenNoteModal,
-  onDeleteNote
+  onDeleteNote,
 }) => {
   if (isCollapsed) {
     return (
@@ -44,23 +44,38 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
   return (
     <section className={styles.notesColumn}>
       <div className={styles.notesHeader}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div className={styles.searchNoteRow} style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <Search size={12} color="var(--text-muted)" />
               <input
                 type="text"
                 placeholder="Buscar apunte..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                style={{ border: 'none', background: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '11px', width: '100%' }}
+                style={{
+                  border: "none",
+                  background: "none",
+                  outline: "none",
+                  color: "var(--text-primary)",
+                  fontSize: "11px",
+                  width: "100%",
+                }}
               />
             </div>
-            <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>ESC</span>
+            <span
+              style={{
+                fontSize: "9px",
+                fontFamily: "var(--font-mono)",
+                color: "var(--text-dim)",
+              }}
+            >
+              ESC
+            </span>
           </div>
           <button
             className={styles.toolBtn}
-            style={{ padding: '4px 6px' }}
+            style={{ padding: "4px 6px" }}
             onClick={() => onToggleCollapse(true)}
             title="Colapsar lista de notas"
           >
@@ -70,24 +85,55 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
 
         <div className={styles.notesListStats}>
           <span>{notes.length} apuntes</span>
-          <span style={{ cursor: 'pointer' }}>Cronológico ▾</span>
+          <span style={{ cursor: "pointer" }}>Cronológico ▾</span>
         </div>
       </div>
 
       <div className={styles.notesList}>
         {notes.length === 0 ? (
-          <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <BookOpen size={24} style={{ color: 'var(--text-dim)', margin: '0 auto 8px', display: 'block', opacity: 0.6 }} />
-            <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+          <div
+            style={{
+              padding: "32px 16px",
+              textAlign: "center",
+              color: "var(--text-muted)",
+            }}
+          >
+            <BookOpen
+              size={24}
+              style={{
+                color: "var(--text-dim)",
+                margin: "0 auto 8px",
+                display: "block",
+                opacity: 0.6,
+              }}
+            />
+            <p
+              style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                marginBottom: "4px",
+              }}
+            >
               Sin notas
             </p>
-            <span style={{ fontSize: '11px', color: 'var(--text-dim)', display: 'block', marginBottom: '14px', lineHeight: 1.4 }}>
-              {searchQuery ? 'No hay notas con ese término' : 'No hay notas registradas en esta carpeta'}
+            <span
+              style={{
+                fontSize: "11px",
+                color: "var(--text-dim)",
+                display: "block",
+                marginBottom: "14px",
+                lineHeight: 1.4,
+              }}
+            >
+              {searchQuery
+                ? "No hay notas con ese término"
+                : "No hay notas registradas en esta carpeta"}
             </span>
             <button
               className={styles.btnNewFolder}
               onClick={onOpenNoteModal}
-              style={{ justifyContent: 'center' }}
+              style={{ justifyContent: "center" }}
             >
               <Plus size={12} />
               <span>Crear Apunte</span>
@@ -99,13 +145,22 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
             return (
               <div
                 key={note.id}
-                className={`${styles.noteCard} ${isActive ? styles.noteCardActive : ''}`}
+                className={`${styles.noteCard} ${isActive ? styles.noteCardActive : ""}`}
                 onClick={() => onSelectNote(note.id)}
               >
                 <div className={styles.noteCardTop}>
                   <h4 className={styles.noteCardTitle}>{note.titulo}</h4>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                    {isActive && <span className={styles.activeTag}>ACTIVO</span>}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isActive && (
+                      <span className={styles.activeTag}>ACTIVO</span>
+                    )}
                     {onDeleteNote && (
                       <button
                         type="button"
@@ -125,10 +180,17 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
                 <p className={styles.noteCardExcerpt}>{note.resumen}</p>
 
                 <div className={styles.noteCardFooter}>
-                  <span>{new Date(note.fechaModificacion).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}</span>
+                  <span>
+                    {new Date(note.fechaModificacion).toLocaleDateString(
+                      "es-AR",
+                      { day: "numeric", month: "short" },
+                    )}
+                  </span>
                   <div className={styles.tagPillsRow}>
-                    {note.tags.map(tag => (
-                      <span key={tag} className={styles.miniTag}>#{tag}</span>
+                    {note.tags.map((tag) => (
+                      <span key={tag} className={styles.miniTag}>
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -141,7 +203,7 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
       <div className={styles.notesFooter}>
         <button className={styles.btnNewFolder} onClick={onOpenNoteModal}>
           <Plus size={12} />
-          <span>+ Nueva Nota en esta Materia</span>
+          <span>Nueva Nota en esta Materia</span>
         </button>
       </div>
     </section>

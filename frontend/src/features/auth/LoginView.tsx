@@ -1,26 +1,37 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, Lock, Mail, ArrowRight, Sparkles, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import styles from './LoginView.module.css';
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  BookOpen,
+  Lock,
+  Mail,
+  ArrowRight,
+  Sparkles,
+  AlertCircle,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import styles from "./LoginView.module.css";
 
 export const LoginView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/dashboard';
+  const from =
+    (location.state as { from?: { pathname?: string } })?.from?.pathname ||
+    "/dashboard";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setErrorMessage('Por favor ingresá tu correo y contraseña');
+      setErrorMessage("Por favor ingresá tu correo y contraseña");
       return;
     }
 
@@ -31,7 +42,10 @@ export const LoginView: React.FC = () => {
       await login({ email, password });
       navigate(from, { replace: true });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Credenciales inválidas o error de conexión';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Credenciales inválidas o error de conexión";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -41,8 +55,8 @@ export const LoginView: React.FC = () => {
   const handleDemoLogin = async () => {
     setIsLoading(true);
     setErrorMessage(null);
-    const demoEmail = 'demo@miestudio.local';
-    const demoPass = 'demo12345';
+    const demoEmail = "demo@miestudio.local";
+    const demoPass = "demo12345";
 
     try {
       // Intentar login con credenciales demo
@@ -54,15 +68,17 @@ export const LoginView: React.FC = () => {
         await register({
           email: demoEmail,
           password: demoPass,
-          nombre: 'Estudiante Demo',
-          carrera_nombre: 'Ingeniería en Informática',
-          facultad_sede: 'Facultad de Ingeniería',
-          legajo: 'INFO-2026'
+          nombre: "Estudiante Demo",
+          carrera_nombre: "Ingeniería en Informática",
+          facultad_sede: "Facultad de Ingeniería",
+          legajo: "INFO-2026",
         });
         navigate(from, { replace: true });
       } catch (regErr: unknown) {
         setErrorMessage(
-          regErr instanceof Error ? regErr.message : 'Error al inicializar sesión de demostración'
+          regErr instanceof Error
+            ? regErr.message
+            : "Error al inicializar sesión de demostración",
         );
       }
     } finally {
@@ -129,7 +145,7 @@ export const LoginView: React.FC = () => {
               <Lock size={16} className={styles.inputIcon} />
               <input
                 id="login-password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 className={styles.input}
                 placeholder="••••••••"
                 value={password}
@@ -143,7 +159,9 @@ export const LoginView: React.FC = () => {
                 className={styles.eyeBtn}
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Ver contraseña"
+                }
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -159,33 +177,17 @@ export const LoginView: React.FC = () => {
               <div className={styles.buttonSpinner} />
             ) : (
               <>
-                <span>Ingresar al Workspace</span>
+                <span>Ingresar</span>
                 <ArrowRight size={16} />
               </>
             )}
           </button>
         </form>
 
-        <div className={styles.divider}>
-          <span className={styles.dividerText}>o probá al instante</span>
-        </div>
-
-        {/* Quick Demo Access */}
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          className={styles.demoBtn}
-          disabled={isLoading}
-        >
-          <Sparkles size={16} className={styles.demoIcon} />
-          <span>Ingresar como Estudiante Demo</span>
-        </button>
-
-        {/* Register Footer */}
         <div className={styles.footer}>
           <span className={styles.footerText}>¿Primera vez en miEstudio?</span>
           <Link to="/register" className={styles.registerLink}>
-            Crear cuenta de estudiante
+            Crear cuenta
           </Link>
         </div>
       </div>

@@ -1,23 +1,35 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, Lock, Mail, User, GraduationCap, Building2, Hash, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import styles from './RegisterView.module.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  BookOpen,
+  Lock,
+  Mail,
+  User,
+  GraduationCap,
+  Building2,
+  Hash,
+  ArrowRight,
+  AlertCircle,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import styles from "./RegisterView.module.css";
 
 export const RegisterView: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
 
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   // Datos de la Carrera Inicial
-  const [carreraNombre, setCarreraNombre] = useState('');
-  const [facultadSede, setFacultadSede] = useState('');
-  const [legajo, setLegajo] = useState('');
+  const [carreraNombre, setCarreraNombre] = useState("");
+  const [facultadSede, setFacultadSede] = useState("");
+  const [legajo, setLegajo] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -27,12 +39,12 @@ export const RegisterView: React.FC = () => {
     setErrorMessage(null);
 
     if (password !== confirmPassword) {
-      setErrorMessage('Las contraseñas no coinciden');
+      setErrorMessage("Las contraseñas no coinciden");
       return;
     }
 
     if (password.length < 6) {
-      setErrorMessage('La contraseña debe tener al menos 6 caracteres');
+      setErrorMessage("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
@@ -43,13 +55,14 @@ export const RegisterView: React.FC = () => {
         nombre: nombre.trim(),
         email: email.trim(),
         password,
-        carrera_nombre: carreraNombre.trim() || 'Mi Carrera Universitaria',
-        facultad_sede: facultadSede.trim() || 'Facultad / Universidad',
-        legajo: legajo.trim() || 'S/N'
+        carrera_nombre: carreraNombre.trim() || "Mi Carrera Universitaria",
+        facultad_sede: facultadSede.trim() || "Facultad / Universidad",
+        legajo: legajo.trim() || "S/N",
       });
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al registrar usuario';
+      const msg =
+        err instanceof Error ? err.message : "Error al registrar usuario";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -71,7 +84,8 @@ export const RegisterView: React.FC = () => {
           </div>
           <h1 className={styles.brandTitle}>Crear Cuenta</h1>
           <p className={styles.brandSubtitle}>
-            Configurá tu perfil y comenzá a organizar tu trayectoria universitaria
+            Configurá tu perfil y comenzá a organizar tu trayectoria
+            universitaria
           </p>
         </div>
 
@@ -101,7 +115,7 @@ export const RegisterView: React.FC = () => {
                   id="reg-nombre"
                   type="text"
                   className={styles.input}
-                  placeholder="Ej: Sofía Albarracín"
+                  placeholder="Ej: Juan Peréz"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   required
@@ -140,7 +154,7 @@ export const RegisterView: React.FC = () => {
                 <Lock size={16} className={styles.inputIcon} />
                 <input
                   id="reg-password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   className={styles.input}
                   placeholder="Mínimo 6 caracteres"
                   value={password}
@@ -168,7 +182,7 @@ export const RegisterView: React.FC = () => {
                 <Lock size={16} className={styles.inputIcon} />
                 <input
                   id="reg-confirm"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   className={styles.input}
                   placeholder="Repetir contraseña"
                   value={confirmPassword}
@@ -183,8 +197,12 @@ export const RegisterView: React.FC = () => {
 
           {/* Section: Carrera Inicial */}
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionTitle}>2. Tu Carrera Universitaria</span>
-            <span className={styles.sectionHint}>(Podrás agregar más después)</span>
+            <span className={styles.sectionTitle}>
+              2. Tu Carrera Universitaria
+            </span>
+            <span className={styles.sectionHint}>
+              (Podrás agregar más después)
+            </span>
           </div>
 
           <div className={styles.fieldGroup}>
@@ -253,7 +271,7 @@ export const RegisterView: React.FC = () => {
               <div className={styles.buttonSpinner} />
             ) : (
               <>
-                <span>Crear Cuenta & Comenzar</span>
+                <span>Crear Cuenta</span>
                 <ArrowRight size={16} />
               </>
             )}
@@ -262,7 +280,9 @@ export const RegisterView: React.FC = () => {
 
         {/* Login Footer */}
         <div className={styles.footer}>
-          <span className={styles.footerText}>¿Ya tenés una cuenta registrada?</span>
+          <span className={styles.footerText}>
+            ¿Ya tenés una cuenta registrada?
+          </span>
           <Link to="/login" className={styles.loginLink}>
             Iniciar sesión
           </Link>
