@@ -24,21 +24,35 @@ export const useHorarios = (materiaId?: string, diaSemana?: string) => {
     fetchHorarios();
   }, [fetchHorarios]);
 
+  // Escuchar actualizaciones globales de horarios para refrescar de forma reactiva
+  useEffect(() => {
+    const handleUpdated = () => {
+      fetchHorarios();
+    };
+    window.addEventListener('horarios:updated', handleUpdated);
+    return () => {
+      window.removeEventListener('horarios:updated', handleUpdated);
+    };
+  }, [fetchHorarios]);
+
   const createHorario = async (horarioData: Partial<HorarioCursada>) => {
     const created = await horariosService.createHorario(horarioData);
     setHorarios(prev => [...prev, created]);
+    window.dispatchEvent(new CustomEvent('horarios:updated', { detail: created }));
     return created;
   };
 
   const updateHorario = async (id: string, horarioData: Partial<HorarioCursada>) => {
     const updated = await horariosService.updateHorario(id, horarioData);
     setHorarios(prev => prev.map(h => (h.id === id ? updated : h)));
+    window.dispatchEvent(new CustomEvent('horarios:updated', { detail: updated }));
     return updated;
   };
 
   const deleteHorario = async (id: string) => {
     await horariosService.deleteHorario(id);
     setHorarios(prev => prev.filter(h => h.id !== id));
+    window.dispatchEvent(new CustomEvent('horarios:updated', { detail: { id } }));
   };
 
   return {

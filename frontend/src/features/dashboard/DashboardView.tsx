@@ -11,7 +11,7 @@ import {
 } from './components';
 
 interface DashboardViewProps {
-  onNavigate?: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes') => void;
+  onNavigate?: (view: 'dashboard' | 'materias' | 'calendario' | 'apuntes' | 'horarios') => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -32,6 +32,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <DashboardKpis
         onGoToMaterias={() => goTo('materias')}
         onGoToCalendario={() => goTo('calendario')}
+        onGoToHorarios={() => goTo('horarios')}
       />
 
       {/* 3. Main 2-Column Split */}

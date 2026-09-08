@@ -158,12 +158,14 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
         observaciones: observaciones.trim(),
       };
 
+      let result: HorarioCursada;
       if (horarioToEdit) {
-        await horariosService.updateHorario(horarioToEdit.id, payload);
+        result = await horariosService.updateHorario(horarioToEdit.id, payload);
       } else {
-        await horariosService.createHorario(payload);
+        result = await horariosService.createHorario(payload);
       }
 
+      window.dispatchEvent(new CustomEvent('horarios:updated', { detail: result }));
       onSuccess();
       onClose();
     } catch (err) {
@@ -178,6 +180,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
     try {
       setIsSubmitting(true);
       await horariosService.deleteHorario(horarioToEdit.id);
+      window.dispatchEvent(new CustomEvent('horarios:updated', { detail: { id: horarioToEdit.id } }));
       onSuccess();
       onClose();
     } catch (err) {

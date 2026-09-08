@@ -1,44 +1,94 @@
-import React from 'react';
-import styles from './DashboardKpis.module.css';
+import React from "react";
+import styles from "./DashboardKpis.module.css";
 import {
   Calculator,
   GraduationCap,
   Layers,
   Flame,
-  TrendingUp
-} from 'lucide-react';
-import { usePerfil, useMaterias, useEvaluaciones } from '../../../../hooks';
+  TrendingUp,
+} from "lucide-react";
+import {
+  usePerfil,
+  useMaterias,
+  useEvaluaciones,
+  useHorarios,
+} from "../../../../hooks";
 
 interface DashboardKpisProps {
   onGoToMaterias: () => void;
   onGoToCalendario: () => void;
+  onGoToHorarios?: () => void;
 }
 
 export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   onGoToMaterias,
-  onGoToCalendario
+  onGoToCalendario,
+  onGoToHorarios,
 }) => {
   const { perfil } = usePerfil();
   const { materias } = useMaterias();
   const { proximas } = useEvaluaciones();
+  const { horarios } = useHorarios();
 
-  const activeSubjects = materias.filter(m => m.estado === 'CURSANDO');
+  const activeSubjects = materias.filter((m) => m.estado === "CURSANDO");
   const nextCritical = proximas.length > 0 ? proximas[0] : null;
+
+  // Cálculo de carga horaria basado en los horarios de cursada activos
+  const parseTimeToMinutes = (timeStr?: string): number => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(":").map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+  };
+
+  const activeSubjectIds = new Set(activeSubjects.map((m) => m.id));
+  const activeHorarios = horarios.filter((h) => {
+    if (activeSubjects.length === 0) return false;
+    if (h.materiaId) return activeSubjectIds.has(h.materiaId);
+    return true;
+  });
+
+  let totalMins = 0;
+  activeHorarios.forEach((h) => {
+    const diff =
+      parseTimeToMinutes(h.horaFin) - parseTimeToMinutes(h.horaInicio);
+    if (diff > 0) totalMins += diff;
+  });
+
+  const hoursFromSchedule = Math.floor(totalMins / 60);
+  const minsFromSchedule = totalMins % 60;
+  const hasRealSchedule = totalMins > 0;
+  const cargaHorariaTexto = hasRealSchedule
+    ? minsFromSchedule > 0
+      ? `${hoursFromSchedule}h ${minsFromSchedule}m/sem`
+      : `${hoursFromSchedule} hs/sem`
+    : `${activeSubjects.length * 4} hs/sem`;
 
   if (!perfil) return null;
 
   // Real data calculations
-  const approvedSubjects = materias.filter(m => m.estado === 'APROBADA' || m.estado === 'PROMOCIONADA');
-  const totalApproved = perfil.materiasAprobadas > 0 ? perfil.materiasAprobadas : approvedSubjects.length;
-  const totalPlan = perfil.materiasTotales > 0 ? perfil.materiasTotales : materias.length;
-  const progressPercent = totalPlan > 0 ? Math.min(100, Math.round((totalApproved / totalPlan) * 100)) : 0;
+  const approvedSubjects = materias.filter(
+    (m) => m.estado === "APROBADA" || m.estado === "PROMOCIONADA",
+  );
+  const totalApproved =
+    perfil.materiasAprobadas > 0
+      ? perfil.materiasAprobadas
+      : approvedSubjects.length;
+  const totalPlan =
+    perfil.materiasTotales > 0 ? perfil.materiasTotales : materias.length;
+  const progressPercent =
+    totalPlan > 0
+      ? Math.min(100, Math.round((totalApproved / totalPlan) * 100))
+      : 0;
 
   // Promedio calculation from real grades
-  const gradedSubjects = materias.filter(m => m.promedio && m.promedio > 0);
-  const computedAverage = gradedSubjects.length > 0
-    ? (gradedSubjects.reduce((acc, m) => acc + (m.promedio || 0), 0) / gradedSubjects.length)
-    : 0;
-  const displayAverage = perfil.promedioGeneral > 0 ? perfil.promedioGeneral : computedAverage;
+  const gradedSubjects = materias.filter((m) => m.promedio && m.promedio > 0);
+  const computedAverage =
+    gradedSubjects.length > 0
+      ? gradedSubjects.reduce((acc, m) => acc + (m.promedio || 0), 0) /
+        gradedSubjects.length
+      : 0;
+  const displayAverage =
+    perfil.promedioGeneral > 0 ? perfil.promedioGeneral : computedAverage;
   const hasPromedio = displayAverage > 0;
 
   return (
@@ -55,16 +105,23 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiValueRow}>
-          <span className={styles.kpiMainValue}>{hasPromedio ? displayAverage.toFixed(2) : '--'}</span>
+          <span className={styles.kpiMainValue}>
+            {hasPromedio ? displayAverage.toFixed(2) : "--"}
+          </span>
           <span className={styles.kpiSubValue}>/ 10.0</span>
           {perfil.deltaPromedio !== 0 ? (
             <span className={styles.deltaBadge}>
-              <TrendingUp size={11} />
-              +{perfil.deltaPromedio} vs ciclo anterior
+              <TrendingUp size={11} />+{perfil.deltaPromedio} vs ciclo anterior
             </span>
           ) : (
-            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
-              {hasPromedio ? 'Ciclo actual' : 'Sin notas cargadas'}
+            <span
+              style={{
+                fontSize: "11px",
+                color: "var(--text-dim)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {hasPromedio ? "Ciclo actual" : "Sin notas cargadas"}
             </span>
           )}
         </div>
@@ -77,7 +134,11 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           ) : (
             <>
               <span>Régimen regular</span>
-              <span>{activeSubjects.length > 0 ? 'Cursadas activas' : 'Sin cursadas'}</span>
+              <span>
+                {activeSubjects.length > 0
+                  ? "Cursadas activas"
+                  : "Sin cursadas"}
+              </span>
             </>
           )}
         </div>
@@ -91,7 +152,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
             <span className={styles.kpiSub}>
               {totalPlan > 0
                 ? `${totalApproved} de ${totalPlan} materias aprobadas`
-                : 'Plan de carrera'}
+                : "Plan de carrera"}
             </span>
           </div>
           <div className={styles.kpiIconBox}>
@@ -102,7 +163,9 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <div className={styles.kpiValueRow}>
             <span className={styles.kpiMainValue}>{progressPercent}%</span>
             <span className={styles.kpiSubValue}>
-              {totalPlan > 0 ? `${Math.max(0, totalPlan - totalApproved)} pendientes` : 'Por iniciar'}
+              {totalPlan > 0
+                ? `${Math.max(0, totalPlan - totalApproved)} pendientes`
+                : "Por iniciar"}
             </span>
           </div>
           <div className={styles.progressBarBg}>
@@ -116,12 +179,17 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           {totalPlan > 0 ? (
             <>
               <span>{totalApproved} materias acreditadas</span>
-              <span>{Math.max(0, totalPlan - totalApproved)} para completar</span>
+              <span>
+                {Math.max(0, totalPlan - totalApproved)} para completar
+              </span>
             </>
           ) : (
             <>
               <span>Sin materias aprobadas aún</span>
-              <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={onGoToMaterias}>
+              <span
+                style={{ cursor: "pointer", color: "var(--primary-glow)" }}
+                onClick={onGoToMaterias}
+              >
                 Ver materias →
               </span>
             </>
@@ -143,54 +211,124 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         <div>
           <div className={styles.kpiValueRow}>
             <span className={styles.kpiMainValue}>{activeSubjects.length}</span>
-            <span style={{ fontSize: '12px', color: activeSubjects.length > 0 ? 'var(--emerald)' : 'var(--text-dim)' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                color: activeSubjects.length > 0 ? 'var(--emerald)' : 'var(--text-dim)',
+              }}
+            >
               {activeSubjects.length > 0 ? 'Todas regulares al día' : 'Sin materias activas'}
             </span>
           </div>
           <div className={styles.subjectPills}>
-            {activeSubjects.slice(0, 4).map(subj => (
-              <span key={subj.id} className={styles.subjectMiniPill} title={subj.nombre}>
+            {activeSubjects.slice(0, 4).map((subj) => (
+              <span
+                key={subj.id}
+                className={styles.subjectMiniPill}
+                title={subj.nombre}
+              >
                 {subj.codigo || subj.nombre.slice(0, 4)}
               </span>
             ))}
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          <span>Carga estimada: {activeSubjects.length * 4} hs/sem</span>
-          <span style={{ cursor: 'pointer', color: 'var(--primary-glow)' }} onClick={onGoToMaterias}>
-            Ver detalle →
-          </span>
+          {activeSubjects.length === 0 ? (
+            <>
+              <span>Sin cursadas activas</span>
+              <span
+                style={{ cursor: "pointer", color: "var(--primary-glow)" }}
+                onClick={onGoToMaterias}
+              >
+                Ver materias →
+              </span>
+            </>
+          ) : (
+            <>
+              <span
+                title={
+                  hasRealSchedule
+                    ? `Calculado según ${activeHorarios.length} ${activeHorarios.length === 1 ? "clase semanal" : "clases semanales"} en Horarios de Cursada`
+                    : "Estimación de 4 hs/sem por materia (sin horarios cargados aún)"
+                }
+              >
+                {hasRealSchedule ? "Carga semanal: " : "Carga estimada: "}
+                <strong
+                  style={{
+                    color: hasRealSchedule ? "var(--text-primary)" : "inherit",
+                  }}
+                >
+                  {cargaHorariaTexto}
+                </strong>
+              </span>
+              <span
+                style={{ cursor: "pointer", color: "var(--primary-glow)" }}
+                onClick={onGoToHorarios || onGoToMaterias}
+                title={
+                  hasRealSchedule
+                    ? "Ver grilla semanal de horarios"
+                    : "Cargar horarios de cursada"
+                }
+              >
+                {hasRealSchedule ? "Ver horarios →" : "Cargar horarios →"}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
       {/* KPI 4: Atención Inmediata / Próxima Evaluación */}
-      <div className={styles.kpiCard} style={{ borderLeft: nextCritical ? '3px solid var(--red)' : '3px solid var(--emerald)' }}>
+      <div
+        className={styles.kpiCard}
+        style={{
+          borderLeft: nextCritical
+            ? "3px solid var(--red)"
+            : "3px solid var(--emerald)",
+        }}
+      >
         <div className={styles.kpiHeader}>
           <div className={styles.kpiTitleGroup}>
-            <span className={styles.kpiLabel} style={{ color: nextCritical ? 'var(--red)' : 'var(--emerald)' }}>
-              {nextCritical ? 'Atención Inmediata' : 'Cronograma al Día'}
+            <span
+              className={styles.kpiLabel}
+              style={{ color: nextCritical ? "var(--red)" : "var(--emerald)" }}
+            >
+              {nextCritical ? "Atención Inmediata" : "Cronograma al Día"}
             </span>
             <span className={styles.kpiSub}>
-              {nextCritical ? 'Próxima evaluación crítica' : 'Próximas fechas'}
+              {nextCritical ? "Próxima evaluación crítica" : "Próximas fechas"}
             </span>
           </div>
-          <div className={styles.kpiIconBox} style={{ color: nextCritical ? 'var(--red)' : 'var(--emerald)' }}>
+          <div
+            className={styles.kpiIconBox}
+            style={{ color: nextCritical ? "var(--red)" : "var(--emerald)" }}
+          >
             <Flame size={15} />
           </div>
         </div>
         <div>
           <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue} style={{ color: nextCritical ? 'var(--red)' : 'var(--text-primary)' }}>
-              {nextCritical ? `${nextCritical.peso}%` : 'Al día'}
+            <span
+              className={styles.kpiMainValue}
+              style={{
+                color: nextCritical ? "var(--red)" : "var(--text-primary)",
+              }}
+            >
+              {nextCritical ? `${nextCritical.peso}%` : "Al día"}
             </span>
             <span className={styles.kpiSubValue}>
-              {nextCritical ? `${nextCritical.titulo}` : 'Sin exámenes pendientes'}
+              {nextCritical
+                ? `${nextCritical.titulo}`
+                : "Sin exámenes pendientes"}
             </span>
           </div>
           <div className={styles.sparklineContainer}>
             <svg viewBox="0 0 100 20" className={styles.sparklineSvg}>
               <path
-                d={nextCritical ? "M 0,15 Q 25,5 50,12 T 100,2" : "M 0,10 L 100,10"}
+                d={
+                  nextCritical
+                    ? "M 0,15 Q 25,5 50,12 T 100,2"
+                    : "M 0,10 L 100,10"
+                }
                 fill="none"
                 stroke={nextCritical ? "var(--red)" : "var(--border-subtle)"}
                 strokeWidth="2"
@@ -199,11 +337,11 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           </div>
         </div>
         <div className={styles.kpiFooter}>
-          <span style={{ color: 'var(--text-muted)' }}>
-            {nextCritical ? 'Requiere repaso' : 'Calendario despejado'}
+          <span style={{ color: "var(--text-muted)" }}>
+            {nextCritical ? "Requiere repaso" : "Calendario despejado"}
           </span>
           <span
-            style={{ cursor: 'pointer', color: 'var(--primary-glow)' }}
+            style={{ cursor: "pointer", color: "var(--primary-glow)" }}
             onClick={onGoToCalendario}
           >
             Ver fechas →
