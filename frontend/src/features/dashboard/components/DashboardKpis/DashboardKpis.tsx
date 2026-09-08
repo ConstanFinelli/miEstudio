@@ -4,34 +4,29 @@ import {
   Calculator,
   GraduationCap,
   Layers,
-  Flame,
   TrendingUp,
 } from "lucide-react";
 import {
   usePerfil,
   useMaterias,
-  useEvaluaciones,
   useHorarios,
 } from "../../../../hooks";
 
 interface DashboardKpisProps {
   onGoToMaterias: () => void;
-  onGoToCalendario: () => void;
+  onGoToCalendario?: () => void;
   onGoToHorarios?: () => void;
 }
 
 export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   onGoToMaterias,
-  onGoToCalendario,
   onGoToHorarios,
 }) => {
   const { perfil } = usePerfil();
   const { materias } = useMaterias();
-  const { proximas } = useEvaluaciones();
   const { horarios } = useHorarios();
 
   const activeSubjects = materias.filter((m) => m.estado === "CURSANDO");
-  const nextCritical = proximas.length > 0 ? proximas[0] : null;
 
   // Cálculo de carga horaria basado en los horarios de cursada activos
   const parseTimeToMinutes = (timeStr?: string): number => {
@@ -274,78 +269,6 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
               </span>
             </>
           )}
-        </div>
-      </div>
-
-      {/* KPI 4: Atención Inmediata / Próxima Evaluación */}
-      <div
-        className={styles.kpiCard}
-        style={{
-          borderLeft: nextCritical
-            ? "3px solid var(--red)"
-            : "3px solid var(--emerald)",
-        }}
-      >
-        <div className={styles.kpiHeader}>
-          <div className={styles.kpiTitleGroup}>
-            <span
-              className={styles.kpiLabel}
-              style={{ color: nextCritical ? "var(--red)" : "var(--emerald)" }}
-            >
-              {nextCritical ? "Atención Inmediata" : "Cronograma al Día"}
-            </span>
-            <span className={styles.kpiSub}>
-              {nextCritical ? "Próxima evaluación crítica" : "Próximas fechas"}
-            </span>
-          </div>
-          <div
-            className={styles.kpiIconBox}
-            style={{ color: nextCritical ? "var(--red)" : "var(--emerald)" }}
-          >
-            <Flame size={15} />
-          </div>
-        </div>
-        <div>
-          <div className={styles.kpiValueRow}>
-            <span
-              className={styles.kpiMainValue}
-              style={{
-                color: nextCritical ? "var(--red)" : "var(--text-primary)",
-              }}
-            >
-              {nextCritical ? `${nextCritical.peso}%` : "Al día"}
-            </span>
-            <span className={styles.kpiSubValue}>
-              {nextCritical
-                ? `${nextCritical.titulo}`
-                : "Sin exámenes pendientes"}
-            </span>
-          </div>
-          <div className={styles.sparklineContainer}>
-            <svg viewBox="0 0 100 20" className={styles.sparklineSvg}>
-              <path
-                d={
-                  nextCritical
-                    ? "M 0,15 Q 25,5 50,12 T 100,2"
-                    : "M 0,10 L 100,10"
-                }
-                fill="none"
-                stroke={nextCritical ? "var(--red)" : "var(--border-subtle)"}
-                strokeWidth="2"
-              />
-            </svg>
-          </div>
-        </div>
-        <div className={styles.kpiFooter}>
-          <span style={{ color: "var(--text-muted)" }}>
-            {nextCritical ? "Requiere repaso" : "Calendario despejado"}
-          </span>
-          <span
-            style={{ cursor: "pointer", color: "var(--primary-glow)" }}
-            onClick={onGoToCalendario}
-          >
-            Ver fechas →
-          </span>
         </div>
       </div>
     </div>

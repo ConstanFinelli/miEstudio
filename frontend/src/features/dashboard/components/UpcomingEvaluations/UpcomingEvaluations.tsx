@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './UpcomingEvaluations.module.css';
 import { CalendarClock, ArrowRight } from 'lucide-react';
-import { useEvaluaciones } from '../../../../hooks';
+import { useEvaluaciones, useMaterias } from '../../../../hooks';
 
 interface UpcomingEvaluationsProps {
   onGoToMaterias: () => void;
@@ -13,6 +13,8 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
   onGoToApuntes
 }) => {
   const { proximas } = useEvaluaciones();
+  const { materias } = useMaterias();
+  const pendingProximas = proximas.filter(ev => ev.nota === null || ev.nota === undefined);
 
   const formatDate = (dateStr: string, horario?: string) => {
     try {
@@ -51,7 +53,7 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
         <span className={styles.sectionScopeBadge}>Ventana: 30 Días</span>
       </div>
 
-      {proximas.length === 0 ? (
+      {pendingProximas.length === 0 ? (
         <div style={{
           padding: '28px 20px',
           textAlign: 'center',
@@ -69,8 +71,12 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
           </p>
         </div>
       ) : (
-        proximas.slice(0, 3).map((ev, index) => {
+        pendingProximas.slice(0, 3).map((ev, index) => {
           const isUrgent = index === 0;
+          const matchedMateria = materias.find(m => m.id === ev.materiaId);
+          const codigo = matchedMateria?.codigo || (ev.materiaCodigo !== 'MAT' ? ev.materiaCodigo : '') || 'EXAM';
+          const nombre = matchedMateria?.nombre || (ev.materiaNombre !== 'Materia' ? ev.materiaNombre : '') || 'Materia';
+
           return (
             <div
               key={ev.id}
@@ -82,7 +88,7 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
                     {getDaysRemaining(ev.fecha)}
                   </span>
                   <span className={styles.badgeTag}>#{ev.tipo}</span>
-                  <span className={styles.badgeCode}>Código: {ev.materiaCodigo}</span>
+                  <span className={styles.badgeCode}>Código: {codigo}</span>
                 </div>
                 <div className={styles.evalWeightGroup}>
                   <span>Peso: <strong>{ev.peso}%</strong></span>
@@ -112,9 +118,17 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
 
               <div className={styles.evalFooter}>
                 <div className={styles.evalMetrics}>
-                  <span>Asistencia: <strong className={styles.evalMetricHighlight}>{ev.asistencia}%</strong></span>
-                  <span>·</span>
-                  <span>Guías: <strong className={styles.evalMetricHighlight}>{ev.guiasCompletadas}</strong></span>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+                    {nombre}
+                  </span>
+                  {ev.esAprobatorio && (
+                    <>
+                      <span>·</span>
+                      <span style={{ color: 'var(--amber)', fontSize: '11px', fontWeight: 600 }}>
+                        Aprobatorio
+                      </span>
+                    </>
+                  )}
                 </div>
                 <button
                   className={styles.evalActionLink}

@@ -6,7 +6,6 @@ import {
   DashboardKpis,
   UpcomingEvaluations,
   ScheduleBanner,
-  AcademicProgressChart,
   RecentNotesWidget
 } from './components';
 
@@ -28,7 +27,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* 1. Header / Welcome Banner */}
       <DashboardWelcomeBar />
 
-      {/* 2. 4 Academic KPIs Grid */}
+      {/* 2. Academic KPIs Grid */}
       <DashboardKpis
         onGoToMaterias={() => goTo('materias')}
         onGoToCalendario={() => goTo('calendario')}
@@ -37,7 +36,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* 3. Main 2-Column Split */}
       <div className={styles.dashboardSplit}>
-        {/* Left Column: Próximas Evaluaciones + Calendario Banner + Curva Histórica */}
+        {/* Left Column: Próximas Evaluaciones + Calendario Banner */}
         <div className={styles.leftColumn}>
           <UpcomingEvaluations
             onGoToMaterias={() => goTo('materias')}
@@ -45,8 +44,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           />
 
           <ScheduleBanner onGoToCalendario={() => goTo('calendario')} />
-
-          <AcademicProgressChart />
         </div>
 
         {/* Right Column: Notas Recientes */}
