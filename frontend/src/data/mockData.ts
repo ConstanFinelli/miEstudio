@@ -61,15 +61,6 @@ export const mockMaterias: Materia[] = [
         minAsistencia: 75,
         descripcion: 'Todos los parciales ≥ 4.0 y 75% de asistencia mínima requerida.'
       }
-    },
-    correlativas: {
-      requiere: [
-        { materiaId: 'mat-redes', codigo: 'RED-203', nombre: 'Redes de Datos', estado: 'APROBADA' },
-        { materiaId: 'mat-so', codigo: 'SO-204', nombre: 'Sistemas Operativos', estado: 'PROMOCIONADA' }
-      ],
-      habilita: [
-        { materiaId: 'mat-cloud', codigo: 'CLD-401', nombre: 'Arquitecturas Cloud & Escalabilidad', anio: 4 }
-      ]
     }
   },
   {
@@ -102,14 +93,6 @@ export const mockMaterias: Materia[] = [
         minAsistencia: 75,
         descripcion: 'Nota en exámenes ≥ 4.0 y entregas completas.'
       }
-    },
-    correlativas: {
-      requiere: [
-        { materiaId: 'mat-bd1', codigo: 'DAT-201', nombre: 'Bases de Datos I', estado: 'APROBADA' }
-      ],
-      habilita: [
-        { materiaId: 'mat-bi', codigo: 'DAT-402', nombre: 'Big Data & Analytics', anio: 4 }
-      ]
     }
   },
   {
@@ -142,14 +125,6 @@ export const mockMaterias: Materia[] = [
         minAsistencia: 75,
         descripcion: 'Promedio general ≥ 5.0.'
       }
-    },
-    correlativas: {
-      requiere: [
-        { materiaId: 'mat-alg2', codigo: 'ALG-201', nombre: 'Algoritmos II', estado: 'APROBADA' }
-      ],
-      habilita: [
-        { materiaId: 'mat-ia', codigo: 'INT-401', nombre: 'Inteligencia Artificial', anio: 4 }
-      ]
     }
   },
   {
@@ -167,7 +142,6 @@ export const mockMaterias: Materia[] = [
       jtp: 'Ing. Matías Hennessy'
     },
     promedio: 9.0,
-    calificacionFinal: 9.0,
     reglasAcreditacion: {
       promocion: {
         permitePromocion: true,
@@ -183,12 +157,6 @@ export const mockMaterias: Materia[] = [
         minAsistencia: 75,
         descripcion: 'Condición cumplida.'
       }
-    },
-    correlativas: {
-      requiere: [],
-      habilita: [
-        { materiaId: 'mat-1', codigo: 'SIS-304', nombre: 'Sistemas Distribuidos', anio: 3 }
-      ]
     }
   },
   {
@@ -206,7 +174,6 @@ export const mockMaterias: Materia[] = [
       jtp: 'Ing. Pablo McCarthy'
     },
     promedio: 8.0,
-    calificacionFinal: 8.0,
     reglasAcreditacion: {
       promocion: {
         permitePromocion: true,
@@ -222,12 +189,6 @@ export const mockMaterias: Materia[] = [
         minAsistencia: 75,
         descripcion: 'Condición cumplida.'
       }
-    },
-    correlativas: {
-      requiere: [],
-      habilita: [
-        { materiaId: 'mat-3', codigo: 'ALG-302', nombre: 'Algoritmos y Estructuras III', anio: 3 }
-      ]
     }
   }
 ];

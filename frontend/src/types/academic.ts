@@ -1,15 +1,36 @@
-export type EstadoMateria = 'CURSANDO' | 'REGULAR' | 'APROBADA' | 'PROMOCIONADA' | 'LIBRE';
-export type TipoEvaluacion = 'PARCIAL' | 'RECUPERATORIO' | 'FINAL' | 'TP' | 'LABORATORIO' | 'QUIZ';
-export type EstadoEvaluacion = 'PENDIENTE' | 'EN_PROGRESO' | 'CALIFICADO';
-export type TipoEvento = 'EXAMEN' | 'ENTREGA' | 'LABORATORIO' | 'ESTUDIO' | 'CONSULTA';
-export type CategoriaMaterial = 'TEORIA' | 'GUIA_PRACTICA' | 'EXAMEN_ANTERIOR' | 'BIBLIOGRAFIA' | 'OTRO';
+export type EstadoMateria =
+  | "CURSANDO"
+  | "REGULAR"
+  | "APROBADA"
+  | "PROMOCIONADA"
+  | "LIBRE";
+export type TipoEvaluacion =
+  | "PARCIAL"
+  | "RECUPERATORIO"
+  | "FINAL"
+  | "TP"
+  | "LABORATORIO"
+  | "QUIZ";
+export type EstadoEvaluacion = "PENDIENTE" | "EN_PROGRESO" | "CALIFICADO";
+export type TipoEvento =
+  | "EXAMEN"
+  | "ENTREGA"
+  | "LABORATORIO"
+  | "ESTUDIO"
+  | "CONSULTA";
+export type CategoriaMaterial =
+  | "TEORIA"
+  | "GUIA_PRACTICA"
+  | "EXAMEN_ANTERIOR"
+  | "BIBLIOGRAFIA"
+  | "OTRO";
 
 export interface Materia {
   id: string;
   codigo: string;
   nombre: string;
   anio: number;
-  cuatrimestre: '1C' | '2C' | 'Anual';
+  cuatrimestre: "1C" | "2C" | "Anual";
   estado: EstadoMateria;
   color: string;
   profesores: {
@@ -17,9 +38,8 @@ export interface Materia {
     jtp: string;
   };
   comision: string;
-  modalidad: 'Presencial' | 'Virtual' | 'Híbrida';
+  modalidad: "Presencial" | "Virtual" | "Híbrida";
   promedio: number;
-  calificacionFinal?: number;
   reglasAcreditacion: {
     promocion: {
       permitePromocion?: boolean;
@@ -38,10 +58,6 @@ export interface Materia {
       descripcion?: string;
     };
   };
-  correlativas?: {
-    requiere: { materiaId: string; codigo: string; nombre: string; estado: EstadoMateria }[];
-    habilita: { materiaId: string; codigo: string; nombre: string; anio: number }[];
-  };
 }
 
 export interface InstanciaEvaluacion {
@@ -57,7 +73,7 @@ export interface InstanciaEvaluacion {
   nota: number | null;
   estado: EstadoEvaluacion;
   aula: string;
-  modalidad: 'Presencial' | 'Virtual';
+  modalidad: "Presencial" | "Virtual";
   temario: string[];
   asistencia: number;
   guiasCompletadas: string;
@@ -128,7 +144,13 @@ export interface PerfilEstudiante {
   deltaPromedio: number;
 }
 
-export type DiaSemana = 'LUNES' | 'MARTES' | 'MIERCOLES' | 'JUEVES' | 'VIERNES' | 'SABADO';
+export type DiaSemana =
+  | "LUNES"
+  | "MARTES"
+  | "MIERCOLES"
+  | "JUEVES"
+  | "VIERNES"
+  | "SABADO";
 
 export interface HorarioCursada {
   id: string;
@@ -141,8 +163,7 @@ export interface HorarioCursada {
   horaFin: string; // "12:45"
   facultadSede?: string; // ej: "UTN FRBA - Medrano" o "UBA FCEyN"
   aula?: string;
-  tipoClase?: 'Teoría' | 'Práctica' | 'Laboratorio' | 'Taller' | string;
-  modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
+  tipoClase?: "Teoría" | "Práctica" | "Laboratorio" | "Taller" | string;
+  modalidad?: "Presencial" | "Virtual" | "Híbrida";
   observaciones?: string;
 }
-

@@ -65,8 +65,7 @@ export const materiasService = {
         reglasAcreditacion: materia.reglasAcreditacion || {
           promocion: { permitePromocion: true, condicion: 'Promedio ≥ 8.0 y parciales ≥ 7.0', minPromedio: 8.0, minParcial: 7.0, permiteRecuperatorio: false, minAsistencia: 80, descripcion: 'Promoción directa.' },
           regularidad: { condicion: 'Evaluaciones ≥ 4.0 y 75% asistencia', minNota: 4.0, minAsistencia: 75, permiteRecuperatorio: true, descripcion: 'Regularidad.' }
-        },
-        correlativas: materia.correlativas || { requiere: [], habilita: [] }
+        }
       };
       localMaterias.push(newMateria);
       return newMateria;

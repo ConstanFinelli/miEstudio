@@ -60,6 +60,8 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const [condicionPromocion, setCondicionPromocion] = useState('Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)');
   const [condicionRegularidad, setCondicionRegularidad] = useState('Todas las evaluaciones ≥ 4.0 y requisitos de cátedra');
   const [minAsistencia, setMinAsistencia] = useState(75);
+  const [showRulesConfig, setShowRulesConfig] = useState(false);
+  const isAprobada = estado === 'APROBADA' || estado === 'PROMOCIONADA';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,7 +71,8 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setCodigo(materiaToEdit.codigo || '');
       setAnio(materiaToEdit.anio || 3);
       setCuatrimestre(materiaToEdit.cuatrimestre || '1C');
-      setEstado(materiaToEdit.estado || 'CURSANDO');
+      const editEst = materiaToEdit.estado || 'CURSANDO';
+      setEstado(editEst);
       setColor(materiaToEdit.color || '#3b82f6');
       setComision(materiaToEdit.comision || '');
       setModalidad(materiaToEdit.modalidad || 'Presencial');
@@ -88,9 +91,10 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       );
       setMinAsistencia(materiaToEdit.reglasAcreditacion?.regularidad?.minAsistencia ?? 75);
       setNotaFinal(materiaToEdit.promedio && materiaToEdit.promedio > 0 ? materiaToEdit.promedio : 8);
-      setTipoAprobacion(materiaToEdit.estado === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
+      setTipoAprobacion(editEst === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
       setLibroActa('');
       setFolioActa('');
+      setShowRulesConfig(false);
     } else {
       setNombre('');
       setCodigo('');
@@ -112,6 +116,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setTipoAprobacion(defaultEst === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
       setLibroActa('');
       setFolioActa('');
+      setShowRulesConfig(false);
     }
   }, [materiaToEdit, isOpen, initialEstado]);
 
@@ -142,17 +147,25 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         },
         reglasAcreditacion: {
           promocion: {
-            permitePromocion,
-            condicion: permitePromocion ? condicionPromocion.trim() : 'Sin promoción directa. Examen final obligatorio.',
-            minAsistencia: 80,
+            permitePromocion: isAprobada ? estado === 'PROMOCIONADA' : permitePromocion,
+            condicion: isAprobada && !showRulesConfig
+              ? (estado === 'PROMOCIONADA' ? 'Promoción directa acreditada' : 'Acreditación por examen final')
+              : (permitePromocion ? condicionPromocion.trim() : 'Sin promoción directa. Examen final obligatorio.'),
+            minAsistencia: isAprobada && !showRulesConfig ? 0 : 80,
             permiteRecuperatorio: false,
-            descripcion: permitePromocion ? condicionPromocion.trim() : 'Sin promoción directa. Examen final obligatorio.'
+            descripcion: isAprobada && !showRulesConfig
+              ? (estado === 'PROMOCIONADA' ? 'Promoción directa acreditada' : 'Acreditación por examen final')
+              : (permitePromocion ? condicionPromocion.trim() : 'Sin promoción directa. Examen final obligatorio.')
           },
           regularidad: {
-            condicion: condicionRegularidad.trim() || 'Evaluaciones ≥ 4.0 y requisitos de cátedra',
-            minAsistencia,
+            condicion: isAprobada && !showRulesConfig
+              ? 'Cursada aprobada'
+              : (condicionRegularidad.trim() || 'Evaluaciones ≥ 4.0 y requisitos de cátedra'),
+            minAsistencia: isAprobada && !showRulesConfig ? 0 : minAsistencia,
             permiteRecuperatorio: true,
-            descripcion: condicionRegularidad.trim() || 'Evaluaciones ≥ 4.0 y requisitos de cátedra'
+            descripcion: isAprobada && !showRulesConfig
+              ? 'Cursada aprobada'
+              : (condicionRegularidad.trim() || 'Evaluaciones ≥ 4.0 y requisitos de cátedra')
           }
         }
       };
@@ -181,6 +194,9 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
           console.warn('[MateriaModal] Error al registrar aprobación histórica:', aprobErr);
         }
       }
+
+      // Disparar evento reactivo para sincronizar inmediatamente todas las vistas
+      window.dispatchEvent(new CustomEvent('materias:updated', { detail: result }));
 
       onSuccess(result);
       onClose();
@@ -294,8 +310,10 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                   setEstado(nextEstado);
                   if (nextEstado === 'PROMOCIONADA') {
                     setTipoAprobacion('PROMOCION');
+                    setShowRulesConfig(false);
                   } else if (nextEstado === 'APROBADA') {
                     setTipoAprobacion('FINAL');
+                    setShowRulesConfig(false);
                   }
                 }}
               >
@@ -435,63 +453,190 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
             </div>
           </div>
 
-          {/* Configuración de Reglas de Acreditación */}
-          <div className={styles.rulesSection}>
-            <div className={styles.rulesSectionHeader}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Award size={14} color="var(--primary)" />
-                <span>Reglas de Acreditación de Cursada</span>
-              </div>
-              <button
-                type="button"
-                className={`${styles.promoToggleBtn} ${permitePromocion ? styles.promoToggleBtnActive : ''}`}
-                onClick={() => setPermitePromocion(!permitePromocion)}
-              >
-                {permitePromocion ? '✓ Admite Promoción Directa' : '🚫 Sin Promoción (Final Obligatorio)'}
-              </button>
-            </div>
-
-            {permitePromocion ? (
-              <div className={styles.formGroup}>
-                <label className={styles.label} style={{ fontSize: '10px' }}>Condición para Promoción Directa</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Ej: Promedio ≥ 8.0, parciales ≥ 7.0 y coloquio aprobado"
-                  value={condicionPromocion}
-                  onChange={e => setCondicionPromocion(e.target.value)}
-                />
+          {/* Configuración de Reglas de Acreditación (Ocultas por defecto si ya está aprobada) */}
+          {isAprobada ? (
+            !showRulesConfig ? (
+              <div style={{ margin: "4px 0 10px 0" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowRulesConfig(true)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-dim)",
+                    fontSize: "11px",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "4px 0",
+                  }}
+                >
+                  <Award size={13} color="var(--primary)" />
+                  <span>+ Configurar reglas de acreditación de cursada (opcional)</span>
+                </button>
               </div>
             ) : (
-              <div style={{ fontSize: '11px', color: 'var(--amber)', backgroundColor: 'var(--amber-alpha)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--amber-border)' }}>
-                Esta materia requerirá obligatoriamente aprobación de examen final tras regularizar.
-              </div>
-            )}
+              <div className={styles.rulesSection}>
+                <div className={styles.rulesSectionHeader}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Award size={14} color="var(--primary)" />
+                    <span>Reglas de Acreditación de Cursada</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button
+                      type="button"
+                      className={`${styles.promoToggleBtn} ${permitePromocion ? styles.promoToggleBtnActive : ""}`}
+                      onClick={() => setPermitePromocion(!permitePromocion)}
+                    >
+                      {permitePromocion ? "✓ Admite Promoción Directa" : "🚫 Sin Promoción"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowRulesConfig(false)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--text-muted)",
+                        fontSize: "11px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Ocultar
+                    </button>
+                  </div>
+                </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
-              <div className={styles.formGroup}>
-                <label className={styles.label} style={{ fontSize: '10px' }}>Condición para Regularizar Cursada</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Ej: Parciales ≥ 4.0, TPs entregados y 75% asistencia"
-                  value={condicionRegularidad}
-                  onChange={e => setCondicionRegularidad(e.target.value)}
-                />
+                {permitePromocion ? (
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} style={{ fontSize: "10px" }}>
+                      Condición para Promoción Directa
+                    </label>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      placeholder="Ej: Promedio ≥ 8.0, parciales ≥ 7.0 y coloquio aprobado"
+                      value={condicionPromocion}
+                      onChange={(e) => setCondicionPromocion(e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--amber)",
+                      backgroundColor: "var(--amber-alpha)",
+                      padding: "6px 10px",
+                      borderRadius: "var(--radius-xs)",
+                      border: "1px solid var(--amber-border)",
+                    }}
+                  >
+                    Esta materia requerirá obligatoriamente aprobación de examen final tras regularizar.
+                  </div>
+                )}
+
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "10px" }}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} style={{ fontSize: "10px" }}>
+                      Condición para Regularizar Cursada
+                    </label>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      placeholder="Ej: Parciales ≥ 4.0, TPs entregados y 75% asistencia"
+                      value={condicionRegularidad}
+                      onChange={(e) => setCondicionRegularidad(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} style={{ fontSize: "10px" }}>
+                      Asistencia Mínima (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      className={styles.input}
+                      value={minAsistencia}
+                      onChange={(e) => setMinAsistencia(parseInt(e.target.value, 10) || 0)}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label} style={{ fontSize: '10px' }}>Asistencia Mínima (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  className={styles.input}
-                  value={minAsistencia}
-                  onChange={e => setMinAsistencia(parseInt(e.target.value, 10) || 0)}
-                />
+            )
+          ) : (
+            <div className={styles.rulesSection}>
+              <div className={styles.rulesSectionHeader}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Award size={14} color="var(--primary)" />
+                  <span>Reglas de Acreditación de Cursada</span>
+                </div>
+                <button
+                  type="button"
+                  className={`${styles.promoToggleBtn} ${permitePromocion ? styles.promoToggleBtnActive : ""}`}
+                  onClick={() => setPermitePromocion(!permitePromocion)}
+                >
+                  {permitePromocion ? "✓ Admite Promoción Directa" : "🚫 Sin Promoción (Final Obligatorio)"}
+                </button>
+              </div>
+
+              {permitePromocion ? (
+                <div className={styles.formGroup}>
+                  <label className={styles.label} style={{ fontSize: "10px" }}>
+                    Condición para Promoción Directa
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Ej: Promedio ≥ 8.0, parciales ≥ 7.0 y coloquio aprobado"
+                    value={condicionPromocion}
+                    onChange={(e) => setCondicionPromocion(e.target.value)}
+                  />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--amber)",
+                    backgroundColor: "var(--amber-alpha)",
+                    padding: "6px 10px",
+                    borderRadius: "var(--radius-xs)",
+                    border: "1px solid var(--amber-border)",
+                  }}
+                >
+                  Esta materia requerirá obligatoriamente aprobación de examen final tras regularizar.
+                </div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "10px" }}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} style={{ fontSize: "10px" }}>
+                    Condición para Regularizar Cursada
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Ej: Parciales ≥ 4.0, TPs entregados y 75% asistencia"
+                    value={condicionRegularidad}
+                    onChange={(e) => setCondicionRegularidad(e.target.value)}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} style={{ fontSize: "10px" }}>
+                    Asistencia Mínima (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className={styles.input}
+                    value={minAsistencia}
+                    onChange={(e) => setMinAsistencia(parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Color de Identificación */}
           <div className={styles.formGroup}>

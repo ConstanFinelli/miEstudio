@@ -53,7 +53,29 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     isLoading: isMateriasLoading,
     deleteMateria,
     updateMateria,
+    refresh: refreshMaterias,
   } = useMaterias();
+
+  // Sincronizar reactivamente cuando se crea o modifica una materia desde cualquier modal
+  useEffect(() => {
+    const handleMateriaCreatedOrUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<Materia | undefined>;
+      if (customEvent.detail) {
+        setSelectedMateriaId(customEvent.detail.id);
+        if (selectedEstado !== "TODOS" && customEvent.detail.estado !== selectedEstado) {
+          setSelectedEstado("TODOS");
+        }
+        if (selectedYear !== "TODOS" && customEvent.detail.anio !== selectedYear) {
+          setSelectedYear("TODOS");
+        }
+      }
+      refreshMaterias();
+    };
+
+    window.addEventListener("materias:updated", handleMateriaCreatedOrUpdated);
+    return () =>
+      window.removeEventListener("materias:updated", handleMateriaCreatedOrUpdated);
+  }, [refreshMaterias, selectedEstado, selectedYear]);
 
   const handleDeleteMateria = async (id: string, nombre: string) => {
     const confirmDelete = window.confirm(
@@ -276,6 +298,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
 
             <AccreditationRulesCard
               reglas={selectedMateria.reglasAcreditacion}
+              estado={selectedMateria.estado}
               onConfigure={() => setIsRulesModalOpen(true)}
             />
 

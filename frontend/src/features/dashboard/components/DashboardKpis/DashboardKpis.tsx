@@ -34,9 +34,9 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   const progressPercent = totalPlan > 0 ? Math.min(100, Math.round((totalApproved / totalPlan) * 100)) : 0;
 
   // Promedio calculation from real grades
-  const gradedSubjects = materias.filter(m => (m.calificacionFinal && m.calificacionFinal > 0) || (m.promedio && m.promedio > 0));
+  const gradedSubjects = materias.filter(m => m.promedio && m.promedio > 0);
   const computedAverage = gradedSubjects.length > 0
-    ? (gradedSubjects.reduce((acc, m) => acc + (m.calificacionFinal || m.promedio || 0), 0) / gradedSubjects.length)
+    ? (gradedSubjects.reduce((acc, m) => acc + (m.promedio || 0), 0) / gradedSubjects.length)
     : 0;
   const displayAverage = perfil.promedioGeneral > 0 ? perfil.promedioGeneral : computedAverage;
   const hasPromedio = displayAverage > 0;

@@ -80,11 +80,7 @@ export const materiaMapper = {
         titular: dto.profesor_titular !== undefined ? dto.profesor_titular : (extra?.profesores?.titular || ''),
         jtp: dto.profesor_jtp !== undefined ? dto.profesor_jtp : (extra?.profesores?.jtp || '')
       },
-      reglasAcreditacion,
-      correlativas: extra?.correlativas || {
-        requiere: [],
-        habilita: []
-      }
+      reglasAcreditacion
     };
   },
 

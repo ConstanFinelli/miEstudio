@@ -17,33 +17,52 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
         estado: initialStatus
       });
       setMaterias(data);
-      if (data.length > 0 && !selectedMateria) {
-        setSelectedMateria(data[0]);
-      }
+      setSelectedMateria(prev => {
+        if (!prev && data.length > 0) return data[0];
+        if (prev && !data.some(d => d.id === prev.id)) return data[0] || null;
+        if (prev) {
+          const fresh = data.find(d => d.id === prev.id);
+          if (fresh) return fresh;
+        }
+        return prev;
+      });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar materias');
     } finally {
       setIsLoading(false);
     }
-  }, [initialYear, initialStatus, selectedMateria]);
+  }, [initialYear, initialStatus]);
 
   useEffect(() => {
     fetchMaterias();
+  }, [fetchMaterias]);
+
+  // Reactive listener for updates triggered from MateriaModal or other views
+  useEffect(() => {
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<Materia | undefined>;
+      fetchMaterias();
+      if (customEvent.detail) {
+        setSelectedMateria(customEvent.detail);
+      }
+    };
+    window.addEventListener('materias:updated', handleUpdate);
+    return () => window.removeEventListener('materias:updated', handleUpdate);
   }, [fetchMaterias]);
 
   const createMateria = async (newMateria: Partial<Materia>) => {
     const created = await materiasService.createMateria(newMateria);
     setMaterias(prev => [...prev, created]);
     setSelectedMateria(created);
+    window.dispatchEvent(new CustomEvent('materias:updated', { detail: created }));
     return created;
   };
 
   const updateMateria = async (id: string, updates: Partial<Materia>) => {
     const updated = await materiasService.updateMateria(id, updates);
     setMaterias(prev => prev.map(m => (m.id === id ? updated : m)));
-    if (selectedMateria?.id === id) {
-      setSelectedMateria(updated);
-    }
+    setSelectedMateria(curr => (curr?.id === id ? updated : curr));
+    window.dispatchEvent(new CustomEvent('materias:updated', { detail: updated }));
     return updated;
   };
 
@@ -59,6 +78,7 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
       });
       return remaining;
     });
+    window.dispatchEvent(new CustomEvent('materias:updated'));
   };
 
   return {
