@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   FileText,
-  Bell,
   Settings,
   PlusCircle,
   User,
@@ -16,7 +15,6 @@ import {
   ChevronDown,
   LogOut,
   Plus,
-  Award,
 } from "lucide-react";
 import { mockPerfil } from "../../data/mockData";
 import { isMocksEnabled } from "../../config/mockConfig";
