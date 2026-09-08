@@ -51,6 +51,8 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const [fechaAprobacion, setFechaAprobacion] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
+  const [fechaExactaDesconocida, setFechaExactaDesconocida] = useState(false);
+  const [anioAprobacion, setAnioAprobacion] = useState<number>(() => new Date().getFullYear());
   const [tipoAprobacion, setTipoAprobacion] = useState<string>('FINAL');
   const [libroActa, setLibroActa] = useState('');
   const [folioActa, setFolioActa] = useState('');
@@ -94,7 +96,31 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setTipoAprobacion(editEst === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
       setLibroActa('');
       setFolioActa('');
+      setFechaExactaDesconocida(false);
+      setAnioAprobacion(new Date().getFullYear());
       setShowRulesConfig(false);
+
+      if (activeCarrera && (editEst === 'APROBADA' || editEst === 'PROMOCIONADA')) {
+        carrerasService.getAprobaciones(activeCarrera.id).then(aprobs => {
+          const found = aprobs.find(a => a.materia_id === materiaToEdit.id);
+          if (found) {
+            if (found.nota_final) setNotaFinal(found.nota_final);
+            if (found.tipo_aprobacion) setTipoAprobacion(found.tipo_aprobacion);
+            if (found.libro_acta) setLibroActa(found.libro_acta);
+            if (found.folio_acta) setFolioActa(found.folio_acta);
+            if (found.fecha_aprobacion) {
+              const datePart = found.fecha_aprobacion.split('T')[0];
+              setFechaAprobacion(datePart);
+              if (datePart.endsWith('-12-31')) {
+                setFechaExactaDesconocida(true);
+                setAnioAprobacion(parseInt(datePart.split('-')[0], 10) || new Date().getFullYear());
+              } else {
+                setFechaExactaDesconocida(false);
+              }
+            }
+          }
+        }).catch(() => {});
+      }
     } else {
       setNombre('');
       setCodigo('');
@@ -112,13 +138,16 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setCondicionRegularidad('Todas las evaluaciones ≥ 4.0 y requisitos de cátedra');
       setMinAsistencia(75);
       setNotaFinal(8);
-      setFechaAprobacion(new Date().toISOString().split('T')[0]);
+      const now = new Date();
+      setFechaAprobacion(now.toISOString().split('T')[0]);
+      setFechaExactaDesconocida(false);
+      setAnioAprobacion(now.getFullYear());
       setTipoAprobacion(defaultEst === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
       setLibroActa('');
       setFolioActa('');
       setShowRulesConfig(false);
     }
-  }, [materiaToEdit, isOpen, initialEstado]);
+  }, [materiaToEdit, isOpen, initialEstado, activeCarrera]);
 
   if (!isOpen) return null;
 
@@ -178,20 +207,32 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       }
 
       // Si se cargó como aprobada/promocionada y hay carrera activa, registrar aprobación histórica
-      if (isAprobada && activeCarrera) {
-        try {
-          await carrerasService.registrarAprobacion({
-            carrera_id: activeCarrera.id,
-            materia_id: result.id,
-            nota_final: Number(notaFinal),
-            fecha_aprobacion: fechaAprobacion || new Date().toISOString().split('T')[0],
-            tipo_aprobacion: tipoAprobacion,
-            libro_acta: libroActa.trim() || undefined,
-            folio_acta: folioActa.trim() || undefined,
-          });
-          await reloadCarreras();
-        } catch (aprobErr) {
-          console.warn('[MateriaModal] Error al registrar aprobación histórica:', aprobErr);
+      if (isAprobada) {
+        let carreraId = activeCarrera?.id;
+        if (!carreraId) {
+          const carrerasList = await carrerasService.getCarreras().catch(() => []);
+          carreraId = carrerasList.find(c => c.is_activa)?.id || carrerasList[0]?.id;
+        }
+
+        if (carreraId) {
+          try {
+            const finalFecha = fechaExactaDesconocida
+              ? `${anioAprobacion}-12-31`
+              : (fechaAprobacion || new Date().toISOString().split('T')[0]);
+
+            await carrerasService.registrarAprobacion({
+              carrera_id: carreraId,
+              materia_id: result.id,
+              nota_final: Number(notaFinal),
+              fecha_aprobacion: finalFecha,
+              tipo_aprobacion: tipoAprobacion,
+              libro_acta: libroActa.trim() || undefined,
+              folio_acta: folioActa.trim() || undefined,
+            });
+            await reloadCarreras();
+          } catch (aprobErr) {
+            console.warn('[MateriaModal] Error al registrar aprobación histórica:', aprobErr);
+          }
         }
       }
 
@@ -366,14 +407,79 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Fecha de Aprobación</label>
-                  <input
-                    type="date"
-                    className={styles.input}
-                    value={fechaAprobacion}
-                    onChange={e => setFechaAprobacion(e.target.value)}
-                    required
-                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <label className={styles.label} style={{ marginBottom: 0 }}>
+                      {fechaExactaDesconocida ? 'Año de Aprobación *' : 'Fecha de Aprobación *'}
+                    </label>
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        fontSize: '11px',
+                        color: fechaExactaDesconocida ? 'var(--primary-glow)' : 'var(--text-muted)',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontWeight: 500
+                      }}
+                      title="Si no recuerdas el día y mes exacto, puedes indicar solo el año"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={fechaExactaDesconocida}
+                        onChange={e => {
+                          const checked = e.target.checked;
+                          setFechaExactaDesconocida(checked);
+                          if (checked) {
+                            setFechaAprobacion(`${anioAprobacion}-12-31`);
+                          } else {
+                            setFechaAprobacion(new Date().toISOString().split('T')[0]);
+                          }
+                        }}
+                        style={{ cursor: 'pointer', accentColor: 'var(--primary)' }}
+                      />
+                      <span>Fecha exacta desconocida</span>
+                    </label>
+                  </div>
+
+                  {fechaExactaDesconocida ? (
+                    <div>
+                      <input
+                        type="number"
+                        min="1980"
+                        max={new Date().getFullYear() + 1}
+                        className={styles.input}
+                        value={anioAprobacion}
+                        onChange={e => {
+                          const val = parseInt(e.target.value, 10);
+                          const yr = !isNaN(val) ? val : new Date().getFullYear();
+                          setAnioAprobacion(yr);
+                          setFechaAprobacion(`${yr}-12-31`);
+                        }}
+                        placeholder={`Ej: ${new Date().getFullYear()}`}
+                        required
+                      />
+                      <span
+                        style={{
+                          display: 'block',
+                          fontSize: '11px',
+                          color: 'var(--text-dim)',
+                          marginTop: '4px',
+                          fontStyle: 'italic'
+                        }}
+                      >
+                        ℹ Se guardará como 31/12/{anioAprobacion} para cómputo de estadísticas y gráficos.
+                      </span>
+                    </div>
+                  ) : (
+                    <input
+                      type="date"
+                      className={styles.input}
+                      value={fechaAprobacion}
+                      onChange={e => setFechaAprobacion(e.target.value)}
+                      required
+                    />
+                  )}
                 </div>
               </div>
 
