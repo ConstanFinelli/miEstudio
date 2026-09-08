@@ -17,7 +17,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose })
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [legajo, setLegajo] = useState('');
-  const [cicloActivo, setCicloActivo] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
@@ -30,7 +29,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose })
       setNombre(user?.nombre || perfil?.nombre || '');
       setEmail(user?.email || '');
       setLegajo(activeCarrera?.legajo || perfil?.legajo || '');
-      setCicloActivo(activeCarrera?.ciclo_activo || perfil?.cicloActivo || '1C 2026');
       setNewPassword('');
       setErrorMessage(null);
       setSuccessMessage(null);
@@ -57,12 +55,11 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose })
         password: newPassword ? newPassword : undefined,
       });
 
-      // 2. Actualizar carrera activa si existe
+      // 2. Actualizar legajo en carrera activa si existe
       if (activeCarrera) {
         try {
           await carrerasService.updateCarrera(activeCarrera.id, {
             legajo: legajo.trim(),
-            ciclo_activo: cicloActivo.trim(),
           });
         } catch {
           // Continuar con perfil local
@@ -73,7 +70,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose })
       await updatePerfil({
         nombre: nombre.trim(),
         legajo: legajo.trim(),
-        cicloActivo: cicloActivo.trim(),
       });
 
       await reloadProfile();
@@ -193,35 +189,22 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose })
             </div>
           </div>
 
-          {/* SECCIÓN 2: DATOS ACADÉMICOS DE CURSADA */}
+          {/* SECCIÓN 2: DATOS ACADÉMICOS */}
           <div className={styles.section}>
             <div className={styles.sectionTitle}>
               <GraduationCap size={13} color="var(--blue)" />
               <span>Datos Académicos</span>
             </div>
 
-            <div className={styles.grid2}>
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Legajo Estudiantil</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={legajo}
-                  onChange={e => setLegajo(e.target.value)}
-                  placeholder="Ej: 50231 o 1042/22"
-                />
-              </div>
-
-              <div className={styles.field}>
-                <label className={styles.fieldLabel}>Ciclo Lectivo Activo</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={cicloActivo}
-                  onChange={e => setCicloActivo(e.target.value)}
-                  placeholder="Ej: 1C 2026"
-                />
-              </div>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Legajo Estudiantil</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={legajo}
+                onChange={e => setLegajo(e.target.value)}
+                placeholder="Ej: 50231 o 1042/22"
+              />
             </div>
           </div>
 
