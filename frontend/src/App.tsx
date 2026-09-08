@@ -11,11 +11,12 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 import { EvaluationModal, NoteModal, PdfViewerModal, MateriaModal } from './components/modals';
 import { Toast } from './features/components';
-import type { EstadoMateria } from './types/academic';
+import type { EstadoMateria, InstanciaEvaluacion } from './types/academic';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
+  const [evaluationToEdit, setEvaluationToEdit] = useState<InstanciaEvaluacion | null>(null);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMateriaModalOpen, setIsMateriaModalOpen] = useState(false);
   const [materiaInitialEstado, setMateriaInitialEstado] = useState<EstadoMateria | undefined>(undefined);
@@ -39,7 +40,10 @@ export const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <AppLayout
-              onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+              onOpenEvaluationModal={() => {
+                setEvaluationToEdit(null);
+                setIsEvaluationModalOpen(true);
+              }}
               onOpenNoteModal={() => setIsNoteModalOpen(true)}
               onOpenMateriaModal={(estado) => {
                 setMateriaInitialEstado(estado);
@@ -60,7 +64,14 @@ export const App: React.FC = () => {
                   path="/materias"
                   element={
                     <MateriasView
-                      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+                      onOpenEvaluationModal={() => {
+                        setEvaluationToEdit(null);
+                        setIsEvaluationModalOpen(true);
+                      }}
+                      onEditEvaluation={(evaluation) => {
+                        setEvaluationToEdit(evaluation);
+                        setIsEvaluationModalOpen(true);
+                      }}
                       onOpenMateriaModal={() => {
                         setMateriaInitialEstado(undefined);
                         setIsMateriaModalOpen(true);
@@ -75,7 +86,10 @@ export const App: React.FC = () => {
                   path="/calendario"
                   element={
                     <CalendarioView
-                      onOpenEvaluationModal={() => setIsEvaluationModalOpen(true)}
+                      onOpenEvaluationModal={() => {
+                        setEvaluationToEdit(null);
+                        setIsEvaluationModalOpen(true);
+                      }}
                     />
                   }
                 />
@@ -107,8 +121,19 @@ export const App: React.FC = () => {
               {/* Evaluation Modal */}
               <EvaluationModal
                 isOpen={isEvaluationModalOpen}
-                onClose={() => setIsEvaluationModalOpen(false)}
-                onSuccess={() => showToast('✓ Nueva instancia de evaluación registrada')}
+                evaluationToEdit={evaluationToEdit}
+                onClose={() => {
+                  setIsEvaluationModalOpen(false);
+                  setEvaluationToEdit(null);
+                }}
+                onSuccess={(saved) => {
+                  const isEdit = !!evaluationToEdit;
+                  showToast(
+                    isEdit
+                      ? `✓ Evaluación "${saved?.titulo || 'Instancia'}" actualizada con éxito`
+                      : `✓ Evaluación "${saved?.titulo || 'Nueva instancia'}" registrada con éxito`
+                  );
+                }}
               />
 
               {/* Note Modal */}

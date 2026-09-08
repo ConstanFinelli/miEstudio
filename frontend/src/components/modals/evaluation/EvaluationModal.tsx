@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './EvaluationModal.module.css';
 import {
   X,
@@ -8,35 +8,49 @@ import {
   FlaskConical,
   HelpCircle
 } from 'lucide-react';
-import type { TipoEvaluacion } from '../../../types/academic';
+import type { TipoEvaluacion, InstanciaEvaluacion } from '../../../types/academic';
 import { useMaterias } from '../../../hooks';
 import { evaluacionesService } from '../../../services';
 
 interface EvaluationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (saved?: InstanciaEvaluacion) => void;
+  evaluationToEdit?: InstanciaEvaluacion | null;
+  initialMateriaId?: string;
 }
+
+const getTodayLocal = () => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
 
 export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
+  evaluationToEdit,
+  initialMateriaId
 }) => {
   const { materias } = useMaterias();
   const [filterYear, setFilterYear] = useState<number | 'TODOS'>('TODOS');
   const [filterCuatri, setFilterCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
-  const [materiaId, setMateriaId] = useState(materias[0]?.id || '');
+  const [materiaId, setMateriaId] = useState('');
   const [customMateria, setCustomMateria] = useState('');
   const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState<TipoEvaluacion>('PARCIAL');
-  const [fecha, setFecha] = useState(() => new Date().toISOString().slice(0, 10));
+  const [fecha, setFecha] = useState(getTodayLocal);
   const [horario, setHorario] = useState('19:00');
   const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
+  const [peso, setPeso] = useState<number>(35);
+  const [esAprobatorio, setEsAprobatorio] = useState(true);
+  const [nota, setNota] = useState('');
+  const [temarioText, setTemarioText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (!isOpen) return null;
 
   const filteredMaterias = materias.filter(m => {
     if (filterYear !== 'TODOS' && m.anio !== filterYear) return false;
@@ -44,7 +58,78 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
     return true;
   });
 
-  const selectedMat = materias.find(m => m.id === (materiaId || filteredMaterias[0]?.id || materias[0]?.id));
+  // Prefill or reset state on open / evaluationToEdit changes
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (evaluationToEdit) {
+      setMateriaId(evaluationToEdit.materiaId || '');
+      setTitulo(evaluationToEdit.titulo || '');
+      setTipo(evaluationToEdit.tipo || 'PARCIAL');
+      const d = evaluationToEdit.fecha ? evaluationToEdit.fecha.split('T')[0] : getTodayLocal();
+      setFecha(d);
+      setHorario(evaluationToEdit.horario ? evaluationToEdit.horario.replace(' hs', '').replace('hs', '') : '19:00');
+      setAula(evaluationToEdit.aula || '');
+      setModalidad(evaluationToEdit.modalidad || 'Presencial');
+      setPeso(evaluationToEdit.peso ?? 35);
+      setEsAprobatorio(evaluationToEdit.esAprobatorio ?? true);
+      setNota(
+        evaluationToEdit.nota !== null && evaluationToEdit.nota !== undefined
+          ? String(evaluationToEdit.nota)
+          : ''
+      );
+      setTemarioText(
+        Array.isArray(evaluationToEdit.temario)
+          ? evaluationToEdit.temario.join(', ')
+          : ''
+      );
+    } else {
+      if (initialMateriaId) {
+        setMateriaId(initialMateriaId);
+      } else if (materias.length > 0 && !materiaId) {
+        setMateriaId(materias[0].id);
+      }
+      setTitulo('');
+      setTipo('PARCIAL');
+      setFecha(getTodayLocal());
+      setHorario('19:00');
+      setAula('');
+      setModalidad('Presencial');
+      setPeso(35);
+      setEsAprobatorio(true);
+      setNota('');
+      setTemarioText('');
+    }
+  }, [isOpen, evaluationToEdit, initialMateriaId]);
+
+  // Sync initial materiaId when materias load
+  useEffect(() => {
+    if (materias.length > 0 && !materiaId && !evaluationToEdit) {
+      setMateriaId(materias[0].id);
+    }
+  }, [materias, materiaId, evaluationToEdit]);
+
+  // Sync materiaId if current selection is outside filtered subset (only for new evaluations)
+  useEffect(() => {
+    if (!evaluationToEdit && filteredMaterias.length > 0) {
+      if (!filteredMaterias.some(m => m.id === materiaId)) {
+        setMateriaId(filteredMaterias[0].id);
+      }
+    }
+  }, [filterYear, filterCuatri, evaluationToEdit]);
+
+  if (!isOpen) return null;
+
+  const selectedMat = materias.find(m => m.id === materiaId) || filteredMaterias[0] || materias[0];
+
+  const handleTypeChange = (newTipo: TipoEvaluacion) => {
+    setTipo(newTipo);
+    if (newTipo === 'FINAL') setPeso(50);
+    else if (newTipo === 'PARCIAL') setPeso(35);
+    else if (newTipo === 'TP') setPeso(25);
+    else if (newTipo === 'LABORATORIO') setPeso(20);
+    else if (newTipo === 'QUIZ') setPeso(10);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,24 +139,58 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
       setIsSubmitting(true);
       const materiaNombre = selectedMat?.nombre || customMateria.trim() || 'Materia General';
       const materiaCodigo = selectedMat?.codigo || 'GEN';
+      const parsedNota = nota.trim() !== '' && !isNaN(Number(nota)) ? Number(nota) : null;
+      const parsedTemario = temarioText.trim()
+        ? temarioText.split(',').map(t => t.trim()).filter(Boolean)
+        : [];
 
-      await evaluacionesService.createEvaluacion({
-        materiaId: selectedMat?.id || `mat-${Date.now()}`,
-        materiaNombre,
-        materiaCodigo,
-        titulo: titulo.trim(),
-        tipo,
-        fecha,
-        horario: horario.trim() || '19:00',
-        aula: aula.trim() || 'A confirmar',
-        modalidad,
-        peso: 35
-      });
-      setTitulo('');
-      onSuccess();
-      onClose();
+      if (evaluationToEdit) {
+        const updated = await evaluacionesService.updateEvaluacion(evaluationToEdit.id, {
+          materiaId: selectedMat?.id || evaluationToEdit.materiaId,
+          materiaNombre,
+          materiaCodigo,
+          titulo: titulo.trim(),
+          tipo,
+          fecha,
+          horario: horario.trim() || '19:00',
+          aula: aula.trim() || 'A confirmar',
+          modalidad,
+          peso: Number(peso) > 0 ? Number(peso) : 25,
+          esAprobatorio,
+          nota: parsedNota,
+          temario: parsedTemario
+        });
+
+        window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: updated }));
+        onSuccess(updated);
+        onClose();
+      } else {
+        const created = await evaluacionesService.createEvaluacion({
+          materiaId: selectedMat?.id || (customMateria ? `mat-${Date.now()}` : 'mat-gen'),
+          materiaNombre,
+          materiaCodigo,
+          titulo: titulo.trim(),
+          tipo,
+          fecha,
+          horario: horario.trim() || '19:00',
+          aula: aula.trim() || 'A confirmar',
+          modalidad,
+          peso: Number(peso) > 0 ? Number(peso) : 25,
+          esAprobatorio,
+          nota: parsedNota,
+          temario: parsedTemario
+        });
+
+        window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: created }));
+        setTitulo('');
+        setNota('');
+        setTemarioText('');
+        setAula('');
+        onSuccess(created);
+        onClose();
+      }
     } catch (err) {
-      console.error('Error al registrar evaluacion:', err);
+      console.error('Error al guardar evaluacion:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +210,9 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
         {/* Top bar */}
         <div className={styles.modalTopBar}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className={styles.tagBadge}>EVALUACIÓN</span>
+            <span className={styles.tagBadge}>
+              {evaluationToEdit ? 'EDITAR EVALUACIÓN' : 'EVALUACIÓN'}
+            </span>
             <span>{selectedMat ? selectedMat.nombre.toUpperCase() : 'NUEVA INSTANCIA'}</span>
           </div>
           <button className={styles.closeBtn} onClick={onClose} title="Cerrar (Esc)">
@@ -102,9 +223,13 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
         {/* Title */}
         <div className={styles.titleGroup}>
-          <h2 className={styles.modalTitle}>Registrar Nueva Instancia de Evaluación</h2>
+          <h2 className={styles.modalTitle}>
+            {evaluationToEdit ? 'Editar Instancia de Evaluación' : 'Registrar Nueva Instancia de Evaluación'}
+          </h2>
           <p className={styles.modalSub}>
-            Configura tipo de examen, ponderación en la nota final y reglas de aprobación académica.
+            {evaluationToEdit
+              ? 'Modifica la fecha, ponderación, nota o detalles de esta evaluación.'
+              : 'Configura tipo de examen, fecha, horario, ponderación y requisitos de acreditación.'}
           </p>
         </div>
 
@@ -164,7 +289,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
             {filteredMaterias.length > 0 ? (
               <select
                 className={styles.fieldInput}
-                value={materiaId || filteredMaterias[0]?.id}
+                value={materiaId || filteredMaterias[0]?.id || ''}
                 onChange={(e) => setMateriaId(e.target.value)}
               >
                 {[1, 2, 3, 4, 5, 6].map(yr => {
@@ -223,7 +348,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           {/* 3. Tipo de Evaluación */}
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabelRow}>
-              <span>3. Tipo de Evaluación (RF2.2)</span>
+              <span>3. Tipo de Evaluación</span>
               <span style={{ color: 'var(--primary-glow)' }}>Tipo: {tipo}</span>
             </div>
             <div className={styles.typeCardsRow}>
@@ -234,7 +359,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
                   <div
                     key={t.id}
                     className={`${styles.typeCard} ${isSelected ? styles.typeCardActive : ''}`}
-                    onClick={() => setTipo(t.id)}
+                    onClick={() => handleTypeChange(t.id)}
                   >
                     <Icon size={16} />
                     <span>{t.label}</span>
@@ -244,8 +369,8 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
             </div>
           </div>
 
-          {/* 4. Fecha y Horario */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {/* 4. Fecha y Horario / Modalidad */}
+          <div className={styles.grid2}>
             <div className={styles.fieldGroup}>
               <div className={styles.fieldLabelRow}>
                 <span>Fecha de Mesa / Examen</span>
@@ -261,7 +386,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
             <div className={styles.fieldGroup}>
               <div className={styles.fieldLabelRow}>
-                <span>Horario y Modalidad</span>
+                <span>Horario, Aula y Modalidad</span>
               </div>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <input
@@ -292,6 +417,72 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
             </div>
           </div>
 
+          {/* 5. Ponderación & Condición Aprobatoria */}
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <div className={styles.fieldLabelRow}>
+                <span>Ponderación / Peso en Nota Final</span>
+                <span style={{ color: 'var(--text-dim)' }}>1 a 100%</span>
+              </div>
+              <div className={styles.inputWithSuffix}>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  className={styles.fieldInput}
+                  value={peso}
+                  onChange={(e) => setPeso(parseInt(e.target.value, 10) || 0)}
+                  required
+                />
+                <span className={styles.inputSuffix}>%</span>
+              </div>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <div className={styles.fieldLabelRow}>
+                <span>Calificación (Opcional)</span>
+                <span style={{ color: 'var(--text-dim)' }}>1 a 10</span>
+              </div>
+              <input
+                type="number"
+                step="0.1"
+                min="1"
+                max="10"
+                className={styles.fieldInput}
+                value={nota}
+                onChange={(e) => setNota(e.target.value)}
+                placeholder="Dejar vacío si está pendiente"
+              />
+            </div>
+          </div>
+
+          {/* 6. Temario y Requisito Aprobatorio */}
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldLabelRow}>
+              <span>Temario o Unidades a Evaluar (Opcional)</span>
+              <span style={{ color: 'var(--text-dim)' }}>SEPARADO POR COMAS</span>
+            </div>
+            <input
+              type="text"
+              className={styles.fieldInput}
+              value={temarioText}
+              onChange={(e) => setTemarioText(e.target.value)}
+              placeholder="Ej: Unidad 1, Matrices y Espacios Vectoriales, Diagonalización"
+            />
+          </div>
+
+          <div style={{ padding: '4px 0' }}>
+            <label className={styles.checkboxRow}>
+              <input
+                type="checkbox"
+                className={styles.checkboxInput}
+                checked={esAprobatorio}
+                onChange={(e) => setEsAprobatorio(e.target.checked)}
+              />
+              <span>Instancia obligatoria para aprobar o regularizar la cursada</span>
+            </label>
+          </div>
+
           {/* Footer */}
           <div className={styles.modalFooter}>
             <span>Tip: La ponderación impacta en el cálculo de regularidad y promoción</span>
@@ -304,7 +495,11 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
                 className={styles.btnSubmit}
                 disabled={!titulo.trim() || isSubmitting}
               >
-                {isSubmitting ? 'Guardando...' : 'Guardar Evaluación'}
+                {isSubmitting
+                  ? 'Guardando...'
+                  : evaluationToEdit
+                  ? 'Guardar Cambios'
+                  : 'Guardar Evaluación'}
               </button>
             </div>
           </div>

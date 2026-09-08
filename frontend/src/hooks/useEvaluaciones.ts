@@ -29,17 +29,40 @@ export const useEvaluaciones = (materiaId?: string) => {
     fetchEvaluaciones();
   }, [fetchEvaluaciones]);
 
+  // Reactive listener for updates triggered from EvaluationModal or other views
+  useEffect(() => {
+    const handleUpdate = () => {
+      fetchEvaluaciones();
+    };
+    window.addEventListener('evaluaciones:updated', handleUpdate);
+    return () => window.removeEventListener('evaluaciones:updated', handleUpdate);
+  }, [fetchEvaluaciones]);
+
   const createEvaluacion = async (evalData: Partial<InstanciaEvaluacion>) => {
     const created = await evaluacionesService.createEvaluacion(evalData);
     setEvaluaciones(prev => [created, ...prev]);
     setProximas(prev => [created, ...prev]);
+    window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: created }));
     return created;
+  };
+
+  const updateEvaluacion = async (id: string, evalData: Partial<InstanciaEvaluacion>) => {
+    const updated = await evaluacionesService.updateEvaluacion(id, evalData);
+    setEvaluaciones(prev => prev.map(e => (e.id === id ? updated : e)));
+    if (updated.nota !== null && updated.nota !== undefined) {
+      setProximas(prev => prev.filter(e => e.id !== id));
+    } else {
+      setProximas(prev => prev.map(e => (e.id === id ? updated : e)));
+    }
+    window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: updated }));
+    return updated;
   };
 
   const updateNota = async (id: string, nota: number) => {
     const updated = await evaluacionesService.updateNota(id, nota);
     setEvaluaciones(prev => prev.map(e => (e.id === id ? updated : e)));
-    setProximas(prev => prev.map(e => (e.id === id ? updated : e)));
+    setProximas(prev => prev.filter(e => e.id !== id));
+    window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: updated }));
     return updated;
   };
 
@@ -47,6 +70,7 @@ export const useEvaluaciones = (materiaId?: string) => {
     await evaluacionesService.deleteEvaluacion(id);
     setEvaluaciones(prev => prev.filter(e => e.id !== id));
     setProximas(prev => prev.filter(e => e.id !== id));
+    window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: { id } }));
   };
 
   return {
@@ -56,6 +80,7 @@ export const useEvaluaciones = (materiaId?: string) => {
     error,
     refresh: fetchEvaluaciones,
     createEvaluacion,
+    updateEvaluacion,
     updateNota,
     deleteEvaluacion
   };

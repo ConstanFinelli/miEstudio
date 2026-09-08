@@ -25,8 +25,11 @@ import {
   MateriaModal,
 } from "../../components/modals";
 
+import type { InstanciaEvaluacion } from "../../types/academic";
+
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
+  onEditEvaluation?: (evaluation: InstanciaEvaluacion) => void;
   onOpenNoteModal?: () => void;
   onOpenMateriaModal?: () => void;
   onViewPdf: (title: string, url: string) => void;
@@ -34,6 +37,7 @@ interface MateriasViewProps {
 
 export const MateriasView: React.FC<MateriasViewProps> = ({
   onOpenEvaluationModal,
+  onEditEvaluation,
   onOpenMateriaModal,
   onViewPdf,
 }) => {
@@ -305,6 +309,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
             <EvaluationsList
               evaluations={materiaEvaluations}
               onOpenEvaluationModal={onOpenEvaluationModal}
+              onEditEvaluation={onEditEvaluation}
               onDeleteEvaluation={handleDeleteEvaluation}
             />
 

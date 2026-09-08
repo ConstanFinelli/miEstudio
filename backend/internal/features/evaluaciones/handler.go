@@ -21,6 +21,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 	group.Get("/proximas", h.GetProximas)
 	group.Get("/:id", h.GetByID)
 	group.Post("/", h.Create)
+	group.Put("/:id", h.Update)
 	group.Patch("/:id/nota", h.UpdateNota)
 	group.Delete("/:id", h.Delete)
 }
@@ -77,6 +78,25 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, err.Error())
 	}
 	return common.SendCreated(c, ToResponseDTO(*created))
+}
+
+func (h *Handler) Update(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var dto UpdateEvaluacionDTO
+	if err := c.BodyParser(&dto); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Datos de evaluación inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if dto.UsuarioID == "" {
+		dto.UsuarioID = userID
+	}
+
+	updated, err := h.service.UpdateEvaluacion(c.Context(), id, dto)
+	if err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+	return common.SendSuccess(c, ToResponseDTO(*updated))
 }
 
 func (h *Handler) UpdateNota(c *fiber.Ctx) error {

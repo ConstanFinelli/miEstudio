@@ -24,9 +24,19 @@ export const useCalendario = () => {
     fetchEventos();
   }, [fetchEventos]);
 
+  // Reactive listener for updates triggered from other views/components
+  useEffect(() => {
+    const handleUpdate = () => {
+      fetchEventos();
+    };
+    window.addEventListener('calendario:updated', handleUpdate);
+    return () => window.removeEventListener('calendario:updated', handleUpdate);
+  }, [fetchEventos]);
+
   const createEvento = async (evento: Partial<EventoCalendario>) => {
     const created = await calendarioService.createEvento(evento);
     setEventos(prev => [...prev, created]);
+    window.dispatchEvent(new CustomEvent('calendario:updated', { detail: created }));
     return created;
   };
 

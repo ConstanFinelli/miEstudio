@@ -25,7 +25,8 @@ func Init(cfg *config.Config) (*gorm.DB, error) {
 	log.Printf("[DB] Conectando a MySQL en %s:%s/%s...", cfg.DBHost, cfg.DBPort, cfg.DBName)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Warn),
+		Logger:                                   logger.Default.LogMode(logger.Warn),
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("falló conexión a MySQL: %w", err)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styles from "./CalendarioView.module.css";
-import type { EventoCalendario, TipoEvento } from "../../types/academic";
-import { useCalendario, useEvaluaciones } from "../../hooks";
+import type { EventoCalendario, TipoEvento, InstanciaEvaluacion } from "../../types/academic";
+import { useCalendario, useEvaluaciones, useMaterias } from "../../hooks";
 import {
   CalendarTopNav,
   CalendarFiltersBar,
@@ -18,11 +18,38 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
 }) => {
   const { eventos } = useCalendario();
   const { evaluaciones, deleteEvaluacion } = useEvaluaciones();
+  const { materias } = useMaterias();
 
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>("ALL");
+
+  // Auto-focus and jump month when an evaluation is created or updated
+  useEffect(() => {
+    const handleEvalCreatedOrUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<InstanciaEvaluacion | undefined>;
+      const createdOrUpdated = customEvent.detail;
+      if (createdOrUpdated?.id) {
+        setSelectedEventId(createdOrUpdated.id);
+        if (createdOrUpdated.fecha) {
+          const datePart = createdOrUpdated.fecha.includes("T")
+            ? createdOrUpdated.fecha.split("T")[0]
+            : createdOrUpdated.fecha;
+          const parts = datePart.split("-").map(Number);
+          if (parts.length >= 2 && parts[0] && parts[1]) {
+            setCurrentDate(new Date(parts[0], parts[1] - 1, parts[2] || 1));
+          }
+        }
+      }
+    };
+    window.addEventListener("evaluaciones:updated", handleEvalCreatedOrUpdated);
+    return () =>
+      window.removeEventListener(
+        "evaluaciones:updated",
+        handleEvalCreatedOrUpdated
+      );
+  }, []);
 
   const handleDeleteEvent = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
@@ -51,12 +78,24 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
       else if (ev.tipo === "QUIZ") tipoEvento = "ESTUDIO";
       else tipoEvento = "EXAMEN";
 
+      const matchedMateria = materias.find((m) => m.id === ev.materiaId);
+      const matCodigo =
+        matchedMateria?.codigo ||
+        (ev.materiaCodigo && ev.materiaCodigo !== "MAT"
+          ? ev.materiaCodigo
+          : "");
+      const matNombre =
+        matchedMateria?.nombre ||
+        (ev.materiaNombre && ev.materiaNombre !== "Materia"
+          ? ev.materiaNombre
+          : "Materia");
+
       return {
         id: ev.id,
-        titulo: `${ev.materiaCodigo ? ev.materiaCodigo + " - " : ""}${ev.titulo}`,
+        titulo: `${matCodigo ? matCodigo + " - " : ""}${ev.titulo}`,
         materiaId: ev.materiaId,
-        materiaCodigo: ev.materiaCodigo,
-        materiaNombre: ev.materiaNombre,
+        materiaCodigo: matCodigo,
+        materiaNombre: matNombre,
         tipo: tipoEvento,
         fecha: evDate,
         horarioInicio: ev.horario || "09:00",
@@ -71,7 +110,7 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
     const evalIds = new Set(evalAsEvents.map((e) => e.id));
     const otherEvents = eventos.filter((e) => !evalIds.has(e.id));
     return [...evalAsEvents, ...otherEvents];
-  }, [evaluaciones, eventos]);
+  }, [evaluaciones, eventos, materias]);
 
   // Filter events based on selected filter badge, year and cuatrimestre
   const filteredEvents = useMemo(() => {

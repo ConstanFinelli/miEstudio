@@ -48,6 +48,8 @@ export interface MateriaDTO {
 export interface EvaluacionDTO {
   id: string;
   materia_id: string;
+  materia_nombre?: string;
+  materia_codigo?: string;
   titulo: string;
   tipo: 'PARCIAL' | 'RECUPERATORIO' | 'FINAL' | 'TP' | 'LABORATORIO' | 'QUIZ';
   fecha: string;

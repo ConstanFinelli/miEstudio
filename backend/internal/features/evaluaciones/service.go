@@ -16,6 +16,7 @@ type Service interface {
 	ListProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error)
 	GetEvaluacion(ctx context.Context, id string) (*Evaluacion, error)
 	CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO) (*Evaluacion, error)
+	UpdateEvaluacion(ctx context.Context, id string, dto UpdateEvaluacionDTO) (*Evaluacion, error)
 	UpdateNota(ctx context.Context, id string, nota float64) (*Evaluacion, error)
 	DeleteEvaluacion(ctx context.Context, id string) error
 }
@@ -55,7 +56,7 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 		return nil, errors.New("el título de la evaluación es requerido")
 	}
 
-	parsedDate, err := time.Parse("2006-01-02", dto.Fecha)
+	parsedDate, err := time.ParseInLocation("2006-01-02", dto.Fecha, time.Local)
 	if err != nil {
 		parsedDate, err = time.Parse(time.RFC3339, dto.Fecha)
 		if err != nil {
@@ -75,10 +76,13 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 
 	if horario == "" {
 		horario = "09:00"
-	} else {
-		// Validar que sea un formato de hora válido de 24hs (HH:mm)
-		if _, err := time.Parse("15:04", horario); err != nil {
-			return nil, errors.New("formato de horario inválido, debe ser una hora válida HH:mm (ej: 19:00)")
+	} else if len(horario) == 8 && strings.Count(horario, ":") == 2 {
+		if parsedTime, err := time.Parse("15:04:05", horario); err == nil {
+			horario = parsedTime.Format("15:04")
+		}
+	} else if _, err := time.Parse("15:04", horario); err != nil {
+		if len(horario) > 20 {
+			horario = horario[:20]
 		}
 	}
 	peso := dto.Peso
@@ -122,7 +126,75 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 		return nil, err
 	}
 
+	if reloaded, err := s.repo.GetByID(ctx, evaluacion.ID); err == nil {
+		return reloaded, nil
+	}
+
 	return evaluacion, nil
+}
+
+func (s *service) UpdateEvaluacion(ctx context.Context, id string, dto UpdateEvaluacionDTO) (*Evaluacion, error) {
+	ev, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if dto.MateriaID != nil && *dto.MateriaID != "" {
+		ev.MateriaID = *dto.MateriaID
+	}
+	if dto.Titulo != nil && *dto.Titulo != "" {
+		ev.Titulo = *dto.Titulo
+	}
+	if dto.Tipo != nil && *dto.Tipo != "" {
+		ev.Tipo = *dto.Tipo
+	}
+	if dto.Fecha != nil && *dto.Fecha != "" {
+		if parsedDate, err := time.ParseInLocation("2006-01-02", *dto.Fecha, time.Local); err == nil {
+			ev.Fecha = parsedDate
+		} else if parsedDate, err := time.Parse(time.RFC3339, *dto.Fecha); err == nil {
+			ev.Fecha = parsedDate
+		}
+	}
+	if dto.Horario != nil {
+		h := strings.TrimSpace(*dto.Horario)
+		h = strings.TrimSuffix(h, " hs")
+		h = strings.TrimSuffix(h, "hs")
+		h = strings.TrimSpace(h)
+		if h != "" {
+			ev.Horario = h
+		}
+	}
+	if dto.ClearNota {
+		ev.Nota = nil
+	} else if dto.Nota != nil {
+		ev.Nota = dto.Nota
+	}
+	if dto.Peso != nil && *dto.Peso > 0 {
+		ev.Peso = *dto.Peso
+	}
+	if dto.EsAprobatorio != nil {
+		ev.EsAprobatorio = *dto.EsAprobatorio
+	}
+	if dto.Aula != nil {
+		ev.Aula = *dto.Aula
+	}
+	if dto.Modalidad != nil && *dto.Modalidad != "" {
+		ev.Modalidad = *dto.Modalidad
+	}
+	if dto.Temario != nil {
+		if bytes, err := json.Marshal(*dto.Temario); err == nil {
+			ev.Temario = string(bytes)
+		}
+	}
+
+	if err := s.repo.Update(ctx, ev); err != nil {
+		return nil, err
+	}
+
+	if reloaded, err := s.repo.GetByID(ctx, ev.ID); err == nil {
+		return reloaded, nil
+	}
+	return ev, nil
 }
 
 func (s *service) UpdateNota(ctx context.Context, id string, nota float64) (*Evaluacion, error) {

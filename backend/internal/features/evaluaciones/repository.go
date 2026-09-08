@@ -25,7 +25,7 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materiaID string) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
-	q := r.db.WithContext(ctx).Order("fecha asc")
+	q := r.db.WithContext(ctx).Preload("Materia").Order("fecha asc")
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
 	}
@@ -40,7 +40,7 @@ func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materia
 
 func (r *repository) GetProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
-	q := r.db.WithContext(ctx).Order("fecha asc")
+	q := r.db.WithContext(ctx).Preload("Materia").Where("nota IS NULL").Order("fecha asc")
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
 	}
@@ -55,7 +55,7 @@ func (r *repository) GetProximas(ctx context.Context, usuarioID string, limit in
 
 func (r *repository) GetByID(ctx context.Context, id string) (*Evaluacion, error) {
 	var evaluacion Evaluacion
-	if err := r.db.WithContext(ctx).First(&evaluacion, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Materia").First(&evaluacion, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &evaluacion, nil

@@ -209,8 +209,6 @@ export const mockEvaluaciones: InstanciaEvaluacion[] = [
     aula: 'Aula Magna Pabellón 3',
     modalidad: 'Presencial',
     temario: ['gRPC & Protocol Buffers', 'Raft Consensus Algorithm', 'Relojes Lógicos (Lamport)'],
-    asistencia: 92,
-    guiasCompletadas: '4 / 4',
     esAprobatorio: true,
     diasRestantes: 3
   },
@@ -229,8 +227,6 @@ export const mockEvaluaciones: InstanciaEvaluacion[] = [
     aula: 'Entrega GitHub Classroom',
     modalidad: 'Virtual',
     temario: ['Golang 1.22', 'PostgreSQL WAL parsing', 'Benchmarking CPU'],
-    asistencia: 85,
-    guiasCompletadas: '3 / 4',
     esAprobatorio: true,
     diasRestantes: 8
   },
@@ -249,8 +245,6 @@ export const mockEvaluaciones: InstanciaEvaluacion[] = [
     aula: 'Laboratorio Turing',
     modalidad: 'Presencial',
     temario: ['Flujo Máximo (Ford-Fulkerson)', 'Programación Lineal', 'NP-Completitud'],
-    asistencia: 88,
-    guiasCompletadas: '2 / 5',
     esAprobatorio: true,
     diasRestantes: 24
   },
@@ -269,8 +263,6 @@ export const mockEvaluaciones: InstanciaEvaluacion[] = [
     aula: 'Campus Virtual',
     modalidad: 'Virtual',
     temario: ['Consenso Raft', 'Heartbeats', 'RPC con Go'],
-    asistencia: 95,
-    guiasCompletadas: '4 / 4',
     esAprobatorio: true
   },
   {
@@ -288,8 +280,6 @@ export const mockEvaluaciones: InstanciaEvaluacion[] = [
     aula: 'Aula 302',
     modalidad: 'Presencial',
     temario: ['Consenso distribuido', 'Tolerancia a fallas bizantinas', 'DHT Chord'],
-    asistencia: 90,
-    guiasCompletadas: '0 / 3',
     esAprobatorio: true
   }
 ];

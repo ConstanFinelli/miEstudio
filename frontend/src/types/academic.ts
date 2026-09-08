@@ -75,8 +75,6 @@ export interface InstanciaEvaluacion {
   aula: string;
   modalidad: "Presencial" | "Virtual";
   temario: string[];
-  asistencia: number;
-  guiasCompletadas: string;
   esAprobatorio: boolean;
   diasRestantes?: number;
 }

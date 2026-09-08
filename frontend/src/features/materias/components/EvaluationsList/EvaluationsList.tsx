@@ -6,12 +6,14 @@ import type { InstanciaEvaluacion } from "../../../../types/academic";
 interface EvaluationsListProps {
   evaluations: InstanciaEvaluacion[];
   onOpenEvaluationModal: () => void;
+  onEditEvaluation?: (evaluation: InstanciaEvaluacion) => void;
   onDeleteEvaluation?: (id: string, titulo: string) => void;
 }
 
 export const EvaluationsList: React.FC<EvaluationsListProps> = ({
   evaluations,
   onOpenEvaluationModal,
+  onEditEvaluation,
   onDeleteEvaluation,
 }) => {
   return (
@@ -83,17 +85,30 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
                 </span>
               </div>
             ) : (
-              <button
-                className={styles.btnActionLight}
-                onClick={() => alert("Cargar calificación")}
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "var(--text-muted)",
+                  fontFamily: "var(--font-mono)",
+                  padding: "3px 8px",
+                  borderRadius: "var(--radius-sm)",
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--border-subtle)",
+                }}
               >
-                Ingresar Nota
-              </button>
+                Sin nota
+              </span>
             )}
 
-            <button className={styles.iconBtnSmall} title="Editar">
-              <Edit2 size={12} />
-            </button>
+            {onEditEvaluation && (
+              <button
+                className={styles.iconBtnSmall}
+                title="Editar evaluación"
+                onClick={() => onEditEvaluation(evalItem)}
+              >
+                <Edit2 size={12} />
+              </button>
+            )}
             {onDeleteEvaluation && (
               <button
                 className={styles.iconBtnSmall}

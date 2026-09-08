@@ -4,8 +4,8 @@ import type { InstanciaEvaluacion } from '../../types/academic';
 export const evaluacionMapper = {
   toEvaluacion(
     dto: EvaluacionDTO,
-    materiaNombre: string = 'Materia',
-    materiaCodigo: string = 'MAT'
+    materiaNombre?: string,
+    materiaCodigo?: string
   ): InstanciaEvaluacion {
     let temarioList: string[] = [];
     if (Array.isArray(dto.temario)) {
@@ -26,21 +26,19 @@ export const evaluacionMapper = {
     return {
       id: dto.id,
       materiaId: dto.materia_id,
-      materiaCodigo,
-      materiaNombre,
+      materiaCodigo: dto.materia_codigo || materiaCodigo || 'MAT',
+      materiaNombre: dto.materia_nombre || materiaNombre || 'Materia',
       titulo: dto.titulo,
       tipo: dto.tipo,
       fecha: dto.fecha,
-      horario: dto.horario || '08:30 - 11:30 hs',
-      peso: dto.peso,
+      horario: dto.horario || '09:00',
+      peso: dto.peso ?? 25,
       nota: dto.nota,
-      estado: dto.nota !== null ? 'CALIFICADO' : 'PENDIENTE',
-      aula: dto.aula || 'Aula Magna',
+      estado: dto.nota !== null && dto.nota !== undefined ? 'CALIFICADO' : 'PENDIENTE',
+      aula: dto.aula || 'A confirmar',
       modalidad: dto.modalidad || 'Presencial',
       temario: temarioList,
-      asistencia: 100,
-      guiasCompletadas: '3/3 Guías',
-      esAprobatorio: dto.es_aprobatorio
+      esAprobatorio: dto.es_aprobatorio ?? true
     };
   },
 
