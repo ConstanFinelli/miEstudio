@@ -103,8 +103,8 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                     <span className={styles.projectionHighlight}>
                       {materia.reglasAcreditacion?.promocion?.permitePromocion === false
                         ? 'Examen Final Obligatorio'
-                        : (materia.promedio >= (materia.reglasAcreditacion?.promocion?.minPromedio || 8.0)
-                            ? `☍ En camino a Promoción (≥ ${materia.reglasAcreditacion?.promocion?.minPromedio || 8.0})`
+                        : (materia.promedio >= (materia.reglasAcreditacion?.promocion?.minPromedio ?? 7.0)
+                            ? '☍ En camino a Promoción'
                             : 'Regular (Final Pendiente)')}
                     </span>
                   </div>

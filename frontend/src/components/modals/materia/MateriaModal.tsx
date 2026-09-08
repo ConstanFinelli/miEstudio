@@ -57,9 +57,8 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
 
   // Reglas de acreditación configurables
   const [permitePromocion, setPermitePromocion] = useState(true);
-  const [minPromedio, setMinPromedio] = useState(8.0);
-  const [minParcial, setMinParcial] = useState(7.0);
-  const [minNotaRegular, setMinNotaRegular] = useState(4.0);
+  const [condicionPromocion, setCondicionPromocion] = useState('Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)');
+  const [condicionRegularidad, setCondicionRegularidad] = useState('Todas las evaluaciones ≥ 4.0 y requisitos de cátedra');
   const [minAsistencia, setMinAsistencia] = useState(75);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,9 +76,16 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setProfesorTitular(materiaToEdit.profesores?.titular || '');
       setProfesorJtp(materiaToEdit.profesores?.jtp || '');
       setPermitePromocion(materiaToEdit.reglasAcreditacion?.promocion?.permitePromocion ?? true);
-      setMinPromedio(materiaToEdit.reglasAcreditacion?.promocion?.minPromedio ?? 8.0);
-      setMinParcial(materiaToEdit.reglasAcreditacion?.promocion?.minParcial ?? 7.0);
-      setMinNotaRegular(materiaToEdit.reglasAcreditacion?.regularidad?.minNota ?? 4.0);
+      setCondicionPromocion(
+        materiaToEdit.reglasAcreditacion?.promocion?.condicion ||
+        materiaToEdit.reglasAcreditacion?.promocion?.descripcion ||
+        'Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)'
+      );
+      setCondicionRegularidad(
+        materiaToEdit.reglasAcreditacion?.regularidad?.condicion ||
+        materiaToEdit.reglasAcreditacion?.regularidad?.descripcion ||
+        'Todas las evaluaciones ≥ 4.0 y requisitos de cátedra'
+      );
       setMinAsistencia(materiaToEdit.reglasAcreditacion?.regularidad?.minAsistencia ?? 75);
       setNotaFinal(materiaToEdit.promedio && materiaToEdit.promedio > 0 ? materiaToEdit.promedio : 8);
       setTipoAprobacion(materiaToEdit.estado === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
@@ -98,9 +104,8 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setProfesorTitular('');
       setProfesorJtp('');
       setPermitePromocion(true);
-      setMinPromedio(8.0);
-      setMinParcial(7.0);
-      setMinNotaRegular(4.0);
+      setCondicionPromocion('Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)');
+      setCondicionRegularidad('Todas las evaluaciones ≥ 4.0 y requisitos de cátedra');
       setMinAsistencia(75);
       setNotaFinal(8);
       setFechaAprobacion(new Date().toISOString().split('T')[0]);
@@ -138,19 +143,16 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         reglasAcreditacion: {
           promocion: {
             permitePromocion,
-            minPromedio: permitePromocion ? minPromedio : 0,
-            minParcial: permitePromocion ? minParcial : 0,
-            permiteRecuperatorio: false,
+            condicion: permitePromocion ? condicionPromocion.trim() : 'Sin promoción directa. Examen final obligatorio.',
             minAsistencia: 80,
-            descripcion: permitePromocion
-              ? `Promedio ≥ ${minPromedio.toFixed(1)}, parciales ≥ ${minParcial.toFixed(1)} sin recuperatorio.`
-              : 'Sin promoción directa. Examen final obligatorio para acreditar la materia.'
+            permiteRecuperatorio: false,
+            descripcion: permitePromocion ? condicionPromocion.trim() : 'Sin promoción directa. Examen final obligatorio.'
           },
           regularidad: {
-            minNota: minNotaRegular,
+            condicion: condicionRegularidad.trim() || 'Evaluaciones ≥ 4.0 y requisitos de cátedra',
             minAsistencia,
             permiteRecuperatorio: true,
-            descripcion: `Evaluaciones ≥ ${minNotaRegular.toFixed(1)} y ${minAsistencia}% de asistencia mínima.`
+            descripcion: condicionRegularidad.trim() || 'Evaluaciones ≥ 4.0 y requisitos de cátedra'
           }
         }
       };
@@ -450,31 +452,15 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
             </div>
 
             {permitePromocion ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label} style={{ fontSize: '10px' }}>Promedio Mínimo para Promover</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="1"
-                    max="10"
-                    className={styles.input}
-                    value={minPromedio}
-                    onChange={e => setMinPromedio(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.label} style={{ fontSize: '10px' }}>Nota Mínima por Parcial</label>
-                  <input
-                    type="number"
-                    step="0.5"
-                    min="1"
-                    max="10"
-                    className={styles.input}
-                    value={minParcial}
-                    onChange={e => setMinParcial(parseFloat(e.target.value) || 0)}
-                  />
-                </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label} style={{ fontSize: '10px' }}>Condición para Promoción Directa</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  placeholder="Ej: Promedio ≥ 8.0, parciales ≥ 7.0 y coloquio aprobado"
+                  value={condicionPromocion}
+                  onChange={e => setCondicionPromocion(e.target.value)}
+                />
               </div>
             ) : (
               <div style={{ fontSize: '11px', color: 'var(--amber)', backgroundColor: 'var(--amber-alpha)', padding: '6px 10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--amber-border)' }}>
@@ -482,21 +468,19 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
               <div className={styles.formGroup}>
-                <label className={styles.label} style={{ fontSize: '10px' }}>Nota Mín. Regularidad (Parciales)</label>
+                <label className={styles.label} style={{ fontSize: '10px' }}>Condición para Regularizar Cursada</label>
                 <input
-                  type="number"
-                  step="0.5"
-                  min="1"
-                  max="10"
+                  type="text"
                   className={styles.input}
-                  value={minNotaRegular}
-                  onChange={e => setMinNotaRegular(parseFloat(e.target.value) || 0)}
+                  placeholder="Ej: Parciales ≥ 4.0, TPs entregados y 75% asistencia"
+                  value={condicionRegularidad}
+                  onChange={e => setCondicionRegularidad(e.target.value)}
                 />
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.label} style={{ fontSize: '10px' }}>Asistencia Mínima Requerida (%)</label>
+                <label className={styles.label} style={{ fontSize: '10px' }}>Asistencia Mínima (%)</label>
                 <input
                   type="number"
                   min="0"

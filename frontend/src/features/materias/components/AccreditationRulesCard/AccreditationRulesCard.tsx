@@ -55,22 +55,24 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
             )}
           </div>
 
-          <p className={styles.ruleCardDesc}>
-            {promo?.descripcion ||
-              (isPromoEnabled
-                ? "Promedio ≥ 8.0, parciales ≥ 7.0 sin recuperatorio."
-                : "Sin promoción directa. Examen final obligatorio para acreditar la materia.")}
-          </p>
+          {isPromoEnabled ? (
+            <div className={styles.conditionBox}>
+              <span className={styles.conditionLabel}>Requisito de Promoción:</span>
+              <p className={styles.conditionText}>
+                {promo?.condicion ||
+                  promo?.descripcion ||
+                  "Promedio ≥ 8.0 y evaluaciones ≥ 7.0 sin recuperatorio."}
+              </p>
+            </div>
+          ) : (
+            <p className={styles.ruleCardDesc}>
+              Sin promoción directa. Examen final obligatorio para acreditar la materia.
+            </p>
+          )}
 
           <div className={styles.rulePills}>
             {isPromoEnabled ? (
               <>
-                <span className={styles.rulePill}>
-                  Promedio mín: <strong>≥ {promo?.minPromedio ?? 8.0}</strong>
-                </span>
-                <span className={styles.rulePill}>
-                  Parcial mín: <strong>≥ {promo?.minParcial ?? 7.0}</strong>
-                </span>
                 <span className={styles.rulePill}>
                   Asistencia: <strong>≥ {promo?.minAsistencia ?? 80}%</strong>
                 </span>
@@ -105,15 +107,16 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
             <span className={styles.ruleBadgeActive}>REGULARIDAD</span>
           </div>
 
-          <p className={styles.ruleCardDesc}>
-            {regu?.descripcion ||
-              "Todas las evaluaciones ≥ 4.0 y 75% de asistencia mínima requerida."}
-          </p>
+          <div className={styles.conditionBox}>
+            <span className={styles.conditionLabel}>Requisito de Regularidad:</span>
+            <p className={styles.conditionText}>
+              {regu?.condicion ||
+                regu?.descripcion ||
+                "Todas las evaluaciones ≥ 4.0 y requisitos de cátedra cumplidos."}
+            </p>
+          </div>
 
           <div className={styles.rulePills}>
-            <span className={styles.rulePill}>
-              Parciales: <strong>≥ {regu?.minNota ?? 4.0}</strong>
-            </span>
             <span className={styles.rulePill}>
               Asistencia requerida:{" "}
               <strong>≥ {regu?.minAsistencia ?? 75}%</strong>

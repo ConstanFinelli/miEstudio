@@ -1,7 +1,7 @@
-import React from 'react';
-import styles from './EvaluationsList.module.css';
-import { FileText, Plus, Edit2, Trash2 } from 'lucide-react';
-import type { InstanciaEvaluacion } from '../../../../types/academic';
+import React from "react";
+import styles from "./EvaluationsList.module.css";
+import { FileText, Plus, Edit2, Trash2 } from "lucide-react";
+import type { InstanciaEvaluacion } from "../../../../types/academic";
 
 interface EvaluationsListProps {
   evaluations: InstanciaEvaluacion[];
@@ -12,17 +12,27 @@ interface EvaluationsListProps {
 export const EvaluationsList: React.FC<EvaluationsListProps> = ({
   evaluations,
   onOpenEvaluationModal,
-  onDeleteEvaluation
+  onDeleteEvaluation,
 }) => {
   return (
     <div className={styles.evalListSection}>
       <div className={styles.evalListHeader}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "11px",
+            color: "var(--text-muted)",
+          }}
+        >
           INSTANCIAS DE EVALUACIÓN ({evaluations.length} REGISTRADAS)
         </div>
-        <button className={styles.btnPrimary} onClick={onOpenEvaluationModal} style={{ padding: '4px 10px', fontSize: '11px' }}>
+        <button
+          className={styles.btnPrimary}
+          onClick={onOpenEvaluationModal}
+          style={{ padding: "4px 10px", fontSize: "11px" }}
+        >
           <Plus size={12} />
-          <span>+ Agregar Instancia de Evaluación</span>
+          <span>Agregar Instancia de Evaluación</span>
         </button>
       </div>
 
@@ -34,16 +44,33 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
             </div>
             <div className={styles.evalInfo}>
               <div className={styles.evalMetaPills}>
-                <span style={{ background: 'var(--surface-3)', padding: '1px 5px', borderRadius: '2px', color: 'var(--text-secondary)' }}>
+                <span
+                  style={{
+                    background: "var(--surface-3)",
+                    padding: "1px 5px",
+                    borderRadius: "2px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
                   {evalItem.tipo}
                 </span>
-                <span>Fecha: {new Date(evalItem.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                <span>
+                  Fecha:{" "}
+                  {new Date(evalItem.fecha).toLocaleDateString("es-AR", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
                 <span>Peso: {evalItem.peso}%</span>
               </div>
               <div className={styles.evalItemTitle}>{evalItem.titulo}</div>
-              {Array.isArray(evalItem.temario) && evalItem.temario.length > 0 && (
-                <div className={styles.evalItemSub}>{evalItem.temario.join(', ')}</div>
-              )}
+              {Array.isArray(evalItem.temario) &&
+                evalItem.temario.length > 0 && (
+                  <div className={styles.evalItemSub}>
+                    {evalItem.temario.join(", ")}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -51,10 +78,15 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
             {evalItem.nota !== null ? (
               <div className={styles.scorePill}>
                 <span>{evalItem.nota.toFixed(1)}</span>
-                <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>/ 10</span>
+                <span style={{ fontSize: "11px", color: "var(--text-dim)" }}>
+                  / 10
+                </span>
               </div>
             ) : (
-              <button className={styles.btnActionLight} onClick={() => alert('Cargar calificación')}>
+              <button
+                className={styles.btnActionLight}
+                onClick={() => alert("Cargar calificación")}
+              >
                 Ingresar Nota
               </button>
             )}

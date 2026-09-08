@@ -1,13 +1,13 @@
-import React from 'react';
-import styles from './MateriasHeader.module.css';
-import { Plus } from 'lucide-react';
+import React from "react";
+import styles from "./MateriasHeader.module.css";
+import { Plus } from "lucide-react";
 
 interface MateriasHeaderProps {
   onRegisterMateria?: () => void;
 }
 
 export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
-  onRegisterMateria
+  onRegisterMateria,
 }) => {
   return (
     <div className={styles.headerArea}>
@@ -17,7 +17,9 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
           <span>·</span>
           <span>PLAN DE ESTUDIO</span>
           <span>·</span>
-          <span style={{ color: 'var(--text-dim)' }}>SEGUIMIENTO ACADÉMICO</span>
+          <span style={{ color: "var(--text-dim)" }}>
+            SEGUIMIENTO ACADÉMICO
+          </span>
         </div>
 
         <div className={styles.headerTitleRow}>
@@ -26,7 +28,7 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
         </div>
 
         <p className={styles.pageDesc}>
-          Control de correlatividades, ponderación por instancia de examen y proyección de regularidad y promoción directa.
+          Seguimiento de instancias de examen, ponderación y proyección de regularidad y acreditación.
         </p>
       </div>
 
@@ -34,7 +36,7 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
         {onRegisterMateria && (
           <button className={styles.btnPrimary} onClick={onRegisterMateria}>
             <Plus size={14} />
-            <span>+ Registrar Materia</span>
+            <span>Registrar Materia</span>
           </button>
         )}
       </div>

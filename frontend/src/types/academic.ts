@@ -23,20 +23,22 @@ export interface Materia {
   reglasAcreditacion: {
     promocion: {
       permitePromocion?: boolean;
-      minPromedio: number;
-      minParcial: number;
-      permiteRecuperatorio: boolean;
+      condicion: string;
+      minPromedio?: number;
+      minParcial?: number;
+      permiteRecuperatorio?: boolean;
       minAsistencia?: number;
-      descripcion: string;
+      descripcion?: string;
     };
     regularidad: {
-      minNota: number;
-      minAsistencia: number;
+      condicion: string;
+      minNota?: number;
+      minAsistencia?: number;
       permiteRecuperatorio?: boolean;
-      descripcion: string;
+      descripcion?: string;
     };
   };
-  correlativas: {
+  correlativas?: {
     requiere: { materiaId: string; codigo: string; nombre: string; estado: EstadoMateria }[];
     habilita: { materiaId: string; codigo: string; nombre: string; anio: number }[];
   };

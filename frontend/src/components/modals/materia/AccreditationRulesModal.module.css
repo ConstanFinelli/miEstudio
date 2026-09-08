@@ -335,3 +335,37 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.chipsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.chipsLabel {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+
+.chipBtn {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.chipBtn:hover {
+  background-color: var(--surface-3);
+  border-color: var(--primary);
+  color: var(--primary);
+}

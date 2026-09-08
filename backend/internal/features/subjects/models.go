@@ -11,15 +11,17 @@ import (
 
 type ReglaPromocionDTO struct {
 	PermitePromocion     bool    `json:"permite_promocion"`
-	MinPromedio          float64 `json:"min_promedio"`
-	MinParcial           float64 `json:"min_parcial"`
+	Condicion            string  `json:"condicion"`
+	MinPromedio          float64 `json:"min_promedio,omitempty"`
+	MinParcial           float64 `json:"min_parcial,omitempty"`
 	PermiteRecuperatorio bool    `json:"permite_recuperatorio"`
 	MinAsistencia        int     `json:"min_asistencia"`
 	Descripcion          string  `json:"descripcion"`
 }
 
 type ReglaRegularidadDTO struct {
-	MinNota              float64 `json:"min_nota"`
+	Condicion            string  `json:"condicion"`
+	MinNota              float64 `json:"min_nota,omitempty"`
 	MinAsistencia        int     `json:"min_asistencia"`
 	PermiteRecuperatorio bool    `json:"permite_recuperatorio"`
 	Descripcion          string  `json:"descripcion"`
@@ -34,6 +36,7 @@ func DefaultReglasAcreditacion() ReglasAcreditacionDTO {
 	return ReglasAcreditacionDTO{
 		Promocion: ReglaPromocionDTO{
 			PermitePromocion:     true,
+			Condicion:            "Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)",
 			MinPromedio:          8.0,
 			MinParcial:           7.0,
 			PermiteRecuperatorio: false,
@@ -41,6 +44,7 @@ func DefaultReglasAcreditacion() ReglasAcreditacionDTO {
 			Descripcion:          "Promedio ≥ 8.0, parciales ≥ 7.0, sin recuperatorio y 80% de asistencia mínima.",
 		},
 		Regularidad: ReglaRegularidadDTO{
+			Condicion:            "Todas las evaluaciones ≥ 4.0 y TPs de cátedra aprobados",
 			MinNota:              4.0,
 			MinAsistencia:        75,
 			PermiteRecuperatorio: true,
@@ -73,7 +77,25 @@ func (r *ReglasAcreditacionDTO) Scan(value interface{}) error {
 		*r = DefaultReglasAcreditacion()
 		return nil
 	}
-	return json.Unmarshal(bytes, r)
+	if err := json.Unmarshal(bytes, r); err != nil {
+		return err
+	}
+	// Retrocompatibilidad: si no tenía condición previa, inferir de la descripción
+	if r.Promocion.Condicion == "" {
+		if r.Promocion.Descripcion != "" {
+			r.Promocion.Condicion = r.Promocion.Descripcion
+		} else {
+			r.Promocion.Condicion = "Promedio ≥ 8.0 y parciales ≥ 7.0"
+		}
+	}
+	if r.Regularidad.Condicion == "" {
+		if r.Regularidad.Descripcion != "" {
+			r.Regularidad.Condicion = r.Regularidad.Descripcion
+		} else {
+			r.Regularidad.Condicion = "Evaluaciones ≥ 4.0 y requisitos de cátedra"
+		}
+	}
+	return nil
 }
 
 type Materia struct {

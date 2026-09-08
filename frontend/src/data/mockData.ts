@@ -49,12 +49,14 @@ export const mockMaterias: Materia[] = [
     reglasAcreditacion: {
       promocion: {
         permitePromocion: true,
+        condicion: 'Promedio ≥ 8.0 y cada parcial individual ≥ 7.0 (sin recuperatorio)',
         minPromedio: 8.0,
         minParcial: 7.0,
         permiteRecuperatorio: false,
         descripcion: 'Promedio ≥ 8.0 y cada parcial individual ≥ 7.0 (sin recuperatorio mayor).'
       },
       regularidad: {
+        condicion: 'Parciales ≥ 4.0, 75% de asistencia y TP de Laboratorio de Redes aprobado',
         minNota: 4.0,
         minAsistencia: 75,
         descripcion: 'Todos los parciales ≥ 4.0 y 75% de asistencia mínima requerida.'
@@ -88,12 +90,14 @@ export const mockMaterias: Materia[] = [
     reglasAcreditacion: {
       promocion: {
         permitePromocion: false,
+        condicion: 'Sin promoción directa. Examen final obligatorio para acreditar la materia.',
         minPromedio: 0,
         minParcial: 0,
         permiteRecuperatorio: false,
         descripcion: 'Sin promoción directa. Examen final obligatorio para acreditar la materia.'
       },
       regularidad: {
+        condicion: '2 parciales aprobados con 4+, TP de SQL grupal entregado y aprobado',
         minNota: 4.0,
         minAsistencia: 75,
         descripcion: 'Nota en exámenes ≥ 4.0 y entregas completas.'
@@ -126,12 +130,14 @@ export const mockMaterias: Materia[] = [
     reglasAcreditacion: {
       promocion: {
         permitePromocion: true,
+        condicion: 'Parciales teóricos ≥ 7.5 en 1° intento y coloquio práctico aprobado',
         minPromedio: 8.0,
         minParcial: 7.5,
         permiteRecuperatorio: false,
         descripcion: 'Parciales teóricos ≥ 7.5 y coloquio práctico.'
       },
       regularidad: {
+        condicion: 'Promedio general ≥ 5.0, 75% asistencia a talleres y 4 de 5 TPs aprobados',
         minNota: 5.0,
         minAsistencia: 75,
         descripcion: 'Promedio general ≥ 5.0.'
@@ -165,12 +171,14 @@ export const mockMaterias: Materia[] = [
     reglasAcreditacion: {
       promocion: {
         permitePromocion: true,
+        condicion: 'Promocionada con distinción: Parciales ≥ 8 y coloquio de assembler',
         minPromedio: 8.0,
         minParcial: 7.0,
         permiteRecuperatorio: false,
         descripcion: 'Promocionada con distinción.'
       },
       regularidad: {
+        condicion: 'Parciales ≥ 4 y prácticas de laboratorio en Logisim aprobadas',
         minNota: 4.0,
         minAsistencia: 75,
         descripcion: 'Condición cumplida.'
@@ -202,12 +210,14 @@ export const mockMaterias: Materia[] = [
     reglasAcreditacion: {
       promocion: {
         permitePromocion: true,
+        condicion: 'Aprobada en mesa de final #1042 tras regularizar',
         minPromedio: 8.0,
         minParcial: 8.0,
         permiteRecuperatorio: false,
         descripcion: 'Aprobada en mesa de final #1042.'
       },
       regularidad: {
+        condicion: '3 parciales de paradigmas ≥ 4 y TP Wollok aprobado',
         minNota: 4.0,
         minAsistencia: 75,
         descripcion: 'Condición cumplida.'

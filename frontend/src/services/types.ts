@@ -6,15 +6,17 @@
 
 export interface ReglaPromocionDTO {
   permite_promocion: boolean;
-  min_promedio: number;
-  min_parcial: number;
+  condicion?: string;
+  min_promedio?: number;
+  min_parcial?: number;
   permite_recuperatorio: boolean;
   min_asistencia: number;
   descripcion: string;
 }
 
 export interface ReglaRegularidadDTO {
-  min_nota: number;
+  condicion?: string;
+  min_nota?: number;
   min_asistencia: number;
   permite_recuperatorio: boolean;
   descripcion: string;

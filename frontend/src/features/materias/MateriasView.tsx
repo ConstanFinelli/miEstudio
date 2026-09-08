@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import styles from './MateriasView.module.css';
-import { BookOpen, Plus } from 'lucide-react';
-import type { Materia } from '../../types/academic';
-import { useMaterias, useEvaluaciones, useMateriales, useHorarios } from '../../hooks';
+import React, { useState, useEffect } from "react";
+import styles from "./MateriasView.module.css";
+import { BookOpen, Plus } from "lucide-react";
+import type { Materia } from "../../types/academic";
+import {
+  useMaterias,
+  useEvaluaciones,
+  useMateriales,
+  useHorarios,
+} from "../../hooks";
 import {
   MateriasHeader,
   MateriasFilterBar,
@@ -10,12 +15,15 @@ import {
   MateriaDetailHeader,
   AccreditationRulesCard,
   EvaluationsList,
-  CorrelativesCard,
   MaterialsManager,
-  MateriaSchedulesCard
-} from './components';
+  MateriaSchedulesCard,
+} from "./components";
 
-import { AccreditationRulesModal, UploadMaterialModal, MateriaModal } from '../../components/modals';
+import {
+  AccreditationRulesModal,
+  UploadMaterialModal,
+  MateriaModal,
+} from "../../components/modals";
 
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
@@ -27,104 +35,119 @@ interface MateriasViewProps {
 export const MateriasView: React.FC<MateriasViewProps> = ({
   onOpenEvaluationModal,
   onOpenMateriaModal,
-  onViewPdf
+  onViewPdf,
 }) => {
-  const [selectedYear, setSelectedYear] = useState<number | 'TODOS'>('TODOS');
-  const [selectedCuatri, setSelectedCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
-  const [selectedEstado, setSelectedEstado] = useState<string>('TODOS');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMateriaId, setSelectedMateriaId] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<number | "TODOS">("TODOS");
+  const [selectedCuatri, setSelectedCuatri] = useState<
+    "TODOS" | "1C" | "2C" | "Anual"
+  >("TODOS");
+  const [selectedEstado, setSelectedEstado] = useState<string>("TODOS");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMateriaId, setSelectedMateriaId] = useState<string>("");
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditMateriaModalOpen, setIsEditMateriaModalOpen] = useState(false);
 
-  const { materias, isLoading: isMateriasLoading, deleteMateria, updateMateria } = useMaterias();
+  const {
+    materias,
+    isLoading: isMateriasLoading,
+    deleteMateria,
+    updateMateria,
+  } = useMaterias();
 
   const handleDeleteMateria = async (id: string, nombre: string) => {
     const confirmDelete = window.confirm(
-      `¿Estás seguro de que deseas eliminar "${nombre}"? Esta acción eliminará la cursada y sus registros asociados.`
+      `¿Estás seguro de que deseas eliminar "${nombre}"? Esta acción eliminará la cursada y sus registros asociados.`,
     );
     if (!confirmDelete) return;
 
     try {
       await deleteMateria(id);
-      const remaining = materias.filter(m => m.id !== id);
+      const remaining = materias.filter((m) => m.id !== id);
       if (remaining.length > 0) {
         setSelectedMateriaId(remaining[0].id);
       } else {
-        setSelectedMateriaId('');
+        setSelectedMateriaId("");
       }
     } catch (err) {
-      console.error('Error al eliminar materia:', err);
-      alert('Ocurrió un error al intentar eliminar la materia.');
+      console.error("Error al eliminar materia:", err);
+      alert("Ocurrió un error al intentar eliminar la materia.");
     }
   };
 
   // Filtered materias list applying Year (1-6 o TODOS), Cuatrimestre, Estado and Search
-  const filteredMaterias = materias.filter(m => {
-    if (selectedYear !== 'TODOS' && m.anio !== selectedYear) return false;
-    if (selectedCuatri !== 'TODOS' && m.cuatrimestre !== selectedCuatri) return false;
-    if (selectedEstado !== 'TODOS' && m.estado !== selectedEstado) return false;
-    if (searchQuery.trim() !== '') {
+  const filteredMaterias = materias.filter((m) => {
+    if (selectedYear !== "TODOS" && m.anio !== selectedYear) return false;
+    if (selectedCuatri !== "TODOS" && m.cuatrimestre !== selectedCuatri)
+      return false;
+    if (selectedEstado !== "TODOS" && m.estado !== selectedEstado) return false;
+    if (searchQuery.trim() !== "") {
       const q = searchQuery.toLowerCase();
-      return m.nombre.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q);
+      return (
+        m.nombre.toLowerCase().includes(q) || m.codigo.toLowerCase().includes(q)
+      );
     }
     return true;
   });
 
   // Selected materia prioritizes matching selected ID within filtered list
   const selectedMateria: Materia | undefined =
-    filteredMaterias.find(m => m.id === selectedMateriaId) || filteredMaterias[0];
+    filteredMaterias.find((m) => m.id === selectedMateriaId) ||
+    filteredMaterias[0];
 
   // Evaluations for this materia
-  const { evaluaciones: materiaEvaluations, deleteEvaluacion } = useEvaluaciones(selectedMateria?.id);
+  const { evaluaciones: materiaEvaluations, deleteEvaluacion } =
+    useEvaluaciones(selectedMateria?.id);
 
   // Materials for this materia
   const {
     materiales: materiaMaterials,
     uploadMaterial,
-    deleteMaterial
+    deleteMaterial,
   } = useMateriales(selectedMateria?.id);
 
   // Schedules for this materia
   const {
     horarios: materiaHorarios,
     refresh: refreshHorarios,
-    deleteHorario: deleteHorarioCursada
+    deleteHorario: deleteHorarioCursada,
   } = useHorarios(selectedMateria?.id);
-
 
   const handleDeleteEvaluation = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
-      `¿Estás seguro de que deseas eliminar la evaluación "${titulo}"?`
+      `¿Estás seguro de que deseas eliminar la evaluación "${titulo}"?`,
     );
     if (!confirmDelete) return;
 
     try {
       await deleteEvaluacion(id);
     } catch (err) {
-      console.error('Error al eliminar evaluación:', err);
-      alert('Ocurrió un error al eliminar la evaluación.');
+      console.error("Error al eliminar evaluación:", err);
+      alert("Ocurrió un error al eliminar la evaluación.");
     }
   };
 
   const handleDeleteMaterial = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
-      `¿Estás seguro de que deseas eliminar el material "${titulo}"?`
+      `¿Estás seguro de que deseas eliminar el material "${titulo}"?`,
     );
     if (!confirmDelete) return;
 
     try {
       await deleteMaterial(id);
     } catch (err) {
-      console.error('Error al eliminar material:', err);
-      alert('Ocurrió un error al eliminar el material.');
+      console.error("Error al eliminar material:", err);
+      alert("Ocurrió un error al eliminar el material.");
     }
   };
 
   // Set initial selected id when materias load
   useEffect(() => {
-    if (filteredMaterias.length > 0 && (!selectedMateriaId || !filteredMaterias.some(m => m.id === selectedMateriaId))) {
+    if (
+      filteredMaterias.length > 0 &&
+      (!selectedMateriaId ||
+        !filteredMaterias.some((m) => m.id === selectedMateriaId))
+    ) {
       setSelectedMateriaId(filteredMaterias[0].id);
     }
   }, [filteredMaterias, selectedMateriaId]);
@@ -137,50 +160,68 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   if (materias.length === 0) {
     return (
       <div className={styles.container}>
-        <MateriasHeader
-          onRegisterMateria={onOpenMateriaModal}
-        />
-        <div style={{
-          backgroundColor: 'var(--surface-1)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-md)',
-          padding: '60px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '16px',
-          textAlign: 'center',
-          marginTop: '20px'
-        }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--surface-2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--primary)'
-          }}>
+        <MateriasHeader onRegisterMateria={onOpenMateriaModal} />
+        <div
+          style={{
+            backgroundColor: "var(--surface-1)",
+            border: "1px solid var(--border-subtle)",
+            borderRadius: "var(--radius-md)",
+            padding: "60px 24px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+            textAlign: "center",
+            marginTop: "20px",
+          }}
+        >
+          <div
+            style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "50%",
+              backgroundColor: "var(--surface-2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--primary)",
+            }}
+          >
             <BookOpen size={28} />
           </div>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+            <h2
+              style={{
+                fontSize: "18px",
+                fontWeight: 700,
+                color: "var(--text-primary)",
+                marginBottom: "6px",
+              }}
+            >
               No tenés materias registradas todavía
             </h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', maxWidth: '440px', lineHeight: 1.5, margin: 0 }}>
-              Registrá tus materias del cuatrimestre para comenzar a hacer el seguimiento de notas, fechas de examen, apuntes y bibliografía.
+            <p
+              style={{
+                fontSize: "13px",
+                color: "var(--text-secondary)",
+                maxWidth: "440px",
+                lineHeight: 1.5,
+                margin: 0,
+              }}
+            >
+              Registrá tus materias del cuatrimestre para comenzar a hacer el
+              seguimiento de notas, fechas de examen, apuntes y bibliografía.
             </p>
           </div>
           {onOpenMateriaModal && (
             <button
               className={styles.btnPrimary}
-              style={{ padding: '10px 20px', fontSize: '13px' }}
+              style={{ padding: "10px 20px", fontSize: "13px" }}
               onClick={onOpenMateriaModal}
             >
               <Plus size={16} />
-              <span>+ Registrar Primera Materia</span>
+              <span>Registrar Primera Materia</span>
             </button>
           )}
         </div>
@@ -191,9 +232,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   return (
     <div className={styles.container}>
       {/* 1. Header Area */}
-      <MateriasHeader
-        onRegisterMateria={onOpenMateriaModal}
-      />
+      <MateriasHeader onRegisterMateria={onOpenMateriaModal} />
 
       {/* 2. Filters Bar con Años 1 a 6 y Cuatrimestres funcionales */}
       <MateriasFilterBar
@@ -213,7 +252,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
         {/* Left Column: Master Materias List */}
         <MateriasList
           materias={filteredMaterias}
-          selectedMateriaId={selectedMateria?.id || ''}
+          selectedMateriaId={selectedMateria?.id || ""}
           onSelectMateria={setSelectedMateriaId}
           onOpenMateriaModal={onOpenMateriaModal}
           onDeleteMateria={handleDeleteMateria}
@@ -240,14 +279,11 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
               onConfigure={() => setIsRulesModalOpen(true)}
             />
 
-
             <EvaluationsList
               evaluations={materiaEvaluations}
               onOpenEvaluationModal={onOpenEvaluationModal}
               onDeleteEvaluation={handleDeleteEvaluation}
             />
-
-            <CorrelativesCard correlativas={selectedMateria.correlativas} />
 
             <MaterialsManager
               materials={materiaMaterials}
@@ -258,19 +294,29 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
             />
           </div>
         ) : (
-          <div style={{
-            padding: '60px 20px',
-            textAlign: 'center',
-            backgroundColor: 'var(--surface-1)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px dashed var(--border-subtle)',
-            color: 'var(--text-muted)'
-          }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
+          <div
+            style={{
+              padding: "60px 20px",
+              textAlign: "center",
+              backgroundColor: "var(--surface-1)",
+              borderRadius: "var(--radius-md)",
+              border: "1px dashed var(--border-subtle)",
+              color: "var(--text-muted)",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+                marginBottom: "4px",
+              }}
+            >
               Ninguna materia coincide con los filtros
             </p>
-            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-              Probá seleccionando "Todos" los años o cuatrimestres para explorar tus asignaturas registradas.
+            <span style={{ fontSize: "12px", color: "var(--text-dim)" }}>
+              Probá seleccionando "Todos" los años o cuatrimestres para explorar
+              tus asignaturas registradas.
             </span>
           </div>
         )}
@@ -283,7 +329,9 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           onClose={() => setIsRulesModalOpen(false)}
           materia={selectedMateria}
           onSave={async (newReglas) => {
-            await updateMateria(selectedMateria.id, { reglasAcreditacion: newReglas });
+            await updateMateria(selectedMateria.id, {
+              reglasAcreditacion: newReglas,
+            });
           }}
         />
       )}
@@ -296,7 +344,9 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           materiaId={selectedMateria.id}
           materiaNombre={selectedMateria.nombre}
           materiaCodigo={selectedMateria.codigo}
-          onUpload={(file, titulo, categoria) => uploadMaterial(file, titulo, categoria)}
+          onUpload={(file, titulo, categoria) =>
+            uploadMaterial(file, titulo, categoria)
+          }
         />
       )}
 

@@ -13,24 +13,33 @@ export const materiaMapper = {
     let reglasAcreditacion: Materia['reglasAcreditacion'];
 
     if (dto.reglas_acreditacion) {
+      const p = dto.reglas_acreditacion.promocion;
+      const r = dto.reglas_acreditacion.regularidad;
+
+      const promoCond = p.condicion || p.descripcion ||
+        (p.permite_promocion === false
+          ? 'Sin promoción directa. Examen final obligatorio.'
+          : 'Promedio ≥ 8.0 y parciales ≥ 7.0 sin recuperatorio.');
+
+      const reguCond = r.condicion || r.descripcion ||
+        'Todos los parciales ≥ 4.0 y requisitos de cátedra cumplidos.';
+
       reglasAcreditacion = {
         promocion: {
-          permitePromocion: dto.reglas_acreditacion.promocion.permite_promocion ?? true,
-          minPromedio: dto.reglas_acreditacion.promocion.min_promedio ?? 8.0,
-          minParcial: dto.reglas_acreditacion.promocion.min_parcial ?? 7.0,
-          permiteRecuperatorio: dto.reglas_acreditacion.promocion.permite_recuperatorio ?? false,
-          minAsistencia: dto.reglas_acreditacion.promocion.min_asistencia ?? 80,
-          descripcion: dto.reglas_acreditacion.promocion.descripcion ||
-            (dto.reglas_acreditacion.promocion.permite_promocion === false
-              ? 'Sin promoción directa. Examen final obligatorio.'
-              : 'Promedio ≥ 8.0 sin recuperatorio.')
+          permitePromocion: p.permite_promocion ?? true,
+          condicion: promoCond,
+          minPromedio: p.min_promedio,
+          minParcial: p.min_parcial,
+          permiteRecuperatorio: p.permite_recuperatorio ?? false,
+          minAsistencia: p.min_asistencia ?? 80,
+          descripcion: promoCond
         },
         regularidad: {
-          minNota: dto.reglas_acreditacion.regularidad.min_nota ?? 4.0,
-          minAsistencia: dto.reglas_acreditacion.regularidad.min_asistencia ?? 75,
-          permiteRecuperatorio: dto.reglas_acreditacion.regularidad.permite_recuperatorio ?? true,
-          descripcion: dto.reglas_acreditacion.regularidad.descripcion ||
-            'Todos los parciales ≥ 4.0 y 75% de asistencia mínima.'
+          condicion: reguCond,
+          minNota: r.min_nota,
+          minAsistencia: r.min_asistencia ?? 75,
+          permiteRecuperatorio: r.permite_recuperatorio ?? true,
+          descripcion: reguCond
         }
       };
     } else if (extra?.reglasAcreditacion) {
@@ -39,17 +48,19 @@ export const materiaMapper = {
       reglasAcreditacion = {
         promocion: {
           permitePromocion: true,
+          condicion: 'Promedio ≥ 8.0 y notas parciales ≥ 7.0 (sin recuperatorio).',
           minPromedio: 8.0,
           minParcial: 7.0,
           permiteRecuperatorio: false,
           minAsistencia: 80,
-          descripcion: 'Promedio ≥ 8.0, notas parciales ≥ 7.0 sin recuperatorio.'
+          descripcion: 'Promedio ≥ 8.0 y notas parciales ≥ 7.0 (sin recuperatorio).'
         },
         regularidad: {
+          condicion: 'Evaluaciones ≥ 4.0 y 75% de asistencia mínima requerida.',
           minNota: 4.0,
           minAsistencia: 75,
           permiteRecuperatorio: true,
-          descripcion: 'Todos los parciales ≥ 4.0 y 75% de asistencia mínima.'
+          descripcion: 'Evaluaciones ≥ 4.0 y 75% de asistencia mínima requerida.'
         }
       };
     }
@@ -100,17 +111,19 @@ export const materiaMapper = {
       reglas_acreditacion: materia.reglasAcreditacion ? {
         promocion: {
           permite_promocion: materia.reglasAcreditacion.promocion.permitePromocion ?? true,
+          condicion: materia.reglasAcreditacion.promocion.condicion,
           min_promedio: materia.reglasAcreditacion.promocion.minPromedio,
           min_parcial: materia.reglasAcreditacion.promocion.minParcial,
-          permite_recuperatorio: materia.reglasAcreditacion.promocion.permiteRecuperatorio,
+          permite_recuperatorio: materia.reglasAcreditacion.promocion.permiteRecuperatorio ?? false,
           min_asistencia: materia.reglasAcreditacion.promocion.minAsistencia ?? 80,
-          descripcion: materia.reglasAcreditacion.promocion.descripcion
+          descripcion: materia.reglasAcreditacion.promocion.descripcion || materia.reglasAcreditacion.promocion.condicion
         },
         regularidad: {
+          condicion: materia.reglasAcreditacion.regularidad.condicion,
           min_nota: materia.reglasAcreditacion.regularidad.minNota,
-          min_asistencia: materia.reglasAcreditacion.regularidad.minAsistencia,
+          min_asistencia: materia.reglasAcreditacion.regularidad.minAsistencia ?? 75,
           permite_recuperatorio: materia.reglasAcreditacion.regularidad.permiteRecuperatorio ?? true,
-          descripcion: materia.reglasAcreditacion.regularidad.descripcion
+          descripcion: materia.reglasAcreditacion.regularidad.descripcion || materia.reglasAcreditacion.regularidad.condicion
         }
       } : undefined
     };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './AccreditationRulesModal.module.css';
-import { X, CheckCircle, AlertCircle, Award, Check, SlidersHorizontal } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, Award, Check, SlidersHorizontal, Sparkles } from 'lucide-react';
 import type { Materia } from '../../../types/academic';
 
 interface AccreditationRulesModalProps {
@@ -9,6 +9,22 @@ interface AccreditationRulesModalProps {
   materia: Materia;
   onSave: (updatedReglas: Materia['reglasAcreditacion']) => Promise<void>;
 }
+
+const PROMO_CHIPS = [
+  'Promedio ≥ 8.0',
+  'Parciales ≥ 7.0 en 1° intento',
+  'Coloquio oral integrador',
+  'TP integrador ≥ 8.0',
+  'Sin recuperatorios'
+];
+
+const REGULAR_CHIPS = [
+  'Parciales ≥ 4.0',
+  '100% de TPs aprobados',
+  'Laboratorio de cátedra aprobado',
+  'Coloquio de regularidad',
+  'Asistencia ≥ 75%'
+];
 
 export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = ({
   isOpen,
@@ -20,13 +36,12 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
 
   // Promoción
   const [permitePromocion, setPermitePromocion] = useState<boolean>(
-    currentReglas?.promocion?.permitePromocion ?? true
+    currentReglas?.promocion?.permitePromocion !== false
   );
-  const [minPromedio, setMinPromedio] = useState<number>(
-    currentReglas?.promocion?.minPromedio ?? 8.0
-  );
-  const [minParcialPromocion, setMinParcialPromocion] = useState<number>(
-    currentReglas?.promocion?.minParcial ?? 7.0
+  const [condicionPromocion, setCondicionPromocion] = useState<string>(
+    currentReglas?.promocion?.condicion ||
+    currentReglas?.promocion?.descripcion ||
+    'Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)'
   );
   const [permiteRecupPromocion, setPermiteRecupPromocion] = useState<boolean>(
     currentReglas?.promocion?.permiteRecuperatorio ?? false
@@ -34,22 +49,18 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
   const [minAsistenciaPromocion, setMinAsistenciaPromocion] = useState<number>(
     currentReglas?.promocion?.minAsistencia ?? 80
   );
-  const [descripcionPromocion, setDescripcionPromocion] = useState<string>(
-    currentReglas?.promocion?.descripcion || ''
-  );
 
   // Regularidad
-  const [minNotaRegularidad, setMinNotaRegularidad] = useState<number>(
-    currentReglas?.regularidad?.minNota ?? 4.0
+  const [condicionRegularidad, setCondicionRegularidad] = useState<string>(
+    currentReglas?.regularidad?.condicion ||
+    currentReglas?.regularidad?.descripcion ||
+    'Todas las evaluaciones ≥ 4.0 y requisitos de cátedra cumplidos'
   );
   const [minAsistenciaRegularidad, setMinAsistenciaRegularidad] = useState<number>(
     currentReglas?.regularidad?.minAsistencia ?? 75
   );
   const [permiteRecupRegularidad, setPermiteRecupRegularidad] = useState<boolean>(
     currentReglas?.regularidad?.permiteRecuperatorio ?? true
-  );
-  const [descripcionRegularidad, setDescripcionRegularidad] = useState<string>(
-    currentReglas?.regularidad?.descripcion || ''
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -59,67 +70,63 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
     if (materia?.reglasAcreditacion) {
       const p = materia.reglasAcreditacion.promocion;
       const r = materia.reglasAcreditacion.regularidad;
-      setPermitePromocion(p.permitePromocion ?? true);
-      setMinPromedio(p.minPromedio ?? 8.0);
-      setMinParcialPromocion(p.minParcial ?? 7.0);
+      setPermitePromocion(p.permitePromocion !== false);
+      setCondicionPromocion(
+        p.condicion ||
+        p.descripcion ||
+        'Promedio ≥ 8.0 y parciales ≥ 7.0 (sin recuperatorio)'
+      );
       setPermiteRecupPromocion(p.permiteRecuperatorio ?? false);
       setMinAsistenciaPromocion(p.minAsistencia ?? 80);
-      setDescripcionPromocion(p.descripcion || '');
 
-      setMinNotaRegularidad(r.minNota ?? 4.0);
+      setCondicionRegularidad(
+        r.condicion ||
+        r.descripcion ||
+        'Todas las evaluaciones ≥ 4.0 y requisitos de cátedra cumplidos'
+      );
       setMinAsistenciaRegularidad(r.minAsistencia ?? 75);
       setPermiteRecupRegularidad(r.permiteRecuperatorio ?? true);
-      setDescripcionRegularidad(r.descripcion || '');
     }
   }, [materia, isOpen]);
 
-  // Auto-generate descriptions if default/empty
-  const generatePromocionDesc = (permite: boolean, avg: number, minP: number, recup: boolean, asist: number) => {
-    if (!permite) {
-      return 'Sin promoción directa. La materia se aprueba únicamente mediante examen final obligatorio.';
-    }
-    const recupStr = recup ? 'permite recuperatorio' : 'sin recuperatorio';
-    return `Promedio ≥ ${avg.toFixed(1)}, notas parciales ≥ ${minP.toFixed(1)}, ${recupStr} y ${asist}% de asistencia.`;
-  };
-
-  const generateRegularidadDesc = (nota: number, recup: boolean, asist: number) => {
-    const recupStr = recup ? 'permite recuperatorio' : 'sin recuperatorio';
-    return `Todas las evaluaciones ≥ ${nota.toFixed(1)} (${recupStr}) y ${asist}% de asistencia mínima.`;
-  };
-
   if (!isOpen) return null;
+
+  const appendChipToCondition = (
+    currentText: string,
+    setter: (val: string) => void,
+    chip: string
+  ) => {
+    const trimmed = currentText.trim();
+    if (!trimmed) {
+      setter(chip);
+    } else if (!trimmed.toLowerCase().includes(chip.toLowerCase())) {
+      setter(`${trimmed}, ${chip}`);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setIsSaving(true);
-      const descPromo = descripcionPromocion.trim() || generatePromocionDesc(
-        permitePromocion,
-        minPromedio,
-        minParcialPromocion,
-        permiteRecupPromocion,
-        minAsistenciaPromocion
-      );
-      const descReg = descripcionRegularidad.trim() || generateRegularidadDesc(
-        minNotaRegularidad,
-        permiteRecupRegularidad,
-        minAsistenciaRegularidad
-      );
+      const promoText = permitePromocion
+        ? (condicionPromocion.trim() || 'Promedio ≥ 8.0 y evaluaciones ≥ 7.0')
+        : 'Sin promoción directa. Examen final obligatorio para acreditar la materia.';
+
+      const reguText = condicionRegularidad.trim() || 'Todas las evaluaciones ≥ 4.0 y requisitos de cursada';
 
       await onSave({
         promocion: {
           permitePromocion,
-          minPromedio: permitePromocion ? minPromedio : 0,
-          minParcial: permitePromocion ? minParcialPromocion : 0,
-          permiteRecuperatorio: permitePromocion ? permiteRecupPromocion : false,
+          condicion: promoText,
           minAsistencia: permitePromocion ? minAsistenciaPromocion : 0,
-          descripcion: descPromo
+          permiteRecuperatorio: permitePromocion ? permiteRecupPromocion : false,
+          descripcion: promoText
         },
         regularidad: {
-          minNota: minNotaRegularidad,
+          condicion: reguText,
           minAsistencia: minAsistenciaRegularidad,
           permiteRecuperatorio: permiteRecupRegularidad,
-          descripcion: descReg
+          descripcion: reguText
         }
       });
       onClose();
@@ -153,7 +160,7 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
             <h2 className={styles.title}>Reglas de Acreditación</h2>
           </div>
           <p className={styles.subtitle}>
-            Definí los criterios de promoción directa y regularidad aplicables a esta asignatura.
+            Definí las condiciones específicas de la cátedra para alcanzar la promoción directa y regularizar la cursada.
           </p>
           <div className={styles.materiaBadge}>
             {materia.codigo ? `${materia.codigo} · ` : ''}{materia.nombre} ({materia.anio}° Año · {materia.cuatrimestre})
@@ -171,17 +178,7 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
               </div>
               <div
                 className={styles.toggleWrapper}
-                onClick={() => {
-                  const next = !permitePromocion;
-                  setPermitePromocion(next);
-                  setDescripcionPromocion(generatePromocionDesc(
-                    next,
-                    minPromedio,
-                    minParcialPromocion,
-                    permiteRecupPromocion,
-                    minAsistenciaPromocion
-                  ));
-                }}
+                onClick={() => setPermitePromocion(!permitePromocion)}
               >
                 <span className={styles.toggleLabel}>
                   {permitePromocion ? 'Promocionable' : 'No Promocionable'}
@@ -206,100 +203,57 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
               </div>
             ) : (
               <>
-                <div className={styles.grid2}>
-                  <div className={styles.field}>
-                    <label className={styles.fieldLabel}>Nota Promedio Mínima</label>
-                    <span className={styles.fieldSub}>Calificación media requerida</span>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      max="10"
-                      className={styles.input}
-                      value={minPromedio}
-                      onChange={e => {
-                        const val = parseFloat(e.target.value) || 0;
-                        setMinPromedio(val);
-                        setDescripcionPromocion(generatePromocionDesc(
-                          true,
-                          val,
-                          minParcialPromocion,
-                          permiteRecupPromocion,
-                          minAsistenciaPromocion
-                        ));
-                      }}
-                      required
-                    />
-                  </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.fieldLabel}>Nota Mínima por Parcial</label>
-                    <span className={styles.fieldSub}>Piso mínimo en cada evaluación</span>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="1"
-                      max="10"
-                      className={styles.input}
-                      value={minParcialPromocion}
-                      onChange={e => {
-                        const val = parseFloat(e.target.value) || 0;
-                        setMinParcialPromocion(val);
-                        setDescripcionPromocion(generatePromocionDesc(
-                          true,
-                          minPromedio,
-                          val,
-                          permiteRecupPromocion,
-                          minAsistenciaPromocion
-                        ));
-                      }}
-                      required
-                    />
+                <div className={styles.field}>
+                  <label className={styles.fieldLabel}>Condición de Cátedra para Promocionar</label>
+                  <span className={styles.fieldSub}>Requisito textual establecido por los docentes (ej: notas, coloquio, instancias)</span>
+                  <textarea
+                    className={styles.textarea}
+                    value={condicionPromocion}
+                    onChange={e => setCondicionPromocion(e.target.value)}
+                    placeholder="Ej: Promedio ≥ 8.0, sin parciales inferiores a 7.0 y coloquio oral integrador aprobado"
+                    rows={2}
+                    required
+                  />
+                  <div className={styles.chipsContainer}>
+                    <span className={styles.chipsLabel}>
+                      <Sparkles size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 3 }} />
+                      Sugerencias:
+                    </span>
+                    {PROMO_CHIPS.map(chip => (
+                      <button
+                        key={chip}
+                        type="button"
+                        className={styles.chipBtn}
+                        onClick={() => appendChipToCondition(condicionPromocion, setCondicionPromocion, chip)}
+                      >
+                        + {chip}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 <div className={styles.grid2}>
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>Asistencia Mínima (%)</label>
-                    <span className={styles.fieldSub}>Porcentaje de clases</span>
+                    <span className={styles.fieldSub}>Porcentaje de clases requerido</span>
                     <input
                       type="number"
                       min="0"
                       max="100"
                       className={styles.input}
                       value={minAsistenciaPromocion}
-                      onChange={e => {
-                        const val = parseInt(e.target.value, 10) || 0;
-                        setMinAsistenciaPromocion(val);
-                        setDescripcionPromocion(generatePromocionDesc(
-                          true,
-                          minPromedio,
-                          minParcialPromocion,
-                          permiteRecupPromocion,
-                          val
-                        ));
-                      }}
+                      onChange={e => setMinAsistenciaPromocion(parseInt(e.target.value, 10) || 0)}
                       required
                     />
                   </div>
 
                   <div className={styles.field}>
                     <label className={styles.fieldLabel}>¿Permite Recuperatorio?</label>
-                    <span className={styles.fieldSub}>Para alcanzar la promoción</span>
+                    <span className={styles.fieldSub}>Para acceder a la promoción</span>
                     <select
                       className={styles.select}
                       value={permiteRecupPromocion ? 'SI' : 'NO'}
-                      onChange={e => {
-                        const val = e.target.value === 'SI';
-                        setPermiteRecupPromocion(val);
-                        setDescripcionPromocion(generatePromocionDesc(
-                          true,
-                          minPromedio,
-                          minParcialPromocion,
-                          val,
-                          minAsistenciaPromocion
-                        ));
-                      }}
+                      onChange={e => setPermiteRecupPromocion(e.target.value === 'SI')}
                     >
                       <option value="NO">No permite (solo 1° instancia)</option>
                       <option value="SI">Sí, permite recuperar</option>
@@ -308,16 +262,6 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
                 </div>
               </>
             )}
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Descripción Resumida de la Regla</label>
-              <textarea
-                className={styles.textarea}
-                value={descripcionPromocion}
-                onChange={e => setDescripcionPromocion(e.target.value)}
-                placeholder="Texto explicativo para la tarjeta del alumno..."
-              />
-            </div>
           </div>
 
           {/* SECCIÓN 2: CONDICIÓN DE REGULARIDAD */}
@@ -329,81 +273,62 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
               </div>
             </div>
 
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Condición de Cátedra para Regularizar</label>
+              <span className={styles.fieldSub}>Requisitos específicos (parciales, entregas de TPs, laboratorios, talleres)</span>
+              <textarea
+                className={styles.textarea}
+                value={condicionRegularidad}
+                onChange={e => setCondicionRegularidad(e.target.value)}
+                placeholder="Ej: Parciales ≥ 4.0 (con recuperatorio), 100% de TPs de laboratorio entregados y coloquio aprobado"
+                rows={2}
+                required
+              />
+              <div className={styles.chipsContainer}>
+                <span className={styles.chipsLabel}>
+                  <Sparkles size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 3 }} />
+                  Sugerencias:
+                </span>
+                {REGULAR_CHIPS.map(chip => (
+                  <button
+                    key={chip}
+                    type="button"
+                    className={styles.chipBtn}
+                    onClick={() => appendChipToCondition(condicionRegularidad, setCondicionRegularidad, chip)}
+                  >
+                    + {chip}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className={styles.grid2}>
               <div className={styles.field}>
-                <label className={styles.fieldLabel}>Nota Mínima de Parciales / TPs</label>
-                <span className={styles.fieldSub}>Piso para no quedar libre</span>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  max="10"
-                  className={styles.input}
-                  value={minNotaRegularidad}
-                  onChange={e => {
-                    const val = parseFloat(e.target.value) || 0;
-                    setMinNotaRegularidad(val);
-                    setDescripcionRegularidad(generateRegularidadDesc(
-                      val,
-                      permiteRecupRegularidad,
-                      minAsistenciaRegularidad
-                    ));
-                  }}
-                  required
-                />
-              </div>
-
-              <div className={styles.field}>
                 <label className={styles.fieldLabel}>Asistencia Mínima Requerida (%)</label>
-                <span className={styles.fieldSub}>Requisito de cursada</span>
+                <span className={styles.fieldSub}>Requisito de asistencia obligatoria</span>
                 <input
                   type="number"
                   min="0"
                   max="100"
                   className={styles.input}
                   value={minAsistenciaRegularidad}
-                  onChange={e => {
-                    const val = parseInt(e.target.value, 10) || 0;
-                    setMinAsistenciaRegularidad(val);
-                    setDescripcionRegularidad(generateRegularidadDesc(
-                      minNotaRegularidad,
-                      permiteRecupRegularidad,
-                      val
-                    ));
-                  }}
+                  onChange={e => setMinAsistenciaRegularidad(parseInt(e.target.value, 10) || 0)}
                   required
                 />
               </div>
-            </div>
 
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>¿Permite Recuperatorio para Regularizar?</label>
-              <select
-                className={styles.select}
-                value={permiteRecupRegularidad ? 'SI' : 'NO'}
-                onChange={e => {
-                  const val = e.target.value === 'SI';
-                  setPermiteRecupRegularidad(val);
-                  setDescripcionRegularidad(generateRegularidadDesc(
-                    minNotaRegularidad,
-                    val,
-                    minAsistenciaRegularidad
-                  ));
-                }}
-              >
-                <option value="SI">Sí, admite instancias de recuperación</option>
-                <option value="NO">No admite recuperatorios</option>
-              </select>
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.fieldLabel}>Descripción Resumida de Regularidad</label>
-              <textarea
-                className={styles.textarea}
-                value={descripcionRegularidad}
-                onChange={e => setDescripcionRegularidad(e.target.value)}
-                placeholder="Texto explicativo para la tarjeta del alumno..."
-              />
+              <div className={styles.field}>
+                <label className={styles.fieldLabel}>¿Permite Recuperatorio para Regularizar?</label>
+                <span className={styles.fieldSub}>Instancias de recuperación de parciales</span>
+                <select
+                  className={styles.select}
+                  value={permiteRecupRegularidad ? 'SI' : 'NO'}
+                  onChange={e => setPermiteRecupRegularidad(e.target.value === 'SI')}
+                >
+                  <option value="SI">Sí, admite instancias de recuperación</option>
+                  <option value="NO">No admite recuperatorios</option>
+                </select>
+              </div>
             </div>
           </div>
 
