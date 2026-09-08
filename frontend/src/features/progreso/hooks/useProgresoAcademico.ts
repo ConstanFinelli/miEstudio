@@ -41,6 +41,15 @@ export interface HitoNivel {
   fechaLiquidacion?: string;
 }
 
+export interface StatsRitmo {
+  totalPlan: number;
+  totalAprobadas: number;
+  progresoPercent: number;
+  materiasRestantes: number;
+  cantAniosActivos: number;
+  velocidadAnual: number;
+}
+
 export const useProgresoAcademico = () => {
   const { materias, isLoading: loadingMaterias } = useMaterias();
   const { perfil } = usePerfil();
@@ -122,8 +131,8 @@ export const useProgresoAcademico = () => {
     });
   }, [materias, aprobaciones]);
 
-  // 1. Estadísticas de Ritmo y Proyección
-  const statsRitmo = useMemo(() => {
+  // 1. Estadísticas de Ritmo y Avance
+  const statsRitmo = useMemo<StatsRitmo>(() => {
     const totalPlan = activeCarrera?.total_materias_plan || perfil?.materiasTotales || (materias.length > 0 ? materias.length : 45);
     const totalAprobadas = aprobadasConsolidadas.length;
     const progresoPercent = totalPlan > 0 ? Math.min(100, Math.round((totalAprobadas / totalPlan) * 100)) : 0;
@@ -135,14 +144,6 @@ export const useProgresoAcademico = () => {
     const cantAniosActivos = Math.max(1, aniosList.length);
     const velocidadAnual = Number((totalAprobadas / cantAniosActivos).toFixed(1));
 
-    // Proyección de año de graduación
-    const currentYear = new Date().getFullYear();
-    let anioEstimadoGraduacion = currentYear;
-    if (materiasRestantes > 0 && velocidadAnual > 0) {
-      const aniosRestantes = Math.ceil(materiasRestantes / velocidadAnual);
-      anioEstimadoGraduacion = currentYear + aniosRestantes;
-    }
-
     return {
       totalPlan,
       totalAprobadas,
@@ -150,7 +151,6 @@ export const useProgresoAcademico = () => {
       materiasRestantes,
       cantAniosActivos,
       velocidadAnual,
-      anioEstimadoGraduacion,
     };
   }, [aprobadasConsolidadas, activeCarrera, perfil, materias]);
 

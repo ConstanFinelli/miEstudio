@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './ProgressSummaryCards.module.css';
-import { GraduationCap, Zap, CalendarCheck, Award } from 'lucide-react';
+import { GraduationCap, Zap, Award } from 'lucide-react';
 
 interface ProgressSummaryCardsProps {
   statsRitmo: {
@@ -9,7 +9,6 @@ interface ProgressSummaryCardsProps {
     progresoPercent: number;
     materiasRestantes: number;
     velocidadAnual: number;
-    anioEstimadoGraduacion: number;
   };
   modalidadesStats: {
     promocion: number;
@@ -84,47 +83,6 @@ export const ProgressSummaryCards: React.FC<ProgressSummaryCardsProps> = ({
           <span style={{ color: 'var(--text-secondary)' }}>
             ~{(statsRitmo.velocidadAnual / 2).toFixed(1)} por cuatrimestre
           </span>
-        </div>
-      </div>
-
-      {/* 3. Proyección de Graduación */}
-      <div className={styles.kpiCard}>
-        <div className={styles.kpiHeader}>
-          <div className={styles.kpiTitleGroup}>
-            <span className={styles.kpiLabel}>Proyección de Egreso</span>
-            <span className={styles.kpiSub}>Estimación al ritmo actual</span>
-          </div>
-          <div className={styles.kpiIconBox}>
-            <CalendarCheck size={15} />
-          </div>
-        </div>
-
-        <div>
-          <div className={styles.kpiValueRow}>
-            <span className={styles.kpiMainValue}>
-              {statsRitmo.materiasRestantes === 0
-                ? '¡Egresado!'
-                : statsRitmo.totalAprobadas > 0
-                ? `${statsRitmo.anioEstimadoGraduacion}`
-                : '---'}
-            </span>
-            {statsRitmo.materiasRestantes > 0 && statsRitmo.totalAprobadas > 0 && (
-              <span className={styles.kpiUnit}>estimado</span>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.kpiFooter}>
-          {statsRitmo.materiasRestantes === 0 ? (
-            <span style={{ color: 'var(--emerald)' }}>Plan completado</span>
-          ) : statsRitmo.totalAprobadas > 0 ? (
-            <span>
-              ~{Math.max(1, statsRitmo.anioEstimadoGraduacion - new Date().getFullYear())} años restantes
-            </span>
-          ) : (
-            <span>Requiere materias aprobadas</span>
-          )}
-          <span style={{ color: 'var(--primary-glow)' }}>Ritmo constante</span>
         </div>
       </div>
 
