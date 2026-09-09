@@ -10,4 +10,4 @@ export * from './calendarioService';
 export * from './horariosService';
 export * from './authService';
 export * from './carrerasService';
-
+export * from './aiService';
