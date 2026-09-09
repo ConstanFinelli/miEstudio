@@ -90,3 +90,31 @@
   background-color: rgba(239, 68, 68, 0.12) !important;
   color: var(--red) !important;
 }
+
+.btnAiCopilot {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+  transition: all 0.15s ease;
+}
+
+.btnAiCopilot:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.45);
+  transform: translateY(-1px);
+}
+
+.btnAiCopilotActive {
+  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  border-color: #c084fc;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+}

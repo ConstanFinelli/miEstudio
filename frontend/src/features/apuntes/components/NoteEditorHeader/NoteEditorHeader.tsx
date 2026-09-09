@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./NoteEditorHeader.module.css";
-import { Cloud, Eye, Code, Columns, BookOpen, Trash2 } from "lucide-react";
+import { Cloud, Eye, Code, Columns, BookOpen, Trash2, Sparkles } from "lucide-react";
 import type { ApunteNota } from "../../../../types/academic";
 
 interface NoteEditorHeaderProps {
@@ -9,6 +9,8 @@ interface NoteEditorHeaderProps {
   onViewModeChange: (mode: "render" | "markdown" | "split") => void;
   showPdfSplit: boolean;
   onToggleSplit: () => void;
+  showAiPane?: boolean;
+  onToggleAiPane?: () => void;
   onDeleteNote?: (id: string, titulo: string) => void;
 }
 
@@ -18,6 +20,8 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
   onViewModeChange,
   showPdfSplit,
   onToggleSplit,
+  showAiPane,
+  onToggleAiPane,
   onDeleteNote,
 }) => {
   return (
@@ -79,6 +83,18 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
             <span>Split</span>
           </button>
         </div>
+
+        {/* AI Copilot Mode Toggle Button */}
+        {onToggleAiPane && (
+          <button
+            className={`${styles.btnAiCopilot} ${showAiPane ? styles.btnAiCopilotActive : ""}`}
+            onClick={onToggleAiPane}
+            title="Abrir Copiloto IA (Chat, Resúmenes, Flashcards y Quiz de Examen)"
+          >
+            <Sparkles size={12} />
+            <span>{showAiPane ? "Cerrar IA" : "Copiloto IA"}</span>
+          </button>
+        )}
 
         {/* Split PDF Mode Toggle Button */}
         <button

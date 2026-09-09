@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './SplitPdfViewerPane.module.css';
-import { X, ExternalLink, UploadCloud, FileText, Loader2 } from 'lucide-react';
+import { X, ExternalLink, UploadCloud, FileText, Loader2, Sparkles } from 'lucide-react';
 import type { MaterialEstudio } from '../../../../types/academic';
 import { materialesService } from '../../../../services';
 
@@ -8,18 +8,33 @@ interface SplitPdfViewerPaneProps {
   onClose: () => void;
   activeMateriaId?: string;
   activeMateriaNombre?: string;
+  selectedDocId?: string;
+  onSelectDocId?: (id: string) => void;
   onOpenUploadModal?: () => void;
+  onOpenAiWithDoc?: (docId: string) => void;
 }
 
 export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
   onClose,
   activeMateriaId,
   activeMateriaNombre,
-  onOpenUploadModal
+  selectedDocId: externalDocId,
+  onSelectDocId,
+  onOpenUploadModal,
+  onOpenAiWithDoc
 }) => {
   const [materials, setMaterials] = useState<MaterialEstudio[]>([]);
-  const [selectedDocId, setSelectedDocId] = useState<string>('');
+  const [internalDocId, setInternalDocId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const selectedDocId = externalDocId !== undefined ? externalDocId : internalDocId;
+
+  const handleSelectDoc = (id: string) => {
+    setInternalDocId(id);
+    if (onSelectDocId) {
+      onSelectDocId(id);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -32,14 +47,14 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
         if (!isMounted) return;
         setMaterials(docs);
         if (docs.length > 0) {
-          setSelectedDocId(docs[0].id);
+          handleSelectDoc(docs[0].id);
         } else {
           // If no materials for this materia, fetch all materials across all materias
           materialesService.getMateriales().then(allDocs => {
             if (!isMounted) return;
             setMaterials(allDocs);
             if (allDocs.length > 0) {
-              setSelectedDocId(allDocs[0].id);
+              handleSelectDoc(allDocs[0].id);
             }
           });
         }
@@ -79,7 +94,7 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
             <select
               className={styles.splitPdfSelect}
               value={selectedDocId}
-              onChange={e => setSelectedDocId(e.target.value)}
+              onChange={e => handleSelectDoc(e.target.value)}
               title="Seleccionar documento de cátedra"
             >
               {materials.map(m => (
@@ -105,6 +120,25 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {onOpenAiWithDoc && selectedDoc && (
+            <button
+              className={styles.toolBtn}
+              onClick={() => onOpenAiWithDoc(selectedDoc.id)}
+              title="Chatear y estudiar este PDF con el Copiloto IA"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                color: 'var(--primary-glow)',
+                borderColor: 'var(--primary-border)'
+              }}
+            >
+              <Sparkles size={12} color="var(--primary-glow)" />
+              <span>Estudiar con IA</span>
+            </button>
+          )}
+
           {onOpenUploadModal && (
             <button
               className={styles.toolBtn}
