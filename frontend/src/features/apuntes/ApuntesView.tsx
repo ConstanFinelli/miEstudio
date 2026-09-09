@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import styles from "./ApuntesView.module.css";
 import type { ApunteNota } from "../../types/academic";
 import { useApuntes, useMateriales } from "../../hooks";
+import { useLayout } from "../../context";
 import {
   FoldersSidebar,
   NotesListSidebar,
@@ -34,38 +35,8 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const [noteToDelete, setNoteToDelete] = useState<{ id: string; titulo: string } | null>(null);
   const [isDeletingNote, setIsDeletingNote] = useState(false);
 
-  // Auto-collapse sidebars when activating split mode for a spacious study layout
-  const handleToggleSplit = () => {
-    if (!showPdfSplit) {
-      setShowPdfSplit(true);
-      setIsFoldersCollapsed(true);
-      setIsNotesListCollapsed(true);
-    } else {
-      setShowPdfSplit(false);
-      if (!showAiPane) {
-        setIsFoldersCollapsed(false);
-        setIsNotesListCollapsed(false);
-      }
-    }
-  };
-
-  const handleToggleAiPane = () => {
-    if (!showAiPane) {
-      setShowAiPane(true);
-      setIsFoldersCollapsed(true);
-    } else {
-      setShowAiPane(false);
-      if (!showPdfSplit) {
-        setIsFoldersCollapsed(false);
-      }
-    }
-  };
-
-  const handleOpenAiWithDoc = (docId: string) => {
-    setSelectedMaterialId(docId);
-    setShowAiPane(true);
-    setIsFoldersCollapsed(true);
-  };
+  const { isSidebarCollapsed, setIsSidebarCollapsed } = useLayout();
+  const wasNavAutoCollapsedRef = useRef(false);
 
   const filteredNotes = useMemo(() => {
     return apuntes.filter((n) => {
@@ -93,6 +64,93 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
 
   const activeNote: ApunteNota | null =
     selectedApunte || filteredNotes[0] || apuntes[0] || null;
+
+  const hasActiveNote = Boolean(activeNote && activeNote.id !== "nota-default");
+
+  const currentMateriaNotes = useMemo(() => {
+    if (!activeNote) return [];
+    return apuntes.filter(
+      (a) =>
+        (activeNote.materiaId && a.materiaId === activeNote.materiaId) ||
+        (activeNote.materiaNombre && a.materiaNombre === activeNote.materiaNombre)
+    );
+  }, [apuntes, activeNote]);
+
+  // Auto-close AI Copilot pane if no note is active/available
+  useEffect(() => {
+    if (!hasActiveNote && showAiPane) {
+      setShowAiPane(false);
+      if (!showPdfSplit && wasNavAutoCollapsedRef.current) {
+        wasNavAutoCollapsedRef.current = false;
+        setIsSidebarCollapsed(false);
+      }
+    }
+  }, [hasActiveNote, showAiPane, showPdfSplit, setIsSidebarCollapsed]);
+
+  // Auto-collapse sidebars (including main navigation sidebar) when activating split mode for a spacious study layout
+  const handleToggleSplit = () => {
+    if (!showPdfSplit) {
+      setShowPdfSplit(true);
+      setIsFoldersCollapsed(true);
+      setIsNotesListCollapsed(true);
+      if (!isSidebarCollapsed) {
+        wasNavAutoCollapsedRef.current = true;
+        setIsSidebarCollapsed(true);
+      }
+    } else {
+      setShowPdfSplit(false);
+      if (!showAiPane) {
+        setIsFoldersCollapsed(false);
+        setIsNotesListCollapsed(false);
+        if (wasNavAutoCollapsedRef.current) {
+          wasNavAutoCollapsedRef.current = false;
+          setIsSidebarCollapsed(false);
+        }
+      }
+    }
+  };
+
+  const handleToggleAiPane = () => {
+    if (!showAiPane) {
+      // Only permit opening the AI Copilot if an active note is available
+      if (!hasActiveNote) return;
+      setShowAiPane(true);
+      setIsFoldersCollapsed(true);
+      if (!isSidebarCollapsed && !showPdfSplit) {
+        wasNavAutoCollapsedRef.current = true;
+        setIsSidebarCollapsed(true);
+      }
+    } else {
+      setShowAiPane(false);
+      if (!showPdfSplit) {
+        setIsFoldersCollapsed(false);
+        if (wasNavAutoCollapsedRef.current) {
+          wasNavAutoCollapsedRef.current = false;
+          setIsSidebarCollapsed(false);
+        }
+      }
+    }
+  };
+
+  const handleOpenAiWithDoc = (docId: string) => {
+    if (!hasActiveNote) return;
+    setSelectedMaterialId(docId);
+    setShowAiPane(true);
+    setIsFoldersCollapsed(true);
+    if (!isSidebarCollapsed) {
+      wasNavAutoCollapsedRef.current = true;
+      setIsSidebarCollapsed(true);
+    }
+  };
+
+  // Restore navigation sidebar on unmount if it was auto-collapsed by split view
+  useEffect(() => {
+    return () => {
+      if (wasNavAutoCollapsedRef.current) {
+        setIsSidebarCollapsed(false);
+      }
+    };
+  }, [setIsSidebarCollapsed]);
 
   // Materials hook for uploading PDFs from the split pane
   const { uploadMaterial } = useMateriales(activeNote?.materiaId);
@@ -207,6 +265,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         {/* Editor Top Bar */}
         <NoteEditorHeader
           activeNote={activeNote}
+          materiaNotes={currentMateriaNotes}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           showPdfSplit={showPdfSplit}
@@ -250,19 +309,17 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
             />
           )}
 
-          {/* AI Copilot Pane */}
-          {showAiPane && (
-            <AiCopilotPane
-              isOpen={showAiPane}
-              onClose={() => setShowAiPane(false)}
-              activeNote={activeNote}
-              activeMateriaId={activeNote?.materiaId}
-              activeMateriaNombre={activeNote?.materiaNombre}
-              selectedMaterialId={selectedMaterialId}
-              onSelectMaterialId={setSelectedMaterialId}
-              onInsertMarkdown={handleInsertFromAi}
-            />
-          )}
+          {/* AI Copilot Pane (Persistent in DOM so conversation & tab states are never lost) */}
+          <AiCopilotPane
+            isOpen={showAiPane}
+            onClose={() => setShowAiPane(false)}
+            activeNote={activeNote}
+            activeMateriaId={activeNote?.materiaId}
+            activeMateriaNombre={activeNote?.materiaNombre}
+            selectedMaterialId={selectedMaterialId}
+            onSelectMaterialId={setSelectedMaterialId}
+            onInsertMarkdown={handleInsertFromAi}
+          />
         </div>
       </main>
 

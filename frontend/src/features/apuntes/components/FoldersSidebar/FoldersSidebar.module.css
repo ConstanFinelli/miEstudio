@@ -123,6 +123,35 @@
   background-color: var(--surface-hover);
 }
 
+.folderRightActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zipDownloadBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.folderItem:hover .zipDownloadBtn {
+  opacity: 1;
+}
+
+.zipDownloadBtn:hover {
+  color: var(--primary);
+  background-color: var(--surface-hover);
+}
+
 .countBadge {
   font-family: var(--font-mono);
   font-size: 10px;

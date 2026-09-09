@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styles from "./NoteEditorHeader.module.css";
-import { Cloud, Eye, Code, Columns, BookOpen, Trash2, Sparkles } from "lucide-react";
+import {
+  Cloud,
+  Eye,
+  Code,
+  Columns,
+  BookOpen,
+  Trash2,
+  Sparkles,
+  Download,
+  ChevronDown,
+  FileText,
+  Archive,
+} from "lucide-react";
 import type { ApunteNota } from "../../../../types/academic";
+import { exportSingleNote, exportMateriaNotesZip } from "../../../../utils";
 
 interface NoteEditorHeaderProps {
   activeNote: ApunteNota | null;
+  materiaNotes?: ApunteNota[];
   viewMode: "render" | "markdown" | "split";
   onViewModeChange: (mode: "render" | "markdown" | "split") => void;
   showPdfSplit: boolean;
@@ -16,6 +30,7 @@ interface NoteEditorHeaderProps {
 
 export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
   activeNote,
+  materiaNotes = [],
   viewMode,
   onViewModeChange,
   showPdfSplit,
@@ -24,6 +39,29 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
   onToggleAiPane,
   onDeleteNote,
 }) => {
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const exportMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const hasActiveNote = Boolean(activeNote && activeNote.id !== "nota-default");
+
+  // Close export dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        exportMenuRef.current &&
+        !exportMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsExportMenuOpen(false);
+      }
+    };
+    if (isExportMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isExportMenuOpen]);
+
   return (
     <header className={styles.editorTopBar}>
       <div className={styles.editorBreadcrumbs}>
@@ -89,12 +127,81 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
           <button
             className={`${styles.btnAiCopilot} ${showAiPane ? styles.btnAiCopilotActive : ""}`}
             onClick={onToggleAiPane}
-            title="Abrir Copiloto IA (Chat, Resúmenes, Flashcards y Quiz de Examen)"
+            disabled={!hasActiveNote}
+            title={
+              hasActiveNote
+                ? (showAiPane ? "Cerrar Copiloto IA" : "Abrir Copiloto IA (Chat, Resúmenes, Flashcards y Quiz de Examen)")
+                : "El Copiloto IA requiere que tengas un apunte abierto para analizar su contenido."
+            }
           >
             <Sparkles size={12} />
             <span>{showAiPane ? "Cerrar IA" : "Copiloto IA"}</span>
           </button>
         )}
+
+        {/* Export Notes Dropdown */}
+        <div className={styles.exportContainer} ref={exportMenuRef}>
+          <button
+            type="button"
+            className={styles.btnExport}
+            onClick={() => setIsExportMenuOpen((prev) => !prev)}
+            disabled={!hasActiveNote}
+            title="Exportar notas (apunte individual o materia completa)"
+          >
+            <Download size={12} />
+            <span>Exportar</span>
+            <ChevronDown size={11} style={{ opacity: 0.6 }} />
+          </button>
+
+          {isExportMenuOpen && (
+            <div className={styles.exportMenu}>
+              <button
+                type="button"
+                className={styles.exportMenuItem}
+                onClick={() => {
+                  if (activeNote) {
+                    exportSingleNote(activeNote);
+                  }
+                  setIsExportMenuOpen(false);
+                }}
+              >
+                <div className={styles.exportMenuIcon}>
+                  <FileText size={14} color="var(--primary)" />
+                </div>
+                <div className={styles.exportMenuText}>
+                  <span className={styles.exportMenuTitle}>Descargar apunte</span>
+                  <span className={styles.exportMenuDesc}>Archivo Markdown (.md)</span>
+                </div>
+              </button>
+
+              {materiaNotes && materiaNotes.length > 0 && (
+                <button
+                  type="button"
+                  className={styles.exportMenuItem}
+                  onClick={() => {
+                    if (activeNote) {
+                      exportMateriaNotesZip(
+                        activeNote.materiaNombre || "Materia",
+                        materiaNotes
+                      );
+                    }
+                    setIsExportMenuOpen(false);
+                  }}
+                >
+                  <div className={styles.exportMenuIcon}>
+                    <Archive size={14} color="var(--emerald)" />
+                  </div>
+                  <div className={styles.exportMenuText}>
+                    <span className={styles.exportMenuTitle}>
+                      Descargar materia ({materiaNotes.length} notas)
+                    </span>
+                    <span className={styles.exportMenuDesc}>Paquete comprimido (.zip)</span>
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Split PDF Mode Toggle Button */}
         <button

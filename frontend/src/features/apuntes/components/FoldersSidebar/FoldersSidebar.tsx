@@ -1,8 +1,9 @@
 import React from "react";
 import styles from "./FoldersSidebar.module.css";
-import { Folder, ChevronLeft, Plus, Files } from "lucide-react";
+import { Folder, ChevronLeft, Plus, Files, Download } from "lucide-react";
 import type { ApunteNota } from "../../../../types/academic";
 import { useMaterias, useApuntes } from "../../../../hooks";
+import { exportMateriaNotesZip } from "../../../../utils";
 
 interface FoldersSidebarProps {
   isCollapsed: boolean;
@@ -129,7 +130,22 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
             <Files size={13} color="var(--primary)" />
             <span>Todos los apuntes</span>
           </div>
-          <span className={styles.countBadge}>{apuntes.length}</span>
+          <div className={styles.folderRightActions}>
+            {apuntes.length > 0 && (
+              <button
+                type="button"
+                className={styles.zipDownloadBtn}
+                title="Descargar todos los apuntes (.zip)"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  exportMateriaNotesZip("Mis Apuntes", apuntes);
+                }}
+              >
+                <Download size={11} />
+              </button>
+            )}
+            <span className={styles.countBadge}>{apuntes.length}</span>
+          </div>
         </div>
 
         {folderMaterias.length === 0 ? (
@@ -196,7 +212,25 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
                       {folder.nombre}
                     </span>
                   </div>
-                  <span className={styles.countBadge}>{folder.count}</span>
+                  <div className={styles.folderRightActions}>
+                    {folder.count > 0 && (
+                      <button
+                        type="button"
+                        className={styles.zipDownloadBtn}
+                        title={`Descargar notas de ${folder.nombre} (.zip)`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const folderNotes = apuntes.filter(
+                            (a) => a.materiaId === folder.id || a.materiaNombre === folder.nombre
+                          );
+                          exportMateriaNotesZip(folder.nombre, folderNotes);
+                        }}
+                      >
+                        <Download size={11} />
+                      </button>
+                    )}
+                    <span className={styles.countBadge}>{folder.count}</span>
+                  </div>
                 </div>
 
                 {isSelected && folder.subfolders.length > 0 && (
