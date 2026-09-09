@@ -1,0 +1,110 @@
+.rendererRoot {
+  width: 100%;
+}
+
+.codeBlock {
+  margin: 8px 0;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.codeHeader {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-2);
+  text-transform: uppercase;
+}
+
+.codePre {
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow-x: auto;
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.mathBlock {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  text-align: center;
+}
+
+.calloutBlock {
+  margin: 8px 0;
+  padding: 6px 12px;
+  border-left: 3px solid var(--primary);
+  background: var(--primary-alpha);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-style: italic;
+}
+
+.bulletList {
+  margin: 6px 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bulletItem {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.heading1 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 12px 0 6px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 4px;
+}
+
+.heading2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-glow);
+  margin: 10px 0 4px;
+}
+
+.heading3 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 8px 0 2px;
+}
+
+.paragraph {
+  margin: 4px 0;
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.55;
+}
+
+.inlineCode {
+  font-family: var(--font-mono);
+  background: var(--surface-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.boldText {
+  color: var(--text-primary);
+  font-weight: 600;
+}

@@ -1,0 +1,1 @@
+export { AiFlashcardsTab } from './AiFlashcardsTab';

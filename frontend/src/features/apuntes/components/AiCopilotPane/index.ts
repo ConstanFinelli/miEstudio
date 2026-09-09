@@ -1,3 +1,3 @@
 export { AiCopilotPane } from './AiCopilotPane';
 export type { AiCopilotTabType } from './AiCopilotPane';
-export { AiMarkdownRenderer } from './AiMarkdownRenderer';
+export { AiMarkdownRenderer } from './components';

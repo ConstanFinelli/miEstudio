@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styles from './AiCopilotPane.module.css';
+import styles from './AiFlashcardsTab.module.css';
 import {
   Sparkles,
   ChevronLeft,
@@ -11,8 +11,8 @@ import {
   Layers,
   Check
 } from 'lucide-react';
-import { aiService, type FlashcardItem } from '../../../../services';
-import { AiMarkdownRenderer } from './AiMarkdownRenderer';
+import { aiService, type FlashcardItem } from '../../../../../../services';
+import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiFlashcardsTabProps {
   noteId?: string;
@@ -167,19 +167,7 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
       </div>
 
       {error && (
-        <div
-          style={{
-            background: 'var(--red-alpha)',
-            border: '1px solid var(--red-border)',
-            color: 'var(--text-primary)',
-            padding: '8px 12px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '11.5px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
+        <div className={styles.errorBox}>
           <AlertCircle size={14} color="var(--red)" />
           <span>{error}</span>
         </div>
@@ -300,13 +288,9 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
           {/* Insert Deck into note */}
           {onInsertMarkdown && (
             <button
-              className={styles.deckBtn}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                padding: '7px 0',
-                color: isInserted ? 'var(--emerald)' : 'var(--text-secondary)'
-              }}
+              className={`${styles.deckBtn} ${styles.insertDeckBtn} ${
+                isInserted ? styles.insertDeckBtnSuccess : ''
+              }`}
               onClick={handleInsertAll}
             >
               {isInserted ? <Check size={12} /> : <FileDown size={12} />}
@@ -320,19 +304,9 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
 
       {/* Initial state placeholder */}
       {cards.length === 0 && !isLoading && !error && (
-        <div
-          style={{
-            padding: '24px 16px',
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
+        <div className={styles.emptyState}>
           <Layers size={32} color="var(--text-dim)" />
-          <p style={{ fontSize: '12px', margin: 0, lineHeight: 1.5 }}>
+          <p className={styles.emptyStateText}>
             El repaso activo mediante <strong>Flashcards</strong> fortalece la retención
             a largo plazo de teoremas, fórmulas y definiciones críticas para exámenes.
           </p>

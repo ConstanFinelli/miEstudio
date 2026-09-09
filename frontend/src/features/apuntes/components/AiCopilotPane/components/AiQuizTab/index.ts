@@ -1,0 +1,1 @@
+export { AiQuizTab } from './AiQuizTab';

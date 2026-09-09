@@ -1,0 +1,275 @@
+.flashcardsContainer {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.configCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.configRow {
+  display: flex;
+  gap: 8px;
+}
+
+.configGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.configLabel {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.configSelect {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  outline: none;
+}
+
+.configSelect:focus {
+  border-color: var(--primary);
+}
+
+.primaryActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryActionBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.primaryActionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorBox {
+  background: var(--red-alpha);
+  border: 1px solid var(--red-border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 3D Interactive Card Styles */
+.cardPerspectiveWrapper {
+  perspective: 1200px;
+  width: 100%;
+  height: 230px;
+  cursor: pointer;
+}
+
+.cardInner3D {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.cardFlipped {
+  transform: rotateY(180deg);
+}
+
+.cardFace {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.cardFront {
+  background: linear-gradient(145deg, var(--surface-2) 0%, var(--surface-1) 100%);
+  border: 1px solid var(--border-hover);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.cardBack {
+  background: linear-gradient(145deg, var(--surface-3) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--primary-border);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+  transform: rotateY(180deg);
+}
+
+.cardBadgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.difficultyBadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.badgeFacil {
+  background: var(--emerald-alpha);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-border);
+}
+
+.badgeMedia {
+  background: var(--amber-alpha);
+  color: var(--amber);
+  border: 1px solid var(--amber-border);
+}
+
+.badgeDificil {
+  background: var(--red-alpha);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+}
+
+.cardCategory {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.cardBody {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.cardQuestionText {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.cardAnswerText {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  text-align: left;
+  width: 100%;
+}
+
+.cardFootnote {
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* Card deck controls */
+.deckControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--surface-2);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.deckBtn {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.deckBtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--primary-border);
+}
+
+.deckBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.deckCounter {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.insertDeckBtn {
+  width: 100%;
+  justify-content: center;
+  padding: 7px 0;
+}
+
+.insertDeckBtnSuccess {
+  color: var(--emerald) !important;
+}
+
+.emptyState {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyStateText {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.5;
+}

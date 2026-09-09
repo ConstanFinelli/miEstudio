@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './AiCopilotPane.module.css';
+import styles from './AiSummaryTab.module.css';
 import {
   FileText,
   Sparkles,
@@ -11,8 +11,8 @@ import {
   Lightbulb,
   Sigma
 } from 'lucide-react';
-import { aiService, type ResumenResponse } from '../../../../services';
-import { AiMarkdownRenderer } from './AiMarkdownRenderer';
+import { aiService, type ResumenResponse } from '../../../../../../services';
+import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiSummaryTabProps {
   noteId?: string;
@@ -106,7 +106,7 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
   };
 
   return (
-    <div className={styles.panelSection}>
+    <div className={styles.summaryTab}>
       {/* Config Form */}
       <div className={styles.configCard}>
         <div className={styles.configRow}>
@@ -157,19 +157,7 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
       </div>
 
       {error && (
-        <div
-          style={{
-            background: 'var(--red-alpha)',
-            border: '1px solid var(--red-border)',
-            color: 'var(--text-primary)',
-            padding: '8px 12px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '11.5px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
+        <div className={styles.errorBox}>
           <AlertCircle size={14} color="var(--red)" />
           <span>{error}</span>
         </div>
@@ -182,7 +170,7 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
           <div className={styles.summaryHeader}>
             <h4 className={styles.summaryTitle}>{summaryData.titulo}</h4>
 
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div className={styles.headerActions}>
               <button
                 className={`${styles.actionPillBtn} ${isCopied ? styles.actionPillSuccess : ''}`}
                 onClick={handleCopyAll}
@@ -206,32 +194,14 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
           </div>
 
           {/* Main summary text */}
-          <div
-            style={{
-              background: 'var(--surface-2)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '12px'
-            }}
-          >
+          <div className={styles.summaryContentBox}>
             <AiMarkdownRenderer content={summaryData.resumen} />
           </div>
 
           {/* Conceptos Clave */}
           {summaryData.conceptos_clave && summaryData.conceptos_clave.length > 0 && (
             <div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  marginBottom: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
+              <div className={styles.sectionHeader}>
                 <FileText size={12} />
                 <span>Conceptos Clave</span>
               </div>
@@ -248,33 +218,13 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
           {/* Fórmulas y Teoremas */}
           {summaryData.formulas_teoremas && summaryData.formulas_teoremas.length > 0 && (
             <div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  color: 'var(--primary-glow)',
-                  textTransform: 'uppercase',
-                  marginBottom: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
+              <div className={`${styles.sectionHeader} ${styles.sectionHeaderPrimary}`}>
                 <Sigma size={12} />
                 <span>Fórmulas y Teoremas Relevantes</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {summaryData.formulas_teoremas.map((formula, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      background: 'var(--surface-2)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '8px 10px',
-                      fontSize: '11.5px'
-                    }}
-                  >
+                  <div key={idx} className={styles.formulaCard}>
                     <AiMarkdownRenderer content={formula} />
                   </div>
                 ))}
@@ -289,9 +239,9 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
                 <Lightbulb size={13} />
                 <span>Tips y Puntos Críticos para el Examen</span>
               </div>
-              <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <ul className={styles.tipsList}>
                 {summaryData.tips_examen.map((tip, idx) => (
-                  <li key={idx} style={{ fontSize: '11.5px', color: 'var(--text-primary)', lineHeight: 1.45 }}>
+                  <li key={idx} className={styles.tipItem}>
                     <AiMarkdownRenderer content={tip} />
                   </li>
                 ))}

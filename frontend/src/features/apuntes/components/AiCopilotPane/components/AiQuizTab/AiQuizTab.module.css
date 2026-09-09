@@ -1,0 +1,326 @@
+.quizContainer {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.configCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.configGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.configLabel {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.configSelect {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  outline: none;
+}
+
+.configSelect:focus {
+  border-color: var(--primary);
+}
+
+.primaryActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.primaryActionBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.primaryActionBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorBox {
+  background: var(--red-alpha);
+  border: 1px solid var(--red-border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quizProgressBar {
+  width: 100%;
+  height: 4px;
+  background: var(--surface-3);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.quizProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--emerald) 100%);
+  transition: width 0.3s ease;
+}
+
+.quizQuestionCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quizQuestionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.quizQuestionPrompt {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optionBtn {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.4;
+}
+
+.optionBtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--primary-border);
+}
+
+.optionIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.optionCorrect {
+  background: var(--emerald-alpha) !important;
+  border-color: var(--emerald) !important;
+  color: var(--text-primary) !important;
+}
+
+.optionCorrect .optionIndex {
+  background: var(--emerald);
+  color: white;
+}
+
+.optionIncorrect {
+  background: var(--red-alpha) !important;
+  border-color: var(--red) !important;
+  color: var(--text-primary) !important;
+}
+
+.optionIncorrect .optionIndex {
+  background: var(--red);
+  color: white;
+}
+
+.explanationBox {
+  background: var(--surface-1);
+  border-left: 3px solid var(--emerald);
+  padding: 10px 12px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  animation: fadeIn 0.2s ease;
+}
+
+.explanationHeader {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--emerald);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nextBtn {
+  align-self: flex-end;
+  width: auto;
+  padding: 8px 18px;
+}
+
+.resultsSummaryCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: fadeIn 0.25s ease;
+}
+
+.resultsTitle {
+  margin: 0;
+  fontSize: 16px;
+  color: var(--text-primary);
+}
+
+.scoreCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-alpha);
+  border: 2px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.scorePercentage {
+  font-size: 18px;
+}
+
+.scoreFraction {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.resultsFeedback {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.resultsActionsRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.deckBtn {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 8px 0;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  transition: all 0.15s ease;
+}
+
+.deckBtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--primary-border);
+}
+
+.insertQuizBtn {
+  width: 100%;
+  padding: 8px 0;
+  color: var(--text-primary);
+}
+
+.insertQuizBtnSuccess {
+  color: var(--emerald) !important;
+}
+
+.emptyState {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyStateText {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

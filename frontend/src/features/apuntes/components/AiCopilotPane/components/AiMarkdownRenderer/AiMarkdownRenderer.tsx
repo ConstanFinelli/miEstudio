@@ -1,5 +1,6 @@
 import React from 'react';
 import katex from 'katex';
+import styles from './AiMarkdownRenderer.module.css';
 
 interface AiMarkdownRendererProps {
   content: string;
@@ -30,23 +31,13 @@ const renderInline = (text: string): React.ReactNode => {
       }
     } else if (seg.startsWith('`') && seg.endsWith('`') && seg.length > 2) {
       parts.push(
-        <code
-          key={idx}
-          style={{
-            fontFamily: 'var(--font-mono)',
-            background: 'var(--surface-3)',
-            padding: '1px 5px',
-            borderRadius: '3px',
-            fontSize: '11px',
-            color: 'var(--text-primary)'
-          }}
-        >
+        <code key={idx} className={styles.inlineCode}>
           {seg.slice(1, -1)}
         </code>
       );
     } else if (seg.startsWith('**') && seg.endsWith('**') && seg.length > 4) {
       parts.push(
-        <strong key={idx} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+        <strong key={idx} className={styles.boldText}>
           {seg.slice(2, -2)}
         </strong>
       );
@@ -83,42 +74,9 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
       }
       i++; // skip closing ```
       blocks.push(
-        <div
-          key={`code-${i}`}
-          style={{
-            margin: '8px 0',
-            background: 'var(--bg-canvas)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-sm)',
-            overflow: 'hidden'
-          }}
-        >
-          {lang && (
-            <div
-              style={{
-                fontSize: '10px',
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--text-muted)',
-                padding: '4px 8px',
-                borderBottom: '1px solid var(--border-subtle)',
-                background: 'var(--surface-2)',
-                textTransform: 'uppercase'
-              }}
-            >
-              {lang}
-            </div>
-          )}
-          <pre
-            style={{
-              padding: '8px 10px',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '11px',
-              overflowX: 'auto',
-              margin: 0,
-              color: 'var(--text-primary)',
-              lineHeight: 1.45
-            }}
-          >
+        <div key={`code-${i}`} className={styles.codeBlock}>
+          {lang && <div className={styles.codeHeader}>{lang}</div>}
+          <pre className={styles.codePre}>
             <code>{codeLines.join('\n')}</code>
           </pre>
         </div>
@@ -153,16 +111,8 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
       blocks.push(
         <div
           key={`math-${i}`}
+          className={styles.mathBlock}
           dangerouslySetInnerHTML={{ __html: html }}
-          style={{
-            margin: '10px 0',
-            padding: '8px 12px',
-            background: 'var(--surface-2)',
-            borderRadius: 'var(--radius-sm)',
-            border: '1px solid var(--border-subtle)',
-            overflowX: 'auto',
-            textAlign: 'center'
-          }}
         />
       );
       continue;
@@ -176,19 +126,7 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
         i++;
       }
       blocks.push(
-        <blockquote
-          key={`quote-${i}`}
-          style={{
-            margin: '8px 0',
-            padding: '6px 12px',
-            borderLeft: '3px solid var(--primary)',
-            background: 'var(--primary-alpha)',
-            borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
-            fontSize: '12px',
-            color: 'var(--text-primary)',
-            fontStyle: 'italic'
-          }}
-        >
+        <blockquote key={`quote-${i}`} className={styles.calloutBlock}>
           {quoteLines.map((ql, qIdx) => (
             <div key={qIdx}>{renderInline(ql)}</div>
           ))}
@@ -208,25 +146,9 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
         i++;
       }
       blocks.push(
-        <ul
-          key={`list-${i}`}
-          style={{
-            margin: '6px 0',
-            paddingLeft: '18px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px'
-          }}
-        >
+        <ul key={`list-${i}`} className={styles.bulletList}>
           {items.map((item, itemIdx) => (
-            <li
-              key={itemIdx}
-              style={{
-                fontSize: '12px',
-                color: 'var(--text-primary)',
-                lineHeight: 1.5
-              }}
-            >
+            <li key={itemIdx} className={styles.bulletItem}>
               {renderInline(item)}
             </li>
           ))}
@@ -238,17 +160,7 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
     // Headings
     if (line.startsWith('# ')) {
       blocks.push(
-        <h3
-          key={`h1-${i}`}
-          style={{
-            fontSize: '14px',
-            fontWeight: 700,
-            color: 'var(--text-primary)',
-            margin: '12px 0 6px',
-            borderBottom: '1px solid var(--border-subtle)',
-            paddingBottom: '4px'
-          }}
-        >
+        <h3 key={`h1-${i}`} className={styles.heading1}>
           {renderInline(line.replace(/^#\s+/, ''))}
         </h3>
       );
@@ -257,15 +169,7 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
     }
     if (line.startsWith('## ')) {
       blocks.push(
-        <h4
-          key={`h2-${i}`}
-          style={{
-            fontSize: '13px',
-            fontWeight: 600,
-            color: 'var(--primary-glow)',
-            margin: '10px 0 4px'
-          }}
-        >
+        <h4 key={`h2-${i}`} className={styles.heading2}>
           {renderInline(line.replace(/^##\s+/, ''))}
         </h4>
       );
@@ -274,15 +178,7 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
     }
     if (line.startsWith('### ')) {
       blocks.push(
-        <h5
-          key={`h3-${i}`}
-          style={{
-            fontSize: '12px',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            margin: '8px 0 2px'
-          }}
-        >
+        <h5 key={`h3-${i}`} className={styles.heading3}>
           {renderInline(line.replace(/^###\s+/, ''))}
         </h5>
       );
@@ -298,22 +194,14 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
 
     // Regular paragraph
     blocks.push(
-      <p
-        key={`p-${i}`}
-        style={{
-          margin: '4px 0',
-          fontSize: '12px',
-          color: 'var(--text-primary)',
-          lineHeight: 1.55
-        }}
-      >
+      <p key={`p-${i}`} className={styles.paragraph}>
         {renderInline(line)}
       </p>
     );
     i++;
   }
 
-  return <div className={className}>{blocks}</div>;
+  return <div className={`${styles.rendererRoot} ${className || ''}`}>{blocks}</div>;
 };
 
 export default AiMarkdownRenderer;

@@ -10,10 +10,12 @@ import {
 } from 'lucide-react';
 import type { ApunteNota, MaterialEstudio } from '../../../../types/academic';
 import { materialesService } from '../../../../services';
-import { AiChatTab } from './AiChatTab';
-import { AiSummaryTab } from './AiSummaryTab';
-import { AiFlashcardsTab } from './AiFlashcardsTab';
-import { AiQuizTab } from './AiQuizTab';
+import {
+  AiChatTab,
+  AiSummaryTab,
+  AiFlashcardsTab,
+  AiQuizTab
+} from './components';
 
 export type AiCopilotTabType = 'chat' | 'resumen' | 'flashcards' | 'quiz';
 

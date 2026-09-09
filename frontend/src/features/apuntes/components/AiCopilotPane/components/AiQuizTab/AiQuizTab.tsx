@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './AiCopilotPane.module.css';
+import styles from './AiQuizTab.module.css';
 import {
   Sparkles,
   CheckCircle2,
@@ -13,8 +13,8 @@ import {
   ArrowRight,
   Check
 } from 'lucide-react';
-import { aiService, type QuizPregunta, type QuizResponse } from '../../../../services';
-import { AiMarkdownRenderer } from './AiMarkdownRenderer';
+import { aiService, type QuizPregunta, type QuizResponse } from '../../../../../../services';
+import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiQuizTabProps {
   noteId?: string;
@@ -166,19 +166,7 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
       )}
 
       {error && (
-        <div
-          style={{
-            background: 'var(--red-alpha)',
-            border: '1px solid var(--red-border)',
-            color: 'var(--text-primary)',
-            padding: '8px 12px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '11.5px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
+        <div className={styles.errorBox}>
           <AlertCircle size={14} color="var(--red)" />
           <span>{error}</span>
         </div>
@@ -254,17 +242,7 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
             {/* Explanation box revealed after answering */}
             {isCurrentAnswered && (
               <div className={styles.explanationBox}>
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: '11px',
-                    color: 'var(--emerald)',
-                    marginBottom: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
+                <div className={styles.explanationHeader}>
                   <HelpCircle size={12} />
                   <span>Explicación Conceptual</span>
                 </div>
@@ -276,9 +254,8 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
           {/* Navigation to next question */}
           {isCurrentAnswered && (
             <button
-              className={styles.primaryActionBtn}
+              className={`${styles.primaryActionBtn} ${styles.nextBtn}`}
               onClick={handleNext}
-              style={{ alignSelf: 'flex-end', width: 'auto', padding: '8px 18px' }}
             >
               <span>
                 {currentQIndex < quizData.preguntas.length - 1
@@ -295,18 +272,18 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
       {quizData && isCompleted && (
         <div className={styles.resultsSummaryCard}>
           <Trophy size={36} color="var(--amber)" />
-          <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>
+          <h3 className={styles.resultsTitle}>
             Simulación Finalizada
           </h3>
 
           <div className={styles.scoreCircle}>
-            <span style={{ fontSize: '18px' }}>{percentage}%</span>
-            <span style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-muted)' }}>
+            <span className={styles.scorePercentage}>{percentage}%</span>
+            <span className={styles.scoreFraction}>
               {correct}/{total}
             </span>
           </div>
 
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+          <p className={styles.resultsFeedback}>
             {percentage >= 80
               ? '🎉 ¡Excelente rendimiento! Tenés un gran dominio conceptual de este material.'
               : percentage >= 50
@@ -314,10 +291,9 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
               : '📚 Recomendación: repasá los apuntes y volvé a intentar la simulación para afianzar conceptos.'}
           </p>
 
-          <div style={{ display: 'flex', gap: '8px', width: '100%', marginTop: '6px' }}>
+          <div className={styles.resultsActionsRow}>
             <button
               className={styles.deckBtn}
-              style={{ flex: 1, justifyContent: 'center', padding: '8px 0' }}
               onClick={handleRestart}
             >
               <RotateCcw size={13} />
@@ -326,7 +302,6 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
 
             <button
               className={styles.deckBtn}
-              style={{ flex: 1, justifyContent: 'center', padding: '8px 0' }}
               onClick={handleGenerate}
             >
               <Sparkles size={13} />
@@ -336,13 +311,9 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
 
           {onInsertMarkdown && (
             <button
-              className={styles.deckBtn}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                padding: '8px 0',
-                color: isInserted ? 'var(--emerald)' : 'var(--text-primary)'
-              }}
+              className={`${styles.deckBtn} ${styles.insertQuizBtn} ${
+                isInserted ? styles.insertQuizBtnSuccess : ''
+              }`}
               onClick={handleInsertInNote}
             >
               {isInserted ? <Check size={13} /> : <FileDown size={13} />}
@@ -356,19 +327,9 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
 
       {/* Initial state placeholder */}
       {!quizData && !isLoading && !error && (
-        <div
-          style={{
-            padding: '24px 16px',
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
+        <div className={styles.emptyState}>
           <HelpCircle size={32} color="var(--text-dim)" />
-          <p style={{ fontSize: '12px', margin: 0, lineHeight: 1.5 }}>
+          <p className={styles.emptyStateText}>
             Poné a prueba tu conocimiento con preguntas tipo examen con respuestas
             múltiples y explicaciones pedagógicas detalladas generadas por IA.
           </p>

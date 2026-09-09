@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import styles from './AiCopilotPane.module.css';
+import styles from './AiChatTab.module.css';
 import { Send, Square, Sparkles, Copy, Check, FileDown, Loader2 } from 'lucide-react';
-import { aiService, type ChatMessage } from '../../../../services';
-import { AiMarkdownRenderer } from './AiMarkdownRenderer';
+import { aiService, type ChatMessage } from '../../../../../../services';
+import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiChatTabProps {
   noteId?: string;
@@ -190,7 +190,7 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
               <div>
                 <AiMarkdownRenderer content={msg.content} />
                 {isStreaming && idx === messages.length - 1 && !msg.content && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '11px', padding: '4px 0' }}>
+                  <div className={styles.thinkingIndicator}>
                     <Loader2 size={12} className="animate-spin" />
                     <span>Pensando y analizando material...</span>
                   </div>
