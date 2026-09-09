@@ -65,5 +65,18 @@ export const materialesService = {
       // noop
     }
     localMateriales = localMateriales.filter(m => m.id !== id);
+  },
+
+  async deleteMaterialesByMateria(materiaId: string): Promise<number> {
+    try {
+      const res = await apiClient.delete<{ deleted: number }>(`/materias/${materiaId}/materiales`);
+      localMateriales = localMateriales.filter(m => m.materiaId !== materiaId);
+      return res.deleted || 0;
+    } catch (err) {
+      console.warn('[materialesService] Error eliminando materiales por materia:', err);
+      const prevCount = localMateriales.filter(m => m.materiaId === materiaId).length;
+      localMateriales = localMateriales.filter(m => m.materiaId !== materiaId);
+      return prevCount;
+    }
   }
 };

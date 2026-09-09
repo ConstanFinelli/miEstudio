@@ -12,6 +12,7 @@ type Repository interface {
 	Create(ctx context.Context, material *Material) error
 	Update(ctx context.Context, material *Material) error
 	Delete(ctx context.Context, id string) error
+	DeleteByMateria(ctx context.Context, usuarioID, materiaID string) ([]Material, error)
 }
 
 type repository struct {
@@ -58,4 +59,28 @@ func (r *repository) Update(ctx context.Context, material *Material) error {
 
 func (r *repository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Delete(&Material{}, "id = ?", id).Error
+}
+
+func (r *repository) DeleteByMateria(ctx context.Context, usuarioID, materiaID string) ([]Material, error) {
+	var materials []Material
+	q := r.db.WithContext(ctx).Where("materia_id = ?", materiaID)
+	if usuarioID != "" {
+		q = q.Where("usuario_id = ?", usuarioID)
+	}
+	if err := q.Find(&materials).Error; err != nil {
+		return nil, err
+	}
+	if len(materials) == 0 {
+		return materials, nil
+	}
+
+	delQ := r.db.WithContext(ctx).Where("materia_id = ?", materiaID)
+	if usuarioID != "" {
+		delQ = delQ.Where("usuario_id = ?", usuarioID)
+	}
+	if err := delQ.Delete(&Material{}).Error; err != nil {
+		return nil, err
+	}
+
+	return materials, nil
 }

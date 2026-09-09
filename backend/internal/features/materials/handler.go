@@ -19,6 +19,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 	// Rutas por materia
 	router.Get("/materias/:materia_id/materiales", authMiddleware, h.GetByMateria)
 	router.Post("/materias/:materia_id/materiales", authMiddleware, h.Upload)
+	router.Delete("/materias/:materia_id/materiales", authMiddleware, h.DeleteByMateria)
 
 	// Rutas por material
 	materialsGroup := router.Group("/materiales", authMiddleware)
@@ -117,4 +118,18 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al eliminar material", err.Error())
 	}
 	return common.SendSuccess(c, fiber.Map{"deleted": true, "id": id})
+}
+
+func (h *Handler) DeleteByMateria(c *fiber.Ctx) error {
+	materiaID := c.Params("materia_id")
+	userID := common.GetUserID(c)
+
+	count, err := h.service.DeleteMaterialesByMateria(c.Context(), userID, materiaID)
+	if err != nil {
+		return common.SendError(c, fiber.StatusInternalServerError, "Error al eliminar materiales de la materia", err.Error())
+	}
+	return common.SendSuccess(c, fiber.Map{
+		"deleted": count,
+		"message": fmt.Sprintf("Se eliminaron %d materiales correctamente", count),
+	})
 }

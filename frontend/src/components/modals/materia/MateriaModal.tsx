@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styles from './MateriaModal.module.css';
 import { X, BookOpen, Plus, Award, Save } from 'lucide-react';
-import type { Materia, EstadoMateria } from '../../../types/academic';
-import { materiasService } from '../../../services';
+import type { Materia, EstadoMateria, ApunteNota } from '../../../types/academic';
+import { materiasService, materialesService, apuntesService } from '../../../services';
 import { useAuth } from '../../../context/AuthContext';
 import { carrerasService } from '../../../services/carrerasService';
+import { CleanApprovedPdfsModal } from '../material/CleanApprovedPdfsModal';
+import { exportMateriaNotesZip } from '../../../utils';
 
 interface MateriaModalProps {
   isOpen: boolean;
@@ -66,6 +68,16 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const isAprobada = estado === 'APROBADA' || estado === 'PROMOCIONADA';
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cleanPdfsData, setCleanPdfsData] = useState<{
+    isOpen: boolean;
+    materiaId: string;
+    materiaNombre: string;
+    pdfCount: number;
+    totalBytes: number;
+    notesCount: number;
+    notesList: ApunteNota[];
+    updatedMateria: Materia;
+  } | null>(null);
 
   useEffect(() => {
     if (materiaToEdit) {
@@ -238,6 +250,36 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
 
       // Disparar evento reactivo para sincronizar inmediatamente todas las vistas
       window.dispatchEvent(new CustomEvent('materias:updated', { detail: result }));
+
+      // Verificar si acaba de ser acreditada (aprobada o promocionada)
+      const wasAlreadyApproved = Boolean(
+        materiaToEdit && (materiaToEdit.estado === 'APROBADA' || materiaToEdit.estado === 'PROMOCIONADA')
+      );
+      const isNowApproved = estado === 'APROBADA' || estado === 'PROMOCIONADA';
+
+      if (materiaToEdit && isNowApproved && !wasAlreadyApproved) {
+        try {
+          // Verificar explícitamente que haya PDFs subidos antes de abrir el modal
+          const pdfs = await materialesService.getMateriales(materiaToEdit.id);
+          if (pdfs.length > 0) {
+            const matNotes = await apuntesService.getApuntes(materiaToEdit.id).catch(() => []);
+            const totalBytes = pdfs.reduce((sum, p) => sum + (p.tamanioBytes || 0), 0);
+            setCleanPdfsData({
+              isOpen: true,
+              materiaId: materiaToEdit.id,
+              materiaNombre: result.nombre,
+              pdfCount: pdfs.length,
+              totalBytes,
+              notesCount: matNotes.length,
+              notesList: matNotes,
+              updatedMateria: result
+            });
+            return; // Esperar decisión del alumno en el modal antes de cerrar
+          }
+        } catch (checkErr) {
+          console.warn('[MateriaModal] Error verificando PDFs de la materia:', checkErr);
+        }
+      }
 
       onSuccess(result);
       onClose();
@@ -780,6 +822,29 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
           </div>
         </form>
       </div>
+
+      {/* Modal de confirmación para depurar PDFs al aprobar materia */}
+      {cleanPdfsData && (
+        <CleanApprovedPdfsModal
+          isOpen={cleanPdfsData.isOpen}
+          onClose={() => {
+            const res = cleanPdfsData.updatedMateria;
+            setCleanPdfsData(null);
+            onSuccess(res);
+            onClose();
+          }}
+          materiaNombre={cleanPdfsData.materiaNombre}
+          pdfCount={cleanPdfsData.pdfCount}
+          totalBytes={cleanPdfsData.totalBytes}
+          notesCount={cleanPdfsData.notesCount}
+          onDownloadNotesZip={() => {
+            exportMateriaNotesZip(cleanPdfsData.materiaNombre, cleanPdfsData.notesList);
+          }}
+          onConfirmDeletePdfs={async () => {
+            await materialesService.deleteMaterialesByMateria(cleanPdfsData.materiaId);
+          }}
+        />
+      )}
     </div>
   );
 };

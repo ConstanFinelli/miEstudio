@@ -17,6 +17,7 @@ type Service interface {
 	UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error)
 	UpdateMaterial(ctx context.Context, id string, dto UpdateMaterialDTO) (*Material, error)
 	DeleteMaterial(ctx context.Context, id string) error
+	DeleteMaterialesByMateria(ctx context.Context, usuarioID, materiaID string) (int, error)
 }
 
 type service struct {
@@ -119,4 +120,17 @@ func (s *service) DeleteMaterial(ctx context.Context, id string) error {
 
 	_ = s.storage.Delete(ctx, mat.ArchivoKey)
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *service) DeleteMaterialesByMateria(ctx context.Context, usuarioID, materiaID string) (int, error) {
+	materials, err := s.repo.DeleteByMateria(ctx, usuarioID, materiaID)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, mat := range materials {
+		_ = s.storage.Delete(ctx, mat.ArchivoKey)
+	}
+
+	return len(materials), nil
 }
