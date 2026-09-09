@@ -125,13 +125,13 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
         {/* AI Copilot Mode Toggle Button */}
         {onToggleAiPane && (
           <button
+            type="button"
             className={`${styles.btnAiCopilot} ${showAiPane ? styles.btnAiCopilotActive : ""}`}
             onClick={onToggleAiPane}
-            disabled={!hasActiveNote}
             title={
-              hasActiveNote
-                ? (showAiPane ? "Cerrar Copiloto IA" : "Abrir Copiloto IA (Chat, Resúmenes, Flashcards y Quiz de Examen)")
-                : "El Copiloto IA requiere que tengas un apunte abierto para analizar su contenido."
+              showAiPane
+                ? "Cerrar Copiloto IA"
+                : "Abrir Copiloto IA (Chat, Resúmenes, Flashcards y Quiz de Materiales PDF)"
             }
           >
             <Sparkles size={12} />

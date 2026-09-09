@@ -32,11 +32,11 @@ export interface MateriaDTO {
   codigo?: string;
   nombre: string;
   anio: number;
-  cuatrimestre: 'PRIMERO' | 'SEGUNDO' | 'ANUAL';
-  estado: 'CURSANDO' | 'REGULAR' | 'APROBADA' | 'PROMOCIONADA' | 'LIBRE';
+  cuatrimestre: "PRIMERO" | "SEGUNDO" | "ANUAL";
+  estado: "CURSANDO" | "REGULAR" | "APROBADA" | "PROMOCIONADA" | "LIBRE";
   color: string;
   comision?: string;
-  modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
+  modalidad?: "Presencial" | "Virtual" | "Híbrida";
   promedio?: number;
   profesor_titular?: string;
   profesor_jtp?: string;
@@ -51,14 +51,14 @@ export interface EvaluacionDTO {
   materia_nombre?: string;
   materia_codigo?: string;
   titulo: string;
-  tipo: 'PARCIAL' | 'RECUPERATORIO' | 'FINAL' | 'TP' | 'LABORATORIO' | 'QUIZ';
+  tipo: "PARCIAL" | "RECUPERATORIO" | "FINAL" | "TP" | "LABORATORIO" | "QUIZ";
   fecha: string;
   horario?: string;
   nota: number | null;
   peso: number;
   es_aprobatorio: boolean;
   aula?: string;
-  modalidad?: 'Presencial' | 'Virtual';
+  modalidad?: "Presencial" | "Virtual";
   temario?: string[];
   created_at?: string;
   updated_at?: string;
@@ -82,7 +82,7 @@ export interface EventoCalendarioDTO {
   titulo: string;
   fecha_inicio: string;
   fecha_fin: string;
-  tipo: 'EXAMEN' | 'ENTREGA' | 'LABORATORIO' | 'ESTUDIO' | 'CONSULTA';
+  tipo: "EXAMEN" | "ENTREGA" | "LABORATORIO" | "ESTUDIO" | "CONSULTA";
   aula?: string;
   modalidad?: string;
   impacto_academico?: string;
@@ -93,7 +93,12 @@ export interface MaterialDTO {
   id: string;
   materia_id: string;
   titulo: string;
-  categoria: 'TEORIA' | 'GUIA_PRACTICA' | 'EXAMEN_ANTERIOR' | 'BIBLIOGRAFIA' | 'OTRO';
+  categoria:
+    | "TEORIA"
+    | "GUIA_PRACTICA"
+    | "EXAMEN_ANTERIOR"
+    | "BIBLIOGRAFIA"
+    | "OTRO";
   archivo_nombre_original: string;
   archivo_path: string;
   mime_type: string;
@@ -125,13 +130,19 @@ export interface HorarioCursadaDTO {
   id: string;
   materia_id: string;
   materia?: MateriaDTO;
-  dia_semana: 'LUNES' | 'MARTES' | 'MIERCOLES' | 'JUEVES' | 'VIERNES' | 'SABADO';
+  dia_semana:
+    | "LUNES"
+    | "MARTES"
+    | "MIERCOLES"
+    | "JUEVES"
+    | "VIERNES"
+    | "SABADO";
   hora_inicio: string;
   hora_fin: string;
   facultad_sede?: string;
   aula?: string;
   tipo_clase?: string;
-  modalidad?: 'Presencial' | 'Virtual' | 'Híbrida';
+  modalidad?: "Presencial" | "Virtual" | "Híbrida";
   observaciones?: string;
   created_at?: string;
   updated_at?: string;
@@ -142,4 +153,3 @@ export interface ApiResponse<T> {
   message?: string;
   success: boolean;
 }
-

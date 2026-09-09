@@ -24,7 +24,7 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) GetAll(ctx context.Context, usuarioID, materiaID, carpeta, search string) ([]Apunte, error) {
 	var notes []Apunte
-	q := r.db.WithContext(ctx).Order("updated_at desc")
+	q := r.db.WithContext(ctx).Preload("Materia").Order("updated_at desc")
 
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
@@ -48,7 +48,7 @@ func (r *repository) GetAll(ctx context.Context, usuarioID, materiaID, carpeta, 
 
 func (r *repository) GetByID(ctx context.Context, id string) (*Apunte, error) {
 	var apunte Apunte
-	if err := r.db.WithContext(ctx).First(&apunte, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Materia").First(&apunte, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &apunte, nil

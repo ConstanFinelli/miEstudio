@@ -32,6 +32,9 @@ func (s *service) ListApuntes(ctx context.Context, usuarioID, materiaID, carpeta
 	}
 
 	for i := range notes {
+		if notes[i].Materia != nil {
+			notes[i].MateriaNombre = notes[i].Materia.Nombre
+		}
 		if notes[i].Etiquetas != "" {
 			var tags []string
 			if err := json.Unmarshal([]byte(notes[i].Etiquetas), &tags); err == nil {
@@ -55,6 +58,9 @@ func (s *service) GetApunte(ctx context.Context, id string) (*Apunte, error) {
 		return nil, err
 	}
 
+	if note.Materia != nil {
+		note.MateriaNombre = note.Materia.Nombre
+	}
 	if note.Etiquetas != "" {
 		var tags []string
 		if err := json.Unmarshal([]byte(note.Etiquetas), &tags); err == nil {
@@ -105,6 +111,17 @@ func (s *service) CreateApunte(ctx context.Context, dto CreateApunteDTO) (*Apunt
 		return nil, err
 	}
 
+	created, err := s.repo.GetByID(ctx, apunte.ID)
+	if err == nil && created != nil {
+		if created.Materia != nil {
+			created.MateriaNombre = created.Materia.Nombre
+		}
+		if created.Tags == nil {
+			created.Tags = []string{}
+		}
+		return created, nil
+	}
+
 	return apunte, nil
 }
 
@@ -135,6 +152,17 @@ func (s *service) UpdateApunte(ctx context.Context, id string, dto UpdateApunteD
 
 	if err := s.repo.Update(ctx, apunte); err != nil {
 		return nil, err
+	}
+
+	updated, err := s.repo.GetByID(ctx, id)
+	if err == nil && updated != nil {
+		if updated.Materia != nil {
+			updated.MateriaNombre = updated.Materia.Nombre
+		}
+		if updated.Tags == nil {
+			updated.Tags = []string{}
+		}
+		return updated, nil
 	}
 
 	if apunte.Tags == nil {

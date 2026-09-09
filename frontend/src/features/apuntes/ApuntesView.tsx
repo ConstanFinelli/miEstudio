@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import styles from "./ApuntesView.module.css";
 import type { ApunteNota } from "../../types/academic";
-import { useApuntes, useMateriales } from "../../hooks";
+import { useApuntes, useMateriales, useMaterias } from "../../hooks";
 import { useLayout } from "../../context";
 import {
   FoldersSidebar,
@@ -12,7 +12,10 @@ import {
   SplitPdfViewerPane,
   AiCopilotPane,
 } from "./components";
-import { UploadMaterialModal, DeleteConfirmModal } from "../../components/modals";
+import {
+  UploadMaterialModal,
+  DeleteConfirmModal,
+} from "../../components/modals";
 
 interface ApuntesViewProps {
   onOpenNoteModal: () => void;
@@ -21,10 +24,21 @@ interface ApuntesViewProps {
 export const ApuntesView: React.FC<ApuntesViewProps> = ({
   onOpenNoteModal,
 }) => {
-  const { apuntes, selectedApunte, setSelectedApunte, updateApunte, deleteApunte } = useApuntes();
+  const { materias } = useMaterias();
+  const {
+    apuntes,
+    selectedApunte,
+    setSelectedApunte,
+    updateApunte,
+    deleteApunte,
+  } = useApuntes();
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
-  const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"render" | "markdown" | "split">("split");
+  const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(
+    null,
+  );
+  const [viewMode, setViewMode] = useState<"render" | "markdown" | "split">(
+    "split",
+  );
   const [showPdfSplit, setShowPdfSplit] = useState(false);
   const [showAiPane, setShowAiPane] = useState(false);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>("");
@@ -32,7 +46,10 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const [isNotesListCollapsed, setIsNotesListCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isUploadPdfModalOpen, setIsUploadPdfModalOpen] = useState(false);
-  const [noteToDelete, setNoteToDelete] = useState<{ id: string; titulo: string } | null>(null);
+  const [noteToDelete, setNoteToDelete] = useState<{
+    id: string;
+    titulo: string;
+  } | null>(null);
   const [isDeletingNote, setIsDeletingNote] = useState(false);
 
   const { isSidebarCollapsed, setIsSidebarCollapsed } = useLayout();
@@ -65,27 +82,27 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const activeNote: ApunteNota | null =
     selectedApunte || filteredNotes[0] || apuntes[0] || null;
 
-  const hasActiveNote = Boolean(activeNote && activeNote.id !== "nota-default");
-
   const currentMateriaNotes = useMemo(() => {
     if (!activeNote) return [];
     return apuntes.filter(
       (a) =>
         (activeNote.materiaId && a.materiaId === activeNote.materiaId) ||
-        (activeNote.materiaNombre && a.materiaNombre === activeNote.materiaNombre)
+        (activeNote.materiaNombre &&
+          a.materiaNombre === activeNote.materiaNombre),
     );
   }, [apuntes, activeNote]);
 
-  // Auto-close AI Copilot pane if no note is active/available
-  useEffect(() => {
-    if (!hasActiveNote && showAiPane) {
-      setShowAiPane(false);
-      if (!showPdfSplit && wasNavAutoCollapsedRef.current) {
-        wasNavAutoCollapsedRef.current = false;
-        setIsSidebarCollapsed(false);
-      }
-    }
-  }, [hasActiveNote, showAiPane, showPdfSplit, setIsSidebarCollapsed]);
+  const currentMateriaId =
+    activeNote?.materiaId ||
+    materias.find((m) => m.nombre === selectedFolder || m.id === selectedFolder)
+      ?.id ||
+    undefined;
+
+  const currentMateriaNombre =
+    activeNote?.materiaNombre ||
+    materias.find((m) => m.nombre === selectedFolder || m.id === selectedFolder)
+      ?.nombre ||
+    undefined;
 
   // Auto-collapse sidebars (including main navigation sidebar) when activating split mode for a spacious study layout
   const handleToggleSplit = () => {
@@ -112,8 +129,6 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
 
   const handleToggleAiPane = () => {
     if (!showAiPane) {
-      // Only permit opening the AI Copilot if an active note is available
-      if (!hasActiveNote) return;
       setShowAiPane(true);
       setIsFoldersCollapsed(true);
       if (!isSidebarCollapsed && !showPdfSplit) {
@@ -133,7 +148,6 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   };
 
   const handleOpenAiWithDoc = (docId: string) => {
-    if (!hasActiveNote) return;
     setSelectedMaterialId(docId);
     setShowAiPane(true);
     setIsFoldersCollapsed(true);
@@ -156,9 +170,15 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const { uploadMaterial } = useMateriales(activeNote?.materiaId);
 
   // Formatting inserter callback ref
-  const insertMarkdownRef = useRef<((prefix: string, suffix?: string, defaultText?: string) => void) | null>(null);
+  const insertMarkdownRef = useRef<
+    ((prefix: string, suffix?: string, defaultText?: string) => void) | null
+  >(null);
 
-  const handleInsertMarkdown = (prefix: string, suffix: string = "", defaultText: string = "") => {
+  const handleInsertMarkdown = (
+    prefix: string,
+    suffix: string = "",
+    defaultText: string = "",
+  ) => {
     if (viewMode === "render") {
       setViewMode("split");
     }
@@ -191,7 +211,9 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const handleInsertFromAi = (contentToInsert: string) => {
     if (!activeNote) return;
     const current = activeNote.contenidoMarkdown || "";
-    const updated = current.trim() ? `${current}\n\n${contentToInsert}` : contentToInsert;
+    const updated = current.trim()
+      ? `${current}\n\n${contentToInsert}`
+      : contentToInsert;
     handleContentChange(updated);
   };
 
@@ -207,7 +229,9 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
 
   const handleRemoveTag = async (tagToRemove: string) => {
     if (!activeNote) return;
-    const updatedTags = (activeNote.tags || []).filter((t) => t !== tagToRemove);
+    const updatedTags = (activeNote.tags || []).filter(
+      (t) => t !== tagToRemove,
+    );
     await updateApunte(activeNote.id, { tags: updatedTags });
   };
 
@@ -284,7 +308,9 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         />
 
         {/* Main Document Body or Split View */}
-        <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+        <div
+          style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}
+        >
           {/* Note Area */}
           <NoteReaderContent
             activeNote={activeNote}
@@ -314,25 +340,36 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
             isOpen={showAiPane}
             onClose={() => setShowAiPane(false)}
             activeNote={activeNote}
-            activeMateriaId={activeNote?.materiaId}
-            activeMateriaNombre={activeNote?.materiaNombre}
+            activeMateriaId={currentMateriaId}
+            activeMateriaNombre={currentMateriaNombre}
             selectedMaterialId={selectedMaterialId}
             onSelectMaterialId={setSelectedMaterialId}
             onInsertMarkdown={handleInsertFromAi}
+            onOpenUploadModal={() => setIsUploadPdfModalOpen(true)}
           />
         </div>
       </main>
 
-      {/* Modal to upload PDF right from the split viewer */}
-      {isUploadPdfModalOpen && activeNote && (
+      {/* Modal to upload PDF right from the split viewer or copilot */}
+      {isUploadPdfModalOpen && (
         <UploadMaterialModal
           isOpen={isUploadPdfModalOpen}
           onClose={() => setIsUploadPdfModalOpen(false)}
-          materiaId={activeNote.materiaId}
-          materiaNombre={activeNote.materiaNombre}
-          onUpload={(file, titulo, categoria) =>
-            uploadMaterial(file, titulo, categoria)
+          materiaId={currentMateriaId || materias[0]?.id || ""}
+          materiaNombre={
+            currentMateriaNombre || materias[0]?.nombre || "Materia"
           }
+          onUpload={async (file, titulo, categoria) => {
+            const targetId = currentMateriaId || materias[0]?.id || "";
+            const created = await uploadMaterial(file, titulo, categoria, targetId);
+            setSelectedMaterialId(created.id);
+            return created;
+          }}
+          onSuccess={(created) => {
+            if (created && created.id) {
+              setSelectedMaterialId(created.id);
+            }
+          }}
         />
       )}
 

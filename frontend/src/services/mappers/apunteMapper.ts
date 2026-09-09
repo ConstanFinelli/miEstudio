@@ -1,23 +1,28 @@
-import type { ApunteDTO } from '../types';
-import type { ApunteNota } from '../../types/academic';
+import type { ApunteDTO } from "../types";
+import type { ApunteNota } from "../../types/academic";
 
 export const apunteMapper = {
-  toApunte(dto: ApunteDTO, materiaNombre: string = 'Materia'): ApunteNota {
-    const wordCount = dto.contenido ? dto.contenido.trim().split(/\s+/).length : 0;
+  toApunte(dto: ApunteDTO, materiaNombre: string = "Materia"): ApunteNota {
+    const wordCount = dto.contenido
+      ? dto.contenido.trim().split(/\s+/).length
+      : 0;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
     return {
       id: dto.id,
       materiaId: dto.materia_id,
       materiaNombre,
-      carpeta: dto.carpeta || 'General',
+      carpeta: dto.carpeta || "General",
       titulo: dto.titulo,
-      resumen: dto.resumen || (dto.contenido ? dto.contenido.slice(0, 120) + '...' : ''),
+      resumen:
+        dto.resumen ||
+        (dto.contenido ? dto.contenido.slice(0, 120) + "..." : ""),
       contenidoMarkdown: dto.contenido,
       tags: dto.etiquetas || [],
-      fechaModificacion: dto.updated_at || dto.created_at || new Date().toISOString(),
+      fechaModificacion:
+        dto.updated_at || dto.created_at || new Date().toISOString(),
       tiempoLecturaMin: readingTime,
-      palabras: wordCount
+      palabras: wordCount,
     };
   },
 
@@ -29,7 +34,7 @@ export const apunteMapper = {
       contenido: apunte.contenidoMarkdown,
       carpeta: apunte.carpeta,
       resumen: apunte.resumen,
-      etiquetas: apunte.tags
+      etiquetas: apunte.tags,
     };
-  }
+  },
 };
