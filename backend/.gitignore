@@ -9,7 +9,15 @@
 # Uploaded files
 uploads/*
 !uploads/.gitkeep
+**/uploads/*
+!**/uploads/.gitkeep
 
 # Data files (if sqlite is ever used)
+*.db
+*.sqlite
+*.sqlite3
 data/*
 !data/.gitkeep
+**/data/*
+!**/data/.gitkeep
+
