@@ -15,14 +15,12 @@ import { aiService, type FlashcardItem } from '../../../../../../services';
 import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiFlashcardsTabProps {
-  noteId?: string;
   materialId?: string;
   hasContext?: boolean;
   onInsertMarkdown?: (text: string) => void;
 }
 
 export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
-  noteId,
   materialId,
   hasContext = true,
   onInsertMarkdown
@@ -43,12 +41,8 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
   };
 
   const handleGenerate = async () => {
-    if (!noteId && !materialId) {
-      setError('Debes tener un apunte abierto o un PDF seleccionado como contexto.');
-      return;
-    }
-    if (!hasContext) {
-      setError('El apunte seleccionado aún no tiene contenido escrito y no hay un PDF seleccionado.');
+    if (!materialId || !hasContext) {
+      setError('Debes tener un material de estudio (PDF) seleccionado en la parte superior.');
       return;
     }
 
@@ -58,7 +52,6 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
 
     try {
       const res = await aiService.generarFlashcards({
-        apunte_id: noteId,
         material_id: materialId,
         enfoque,
         cantidad
@@ -67,7 +60,7 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
       setCurrentIndex(0);
     } catch (err: any) {
       console.error('Error generando flashcards:', err);
-      setError(err.message || 'No se pudieron generar las flashcards.');
+      setError(err.message || 'No se pudieron generar las flashcards del material.');
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +150,7 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
           className={styles.primaryActionBtn}
           onClick={handleGenerate}
           disabled={isLoading || !hasContext}
-          title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
+          title={hasContext ? undefined : "Se requiere un material PDF seleccionado"}
         >
           {isLoading ? (
             <>
@@ -180,8 +173,37 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
         </div>
       )}
 
+      {/* Animated Thinking & Loading Skeleton */}
+      {isLoading && (
+        <div className={styles.thinkingCard}>
+          <div className={styles.thinkingHeader}>
+            <div className={styles.thinkingPulseIcon}>
+              <Sparkles size={14} />
+            </div>
+            <div className={styles.thinkingTitleWrapper}>
+              <div className={styles.thinkingTitleRow}>
+                <span className={styles.thinkingTitle}>Generando Flashcards de estudio</span>
+                <span className={styles.thinkingDots}>
+                  <span className={styles.dot} />
+                  <span className={styles.dot} />
+                  <span className={styles.dot} />
+                </span>
+              </div>
+              <span className={styles.thinkingSubtitle}>
+                Analizando el material y formulando preguntas de repaso activo...
+              </span>
+            </div>
+          </div>
+          <div className={styles.skeletonCardPreview}>
+            <div className={styles.skeletonCardBadge} />
+            <div className={styles.skeletonCardText} />
+            <div className={styles.skeletonCardSub} />
+          </div>
+        </div>
+      )}
+
       {/* 3D Card Viewer */}
-      {cards.length > 0 && currentCard && (
+      {!isLoading && cards.length > 0 && currentCard && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {/* 3D Flip Card Container */}
           <div

@@ -89,13 +89,182 @@
   border-color: var(--emerald-border) !important;
 }
 
-.thinkingIndicator {
+.streamingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--primary-glow);
+  background: var(--primary-alpha);
+  border: 1px solid var(--primary-border);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  margin-left: 6px;
+  animation: fadeIn 0.2s ease;
+}
+
+.spinPulse {
+  animation: pulseRotate 2s ease-in-out infinite;
+}
+
+@keyframes pulseRotate {
+  0% { transform: rotate(0deg) scale(1); opacity: 0.8; }
+  50% { transform: rotate(180deg) scale(1.2); opacity: 1; }
+  100% { transform: rotate(360deg) scale(1); opacity: 0.8; }
+}
+
+/* Thinking Box */
+.thinkingContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 4px 6px 4px;
+  animation: fadeIn 0.25s ease;
+}
+
+.thinkingHeader {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--text-muted);
+  gap: 8px;
+}
+
+.thinkingIconPulse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--primary-alpha);
+  color: var(--primary-glow);
+  border: 1px solid var(--primary-border);
+  animation: gentlePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes gentlePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 10px 2px rgba(59, 130, 246, 0.4);
+  }
+}
+
+.thinkingTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.thinkingDots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 2px;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary-glow);
+  display: inline-block;
+  animation: dotBounce 1.4s infinite ease-in-out both;
+}
+
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes dotBounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.thinkingDesc {
   font-size: 11px;
-  padding: 4px 0;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: 30px;
+}
+
+.skeletonBars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 30px;
+  margin-top: 2px;
+}
+
+.skeletonBar {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--surface-3) 25%,
+    rgba(59, 130, 246, 0.25) 50%,
+    var(--surface-3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+}
+
+.skeletonBarLong {
+  width: 85%;
+}
+
+.skeletonBarShort {
+  width: 55%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.modelContentWrapper {
+  position: relative;
+}
+
+.streamingCursor {
+  display: inline-block;
+  width: 6px;
+  height: 13px;
+  background: var(--primary-glow);
+  margin-left: 4px;
+  vertical-align: -1px;
+  border-radius: 1px;
+  animation: cursorBlink 0.8s infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 /* Suggested chips */
@@ -142,7 +311,7 @@
 
 /* Input form */
 .chatInputArea {
-  padding: 10px 12px;
+  padding: 14px 16px;
   border-top: 1px solid var(--border-subtle);
   background: var(--surface-2);
   display: flex;
@@ -160,7 +329,7 @@
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   resize: none;
-  min-height: 38px;
+  min-height: 50px;
   max-height: 110px;
   line-height: 1.4;
   outline: none;

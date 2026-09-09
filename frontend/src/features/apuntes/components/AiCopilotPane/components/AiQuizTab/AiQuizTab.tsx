@@ -17,7 +17,6 @@ import { aiService, type QuizPregunta, type QuizResponse } from '../../../../../
 import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiQuizTabProps {
-  noteId?: string;
   materiaId?: string;
   materialId?: string;
   hasContext?: boolean;
@@ -25,7 +24,6 @@ interface AiQuizTabProps {
 }
 
 export const AiQuizTab: React.FC<AiQuizTabProps> = ({
-  noteId,
   materiaId,
   materialId,
   hasContext = true,
@@ -41,12 +39,8 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
   const [isInserted, setIsInserted] = useState(false);
 
   const handleGenerate = async () => {
-    if (!noteId && !materialId) {
-      setError('Debes tener un apunte abierto o un PDF seleccionado como contexto.');
-      return;
-    }
-    if (!hasContext) {
-      setError('El apunte seleccionado aún no tiene contenido escrito y no hay un PDF seleccionado.');
+    if (!materialId || !hasContext) {
+      setError('Debes tener un material de estudio (PDF) seleccionado en la parte superior.');
       return;
     }
 
@@ -58,7 +52,6 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
 
     try {
       const res = await aiService.generarQuiz({
-        apunte_id: noteId,
         materia_id: materiaId,
         material_id: materialId,
         cantidad_preguntas: cantidad
@@ -66,7 +59,7 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
       setQuizData(res);
     } catch (err: any) {
       console.error('Error generando quiz:', err);
-      setError(err.message || 'No se pudo generar la simulación de examen.');
+      setError(err.message || 'No se pudo generar la simulación de examen del material.');
     } finally {
       setIsLoading(false);
     }
@@ -155,7 +148,7 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
             className={styles.primaryActionBtn}
             onClick={handleGenerate}
             disabled={isLoading || !hasContext}
-            title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
+            title={hasContext ? undefined : "Se requiere un material PDF seleccionado"}
           >
             {isLoading ? (
               <>
@@ -179,8 +172,38 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
         </div>
       )}
 
+      {/* Animated Thinking & Loading Skeleton */}
+      {isLoading && (
+        <div className={styles.thinkingCard}>
+          <div className={styles.thinkingHeader}>
+            <div className={styles.thinkingPulseIcon}>
+              <Sparkles size={14} />
+            </div>
+            <div className={styles.thinkingTitleWrapper}>
+              <div className={styles.thinkingTitleRow}>
+                <span className={styles.thinkingTitle}>Preparando preguntas de examen</span>
+                <span className={styles.thinkingDots}>
+                  <span className={styles.dot} />
+                  <span className={styles.dot} />
+                  <span className={styles.dot} />
+                </span>
+              </div>
+              <span className={styles.thinkingSubtitle}>
+                Gemini está diseñando opciones múltiples y explicaciones pedagógicas...
+              </span>
+            </div>
+          </div>
+          <div className={styles.skeletonContainer}>
+            <div className={`${styles.skeletonLine} ${styles.skeletonTitle}`} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonOption}`} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonOption}`} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonOption}`} />
+          </div>
+        </div>
+      )}
+
       {/* Active Quiz Runner */}
-      {quizData && !isCompleted && currentQuestion && (
+      {!isLoading && quizData && !isCompleted && currentQuestion && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* Progress Bar */}
           <div className={styles.quizProgressBar}>

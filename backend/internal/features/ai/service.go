@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"miestudio/backend/internal/features/materials"
 	"miestudio/backend/internal/features/notes"
@@ -13,12 +12,12 @@ import (
 )
 
 const AcademicSystemPrompt = `Eres el Asistente Académico Inteligente de "miEstudio", una plataforma universitaria de estudio activo.
-Tu función es ayudar al estudiante a comprender en profundidad el material de su carrera, resolver dudas con rigor conceptual y claridad pedagógica.
+Tu función es ayudar al estudiante a comprender en profundidad los materiales de estudio oficiales (libros, diapositivas, guías y documentos PDF de cátedra), resolver dudas con rigor conceptual y claridad pedagógica.
 Directrices:
-1. Sé conciso, claro y directo.
-2. Si el usuario te proporciona un documento PDF o apunte, fundamenta tus respuestas en dicho texto. Cita secciones o temas relevantes.
+1. Sé conciso, riguroso y claro.
+2. Fundamenta tus respuestas, explicaciones, resúmenes, flashcards y preguntas de examen estrictamente en el material de estudio oficial (PDF) proporcionado. Cita secciones, capítulos o páginas relevantes cuando aplique.
 3. Para fórmulas matemáticas o científicas, usa siempre sintaxis LaTeX estándar delimitada por $...$ o $$...$$.
-4. Si no tienes certeza sobre algo o la respuesta no se desprende del material proporcionado, acláralo honestamente.`
+4. Si una consulta no se puede responder a partir del material proporcionado, acláralo honestamente y complementa con conocimientos académicos generales advirtiendo dicha distinción.`
 
 type Service interface {
 	Chat(ctx context.Context, userID string, req ChatRequest) (*ChatResponse, error)
@@ -54,63 +53,38 @@ func (s *service) prepareContext(ctx context.Context, userID string, materialID,
 	var parts []Part
 
 	hasMaterial := materialID != nil && *materialID != ""
-	hasApunte := apunteID != nil && *apunteID != ""
 
-	if !hasMaterial && !hasApunte {
-		return nil, fmt.Errorf("el copiloto requiere un apunte o material de estudio (PDF) para contextualizar la IA y evitar usos innecesarios")
+	if !hasMaterial {
+		return nil, fmt.Errorf("el copiloto de IA requiere un material de estudio (PDF) seleccionado para fundamentar las respuestas en la bibliografía oficial")
 	}
 
-	// 1. Adjuntar PDF si se proporcionó materialID
-	if hasMaterial {
-		mat, err := s.materialsRepo.GetByID(ctx, *materialID)
-		if err != nil {
-			return nil, fmt.Errorf("material de estudio no encontrado: %w", err)
-		}
-
-		// Blindaje Multi-Tenant: Validar pertenencia del material
-		if mat.UsuarioID != "" && userID != "" && mat.UsuarioID != userID {
-			return nil, fmt.Errorf("no tienes permiso para consultar este material de estudio")
-		}
-
-		filePath := s.storage.GetFilePath(mat.ArchivoKey)
-		fileBytes, err := os.ReadFile(filePath)
-		if err != nil {
-			return nil, fmt.Errorf("no se pudo leer el archivo del material: %w", err)
-		}
-
-		mimeType := mat.MimeType
-		if mimeType == "" {
-			mimeType = "application/pdf"
-		}
-
-		parts = append(parts, Part{
-			InlineData: FileToInlineData(fileBytes, mimeType),
-		})
-		parts = append(parts, Part{
-			Text: fmt.Sprintf("Documento de referencia: \"%s\" (Categoría: %s)", mat.Titulo, mat.Categoria),
-		})
+	mat, err := s.materialsRepo.GetByID(ctx, *materialID)
+	if err != nil {
+		return nil, fmt.Errorf("material de estudio no encontrado: %w", err)
 	}
 
-	// 2. Adjuntar Apunte si se proporcionó apunteID
-	if hasApunte {
-		note, err := s.notesRepo.GetByID(ctx, *apunteID)
-		if err != nil {
-			return nil, fmt.Errorf("apunte no encontrado: %w", err)
-		}
-
-		// Blindaje Multi-Tenant: Validar pertenencia del apunte
-		if note.UsuarioID != "" && userID != "" && note.UsuarioID != userID {
-			return nil, fmt.Errorf("no tienes permiso para consultar este apunte")
-		}
-
-		// Si no hay PDF complementario y el apunte está vacío, requerir contenido para no gastar IA
-		if strings.TrimSpace(note.Contenido) == "" && !hasMaterial {
-			return nil, fmt.Errorf("el apunte seleccionado no contiene texto para analizar. Añade contenido a tu apunte o selecciona un PDF complementario")
-		}
-
-		noteContext := fmt.Sprintf("Apunte de referencia: \"%s\"\nContenido del apunte:\n%s", note.Titulo, note.Contenido)
-		parts = append(parts, Part{Text: noteContext})
+	// Blindaje Multi-Tenant: Validar pertenencia del material
+	if mat.UsuarioID != "" && userID != "" && mat.UsuarioID != userID {
+		return nil, fmt.Errorf("no tienes permiso para consultar este material de estudio")
 	}
+
+	filePath := s.storage.GetFilePath(mat.ArchivoKey)
+	fileBytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("no se pudo leer el archivo del material: %w", err)
+	}
+
+	mimeType := mat.MimeType
+	if mimeType == "" {
+		mimeType = "application/pdf"
+	}
+
+	parts = append(parts, Part{
+		InlineData: FileToInlineData(fileBytes, mimeType),
+	})
+	parts = append(parts, Part{
+		Text: fmt.Sprintf("Documento oficial de estudio / cátedra: \"%s\" (Categoría: %s). Basa todas tus respuestas, resúmenes, explicaciones y preguntas de examen rigurosamente en este material.", mat.Titulo, mat.Categoria),
+	})
 
 	return parts, nil
 }

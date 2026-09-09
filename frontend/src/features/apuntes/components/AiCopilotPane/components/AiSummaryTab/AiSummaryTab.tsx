@@ -15,14 +15,12 @@ import { aiService, type ResumenResponse } from '../../../../../../services';
 import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiSummaryTabProps {
-  noteId?: string;
   materialId?: string;
   hasContext?: boolean;
   onInsertMarkdown?: (text: string) => void;
 }
 
 export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
-  noteId,
   materialId,
   hasContext = true,
   onInsertMarkdown
@@ -36,12 +34,8 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
   const [isInserted, setIsInserted] = useState(false);
 
   const handleGenerate = async () => {
-    if (!noteId && !materialId) {
-      setError('Debes tener un apunte abierto o un PDF seleccionado como contexto.');
-      return;
-    }
-    if (!hasContext) {
-      setError('El apunte seleccionado aún no tiene contenido escrito y no hay un PDF seleccionado.');
+    if (!materialId || !hasContext) {
+      setError('Debes tener un material de estudio (PDF) seleccionado en la parte superior.');
       return;
     }
 
@@ -50,7 +44,6 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
 
     try {
       const res = await aiService.resumir({
-        apunte_id: noteId,
         material_id: materialId,
         formato,
         longitud
@@ -58,7 +51,7 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
       setSummaryData(res);
     } catch (err: any) {
       console.error('Error generando resumen:', err);
-      setError(err.message || 'No se pudo generar el resumen.');
+      setError(err.message || 'No se pudo generar el resumen del material.');
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +140,7 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
           className={styles.primaryActionBtn}
           onClick={handleGenerate}
           disabled={isLoading || !hasContext}
-          title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
+          title={hasContext ? undefined : "Se requiere un material PDF seleccionado"}
         >
           {isLoading ? (
             <>
@@ -170,8 +163,38 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
         </div>
       )}
 
+      {/* Animated Thinking & Loading Skeleton */}
+      {isLoading && (
+        <div className={styles.thinkingCard}>
+          <div className={styles.thinkingHeader}>
+            <div className={styles.thinkingPulseIcon}>
+              <Sparkles size={14} />
+            </div>
+            <div className={styles.thinkingTitleWrapper}>
+              <div className={styles.thinkingTitleRow}>
+                <span className={styles.thinkingTitle}>Sintetizando material de estudio</span>
+                <span className={styles.thinkingDots}>
+                  <span className={styles.dot} />
+                  <span className={styles.dot} />
+                  <span className={styles.dot} />
+                </span>
+              </div>
+              <span className={styles.thinkingSubtitle}>
+                Gemini está extrayendo conceptos clave, fórmulas y tips de examen...
+              </span>
+            </div>
+          </div>
+          <div className={styles.skeletonContainer}>
+            <div className={`${styles.skeletonLine} ${styles.skeletonTitle}`} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonFull}`} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonMedium}`} />
+            <div className={`${styles.skeletonLine} ${styles.skeletonShort}`} />
+          </div>
+        </div>
+      )}
+
       {/* Generated Summary Card */}
-      {summaryData && (
+      {!isLoading && summaryData && (
         <div className={styles.summaryContainer}>
           {/* Header with quick actions */}
           <div className={styles.summaryHeader}>

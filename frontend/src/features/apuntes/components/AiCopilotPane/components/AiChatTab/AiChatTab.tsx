@@ -5,9 +5,6 @@ import { aiService, type ChatMessage } from '../../../../../../services';
 import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiChatTabProps {
-  noteId?: string;
-  noteTitle?: string;
-  noteContent?: string;
   hasContext?: boolean;
   materiaId?: string;
   materialId?: string;
@@ -23,8 +20,6 @@ const SUGGESTIONS = [
 ];
 
 export const AiChatTab: React.FC<AiChatTabProps> = ({
-  noteId,
-  noteTitle,
   hasContext = true,
   materiaId,
   materialId,
@@ -36,11 +31,9 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
       role: 'model',
       content: `¡Hola! Soy tu **Copiloto de Estudio**. ${
         materialTitle
-          ? `Tengo cargado el documento **${materialTitle}** y tus notas.`
-          : noteTitle
-          ? `Estoy sincronizado con tu apunte **${noteTitle}**.`
-          : 'Seleccioná un apunte o PDF para comenzar a estudiar juntos.'
-      } ¿Qué querés repasar o resolver hoy?`
+          ? `Tengo cargado el documento oficial **${materialTitle}**.`
+          : 'Selecciona un documento PDF para comenzar a estudiar juntos.'
+      } ¿Qué dudas o conceptos querés consultar sobre este material?`
     }
   ]);
   const [input, setInput] = useState('');
@@ -85,7 +78,6 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
         {
           materia_id: materiaId,
           material_id: materialId,
-          apunte_id: noteId,
           mensaje: textToSend,
           historial: messages.slice(-8) // keep recent context
         },
@@ -180,8 +172,17 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
             {msg.role === 'model' && (
               <div className={styles.modelMessageHeader}>
                 <div className={styles.modelName}>
-                  <Sparkles size={12} />
+                  <Sparkles
+                    size={12}
+                    className={isStreaming && idx === messages.length - 1 ? styles.spinPulse : ''}
+                  />
                   <span>Copiloto Gemini</span>
+                  {isStreaming && idx === messages.length - 1 && (
+                    <span className={styles.streamingBadge}>
+                      <Loader2 size={10} className="animate-spin" />
+                      {msg.content ? 'Escribiendo...' : 'Pensando...'}
+                    </span>
+                  )}
                 </div>
 
                 {msg.content && (
@@ -218,11 +219,33 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
               <div>{msg.content}</div>
             ) : (
               <div>
-                <AiMarkdownRenderer content={msg.content} />
-                {isStreaming && idx === messages.length - 1 && !msg.content && (
-                  <div className={styles.thinkingIndicator}>
-                    <Loader2 size={12} className="animate-spin" />
-                    <span>Pensando y analizando material...</span>
+                {isStreaming && idx === messages.length - 1 && !msg.content ? (
+                  <div className={styles.thinkingContainer}>
+                    <div className={styles.thinkingHeader}>
+                      <div className={styles.thinkingIconPulse}>
+                        <Sparkles size={12} />
+                      </div>
+                      <span className={styles.thinkingTitle}>El copiloto está pensando</span>
+                      <span className={styles.thinkingDots}>
+                        <span className={styles.dot} />
+                        <span className={styles.dot} />
+                        <span className={styles.dot} />
+                      </span>
+                    </div>
+                    <div className={styles.thinkingDesc}>
+                      Consultando material de estudio y razonando respuesta...
+                    </div>
+                    <div className={styles.skeletonBars}>
+                      <div className={`${styles.skeletonBar} ${styles.skeletonBarLong}`} />
+                      <div className={`${styles.skeletonBar} ${styles.skeletonBarShort}`} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.modelContentWrapper}>
+                    <AiMarkdownRenderer content={msg.content} />
+                    {isStreaming && idx === messages.length - 1 && (
+                      <span className={styles.streamingCursor} />
+                    )}
                   </div>
                 )}
               </div>
@@ -258,8 +281,8 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
           className={styles.chatTextarea}
           placeholder={
             hasContext
-              ? "Escribí una pregunta sobre el apunte o el PDF... (Shift+Enter para nueva línea)"
-              : "Escribe contenido en el apunte o selecciona un PDF arriba para chatear..."
+              ? "Escribí una pregunta sobre este material de estudio... (Shift+Enter para nueva línea)"
+              : "Selecciona un material PDF arriba para comenzar a chatear..."
           }
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -281,7 +304,7 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
             className={styles.sendBtn}
             onClick={() => handleSend()}
             disabled={!hasContext || !input.trim()}
-            title={hasContext ? "Enviar mensaje (Enter)" : "Se requiere contenido en el apunte o un PDF"}
+            title={hasContext ? "Enviar mensaje (Enter)" : "Se requiere un material PDF seleccionado"}
           >
             <Send size={14} />
           </button>
