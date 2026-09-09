@@ -18,6 +18,127 @@
   justify-content: space-between;
   user-select: none;
   z-index: 20;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarCollapsed {
+  width: 64px;
+  min-width: 64px;
+}
+
+.sidebarCollapsed .sidebarTop {
+  padding: 14px 8px 10px 8px;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebarCollapsed .brand {
+  justify-content: center;
+  padding: 0;
+  width: 100%;
+}
+
+.sidebarCollapsed .brandIcon {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.sidebarCollapsed .brandIcon:hover {
+  transform: scale(1.08);
+}
+
+.sidebarCollapsed .navSection {
+  align-items: center;
+  width: 100%;
+  gap: 6px;
+}
+
+.sidebarCollapsed .navItem {
+  justify-content: center;
+  padding: 10px 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  margin: 0 auto;
+}
+
+.sidebarCollapsed .navItemActive {
+  box-shadow: none;
+  background-color: var(--surface-3);
+  border-color: var(--border-hover);
+}
+
+.sidebarCollapsed .sidebarFooter {
+  padding: 10px 8px;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebarCollapsed .userProfile {
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  padding: 0;
+}
+
+.sidebarCollapsed .userInfo {
+  justify-content: center;
+}
+
+.sidebarCollapseBtn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sidebarCollapseBtn:hover {
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+}
+
+.headerToggleSidebarBtn {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 5px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.headerToggleSidebarBtn:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.cycleInfoCollapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  padding: 3px 0;
+  width: 42px;
+  background-color: var(--bg-canvas);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  cursor: default;
+}
+
+.userActionsCollapsed {
+  display: flex;
+  justify-content: center;
 }
 
 .sidebarTop {
@@ -49,12 +170,15 @@
 .brandInfo {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .brandTitleRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .brandName {

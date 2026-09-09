@@ -170,6 +170,17 @@
   border-color: var(--primary);
 }
 
+.chatTextarea:disabled {
+  opacity: 0.6;
+  background: var(--surface-2);
+  cursor: not-allowed;
+}
+
+.suggestionChip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .sendBtn {
   width: 38px;
   height: 38px;
@@ -212,3 +223,32 @@
     transform: translateY(0);
   }
 }
+
+.chatControlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 14px 2px 14px;
+}
+
+.clearChatBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-family: var(--font-sans);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clearChatBtn:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+

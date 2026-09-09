@@ -120,7 +120,12 @@ func main() {
 	schedulesHandler.RegisterRoutes(api, authMiddleware)
 
 	// Feature: Inteligencia Asistida & Estudio (Gemini AI - Protegido con authMiddleware)
-	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey)
+	if cfg.GeminiAPIKey == "" {
+		log.Println("⚠️  GEMINI_API_KEY no detectada en .env. Las funciones de IA responderán con error.")
+	} else {
+		log.Printf("🤖 Gemini AI configurado y listo (Modelo primario: %s con fallback automático).", cfg.GeminiModel)
+	}
+	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey, cfg.GeminiModel)
 	aiService := ai.NewService(geminiClient, materialsRepo, notesRepo, storageService)
 	aiHandler := ai.NewHandler(aiService)
 	aiHandler.RegisterRoutes(api, authMiddleware)

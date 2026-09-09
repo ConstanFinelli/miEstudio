@@ -17,12 +17,14 @@ import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 interface AiFlashcardsTabProps {
   noteId?: string;
   materialId?: string;
+  hasContext?: boolean;
   onInsertMarkdown?: (text: string) => void;
 }
 
 export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
   noteId,
   materialId,
+  hasContext = true,
   onInsertMarkdown
 }) => {
   const [enfoque, setEnfoque] = useState<'TEORICO' | 'PRACTICO' | 'MIXTO'>('MIXTO');
@@ -43,6 +45,10 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
   const handleGenerate = async () => {
     if (!noteId && !materialId) {
       setError('Debes tener un apunte abierto o un PDF seleccionado como contexto.');
+      return;
+    }
+    if (!hasContext) {
+      setError('El apunte seleccionado aún no tiene contenido escrito y no hay un PDF seleccionado.');
       return;
     }
 
@@ -150,7 +156,8 @@ export const AiFlashcardsTab: React.FC<AiFlashcardsTabProps> = ({
         <button
           className={styles.primaryActionBtn}
           onClick={handleGenerate}
-          disabled={isLoading}
+          disabled={isLoading || !hasContext}
+          title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
         >
           {isLoading ? (
             <>

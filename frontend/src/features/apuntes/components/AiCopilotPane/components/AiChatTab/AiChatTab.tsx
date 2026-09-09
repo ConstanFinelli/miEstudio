@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './AiChatTab.module.css';
-import { Send, Square, Sparkles, Copy, Check, FileDown, Loader2 } from 'lucide-react';
+import { Send, Square, Sparkles, Copy, Check, FileDown, Loader2, RotateCcw } from 'lucide-react';
 import { aiService, type ChatMessage } from '../../../../../../services';
 import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 
 interface AiChatTabProps {
   noteId?: string;
   noteTitle?: string;
+  noteContent?: string;
+  hasContext?: boolean;
   materiaId?: string;
   materialId?: string;
   materialTitle?: string;
@@ -23,6 +25,7 @@ const SUGGESTIONS = [
 export const AiChatTab: React.FC<AiChatTabProps> = ({
   noteId,
   noteTitle,
+  hasContext = true,
   materiaId,
   materialId,
   materialTitle,
@@ -53,7 +56,17 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
 
+  const handleClearChat = () => {
+    setMessages([
+      {
+        role: 'model',
+        content: `¡Conversación reiniciada! ¿Qué tema o duda querés consultar ahora?`
+      }
+    ]);
+  };
+
   const handleSend = async (customMessage?: string) => {
+    if (!hasContext) return;
     const textToSend = customMessage || input.trim();
     if (!textToSend || isStreaming) return;
 
@@ -118,7 +131,9 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      if (hasContext) {
+        handleSend();
+      }
     }
   };
 
@@ -138,6 +153,21 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
 
   return (
     <div className={styles.chatContainer}>
+      {/* Top Controls (Clear / New Conversation) */}
+      {messages.length > 1 && !isStreaming && (
+        <div className={styles.chatControlsRow}>
+          <button
+            type="button"
+            className={styles.clearChatBtn}
+            onClick={handleClearChat}
+            title="Reiniciar chat y comenzar una nueva conversación"
+          >
+            <RotateCcw size={11} />
+            <span>Nuevo tema / Limpiar chat</span>
+          </button>
+        </div>
+      )}
+
       {/* Scrollable conversation */}
       <div className={styles.messagesList}>
         {messages.map((msg, idx) => (
@@ -212,6 +242,8 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
                 key={i}
                 className={styles.suggestionChip}
                 onClick={() => handleSend(sug)}
+                disabled={!hasContext}
+                title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
               >
                 {sug}
               </button>
@@ -224,10 +256,15 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
       <div className={styles.chatInputArea}>
         <textarea
           className={styles.chatTextarea}
-          placeholder="Escribí una pregunta sobre el apunte o el PDF... (Shift+Enter para nueva línea)"
+          placeholder={
+            hasContext
+              ? "Escribí una pregunta sobre el apunte o el PDF... (Shift+Enter para nueva línea)"
+              : "Escribe contenido en el apunte o selecciona un PDF arriba para chatear..."
+          }
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={!hasContext}
           rows={1}
         />
 
@@ -243,8 +280,8 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
           <button
             className={styles.sendBtn}
             onClick={() => handleSend()}
-            disabled={!input.trim()}
-            title="Enviar mensaje (Enter)"
+            disabled={!hasContext || !input.trim()}
+            title={hasContext ? "Enviar mensaje (Enter)" : "Se requiere contenido en el apunte o un PDF"}
           >
             <Send size={14} />
           </button>

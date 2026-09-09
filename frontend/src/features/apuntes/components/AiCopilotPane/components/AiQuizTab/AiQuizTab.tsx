@@ -20,6 +20,7 @@ interface AiQuizTabProps {
   noteId?: string;
   materiaId?: string;
   materialId?: string;
+  hasContext?: boolean;
   onInsertMarkdown?: (text: string) => void;
 }
 
@@ -27,6 +28,7 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
   noteId,
   materiaId,
   materialId,
+  hasContext = true,
   onInsertMarkdown
 }) => {
   const [cantidad, setCantidad] = useState<number>(5);
@@ -41,6 +43,10 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
   const handleGenerate = async () => {
     if (!noteId && !materialId) {
       setError('Debes tener un apunte abierto o un PDF seleccionado como contexto.');
+      return;
+    }
+    if (!hasContext) {
+      setError('El apunte seleccionado aún no tiene contenido escrito y no hay un PDF seleccionado.');
       return;
     }
 
@@ -148,7 +154,8 @@ export const AiQuizTab: React.FC<AiQuizTabProps> = ({
           <button
             className={styles.primaryActionBtn}
             onClick={handleGenerate}
-            disabled={isLoading}
+            disabled={isLoading || !hasContext}
+            title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
           >
             {isLoading ? (
               <>

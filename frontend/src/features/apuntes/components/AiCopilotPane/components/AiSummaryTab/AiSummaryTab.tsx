@@ -17,12 +17,14 @@ import { AiMarkdownRenderer } from '../AiMarkdownRenderer';
 interface AiSummaryTabProps {
   noteId?: string;
   materialId?: string;
+  hasContext?: boolean;
   onInsertMarkdown?: (text: string) => void;
 }
 
 export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
   noteId,
   materialId,
+  hasContext = true,
   onInsertMarkdown
 }) => {
   const [formato, setFormato] = useState<'BULLET_POINTS' | 'CONCEPTUAL' | 'EXAMEN'>('CONCEPTUAL');
@@ -36,6 +38,10 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
   const handleGenerate = async () => {
     if (!noteId && !materialId) {
       setError('Debes tener un apunte abierto o un PDF seleccionado como contexto.');
+      return;
+    }
+    if (!hasContext) {
+      setError('El apunte seleccionado aún no tiene contenido escrito y no hay un PDF seleccionado.');
       return;
     }
 
@@ -140,7 +146,8 @@ export const AiSummaryTab: React.FC<AiSummaryTabProps> = ({
         <button
           className={styles.primaryActionBtn}
           onClick={handleGenerate}
-          disabled={isLoading}
+          disabled={isLoading || !hasContext}
+          title={hasContext ? undefined : "Se requiere contenido en el apunte o un PDF"}
         >
           {isLoading ? (
             <>

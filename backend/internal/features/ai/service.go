@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"miestudio/backend/internal/features/materials"
 	"miestudio/backend/internal/features/notes"
@@ -52,11 +53,23 @@ func NewService(
 func (s *service) prepareContext(ctx context.Context, userID string, materialID, apunteID *string) ([]Part, error) {
 	var parts []Part
 
+	hasMaterial := materialID != nil && *materialID != ""
+	hasApunte := apunteID != nil && *apunteID != ""
+
+	if !hasMaterial && !hasApunte {
+		return nil, fmt.Errorf("el copiloto requiere un apunte o material de estudio (PDF) para contextualizar la IA y evitar usos innecesarios")
+	}
+
 	// 1. Adjuntar PDF si se proporcionó materialID
-	if materialID != nil && *materialID != "" {
+	if hasMaterial {
 		mat, err := s.materialsRepo.GetByID(ctx, *materialID)
 		if err != nil {
 			return nil, fmt.Errorf("material de estudio no encontrado: %w", err)
+		}
+
+		// Blindaje Multi-Tenant: Validar pertenencia del material
+		if mat.UsuarioID != "" && userID != "" && mat.UsuarioID != userID {
+			return nil, fmt.Errorf("no tienes permiso para consultar este material de estudio")
 		}
 
 		filePath := s.storage.GetFilePath(mat.ArchivoKey)
@@ -79,10 +92,20 @@ func (s *service) prepareContext(ctx context.Context, userID string, materialID,
 	}
 
 	// 2. Adjuntar Apunte si se proporcionó apunteID
-	if apunteID != nil && *apunteID != "" {
+	if hasApunte {
 		note, err := s.notesRepo.GetByID(ctx, *apunteID)
 		if err != nil {
 			return nil, fmt.Errorf("apunte no encontrado: %w", err)
+		}
+
+		// Blindaje Multi-Tenant: Validar pertenencia del apunte
+		if note.UsuarioID != "" && userID != "" && note.UsuarioID != userID {
+			return nil, fmt.Errorf("no tienes permiso para consultar este apunte")
+		}
+
+		// Si no hay PDF complementario y el apunte está vacío, requerir contenido para no gastar IA
+		if strings.TrimSpace(note.Contenido) == "" && !hasMaterial {
+			return nil, fmt.Errorf("el apunte seleccionado no contiene texto para analizar. Añade contenido a tu apunte o selecciona un PDF complementario")
 		}
 
 		noteContext := fmt.Sprintf("Apunte de referencia: \"%s\"\nContenido del apunte:\n%s", note.Titulo, note.Contenido)

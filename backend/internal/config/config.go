@@ -20,10 +20,23 @@ type Config struct {
 	CORSOrigins  []string
 	JWTSecret    string
 	GeminiAPIKey string
+	GeminiModel  string
 }
 
 func Load() *Config {
-	_ = godotenv.Load(".env")
+	// Intentar cargar .env desde distintas rutas relativas comunes según desde dónde se lance la app
+	candidatePaths := []string{
+		".env",
+		"../.env",
+		"../../.env",
+		"backend/.env",
+	}
+	for _, envPath := range candidatePaths {
+		if _, err := os.Stat(envPath); err == nil {
+			_ = godotenv.Load(envPath)
+			break
+		}
+	}
 
 	port := getEnv("PORT", "8080")
 	dbDriver := getEnv("DB_DRIVER", "mysql")
@@ -35,6 +48,7 @@ func Load() *Config {
 	storageDir := getEnv("STORAGE_DIR", "./uploads")
 	jwtSecret := getEnv("JWT_SECRET", "miestudio-super-secret-jwt-key-change-in-production-32bytes")
 	geminiAPIKey := getEnv("GEMINI_API_KEY", "")
+	geminiModel := getEnv("GEMINI_MODEL", "gemini-3.8-flash")
 
 	corsStr := getEnv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 	corsOrigins := strings.Split(corsStr, ",")
@@ -51,6 +65,7 @@ func Load() *Config {
 		CORSOrigins:  corsOrigins,
 		JWTSecret:    jwtSecret,
 		GeminiAPIKey: geminiAPIKey,
+		GeminiModel:  geminiModel,
 	}
 }
 

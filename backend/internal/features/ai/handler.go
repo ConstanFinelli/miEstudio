@@ -2,10 +2,13 @@ package ai
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/valyala/fasthttp"
 	"miestudio/backend/internal/common"
 )
@@ -19,7 +22,27 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handler) {
-	aiGroup := router.Group("/ai", authMiddleware)
+	// Rate limiting de seguridad para IA: máximo 15 consultas por minuto por usuario
+	aiLimiter := limiter.New(limiter.Config{
+		Max:        15,
+		Expiration: 1 * time.Minute,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			userID := common.GetUserID(c)
+			if userID != "" {
+				return "ai_usr_" + userID
+			}
+			return "ai_ip_" + c.IP()
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return common.SendError(
+				c,
+				fiber.StatusTooManyRequests,
+				"Has superado el límite de 15 consultas de IA por minuto. Por favor, aguarda un momento antes de volver a consultar para proteger la cuota del servicio.",
+			)
+		},
+	})
+
+	aiGroup := router.Group("/ai", authMiddleware, aiLimiter)
 
 	aiGroup.Post("/chat", h.Chat)
 	aiGroup.Post("/chat/stream", h.StreamChat)
@@ -40,7 +63,7 @@ func (h *Handler) Chat(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, "El mensaje no puede estar vacío")
 	}
 
-	resp, err := h.service.Chat(c.Context(), userID, req)
+	resp, err := h.service.Chat(c.UserContext(), userID, req)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar respuesta de IA", err.Error())
 	}
@@ -65,7 +88,12 @@ func (h *Handler) StreamChat(c *fiber.Ctx) error {
 	c.Set("Transfer-Encoding", "chunked")
 
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
-		err := h.service.StreamChat(c.Context(), userID, req, func(chunk string) error {
+		// Crear contexto independiente para la goroutine de streaming
+		// para evitar nil pointer dereference al reciclar RequestCtx en fasthttp
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		defer cancel()
+
+		err := h.service.StreamChat(ctx, userID, req, func(chunk string) error {
 			payload, _ := json.Marshal(map[string]string{"chunk": chunk})
 			_, writeErr := fmt.Fprintf(w, "data: %s\n\n", payload)
 			if writeErr != nil {
@@ -95,7 +123,7 @@ func (h *Handler) Resumir(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, "Payload inválido para resumen", err.Error())
 	}
 
-	resp, err := h.service.Resumir(c.Context(), userID, req)
+	resp, err := h.service.Resumir(c.UserContext(), userID, req)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar resumen", err.Error())
 	}
@@ -110,7 +138,7 @@ func (h *Handler) GenerarFlashcards(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, "Payload inválido para flashcards", err.Error())
 	}
 
-	resp, err := h.service.GenerarFlashcards(c.Context(), userID, req)
+	resp, err := h.service.GenerarFlashcards(c.UserContext(), userID, req)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar flashcards", err.Error())
 	}
@@ -125,7 +153,7 @@ func (h *Handler) GenerarQuiz(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, "Payload inválido para quiz", err.Error())
 	}
 
-	resp, err := h.service.GenerarQuiz(c.Context(), userID, req)
+	resp, err := h.service.GenerarQuiz(c.UserContext(), userID, req)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar cuestionario", err.Error())
 	}
@@ -143,7 +171,7 @@ func (h *Handler) ExplicarSeleccion(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, "El texto a explicar es obligatorio")
 	}
 
-	resp, err := h.service.ExplicarSeleccion(c.Context(), req)
+	resp, err := h.service.ExplicarSeleccion(c.UserContext(), req)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al explicar selección", err.Error())
 	}
