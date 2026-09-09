@@ -9,6 +9,7 @@ import {
   BookOpen,
   ExternalLink
 } from 'lucide-react';
+import { getAuthenticatedFileUrl } from '../../../services';
 
 interface PdfViewerModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
 
   if (!isOpen) return null;
 
+  const authPdfUrl = getAuthenticatedFileUrl(pdfUrl);
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div
@@ -52,7 +55,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Page & Zoom controls only when no native iframe URL is active */}
-            {!pdfUrl && (
+            {!authPdfUrl && (
               <>
                 <div className={styles.controlPill}>
                   <button
@@ -84,9 +87,9 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               </>
             )}
 
-            {pdfUrl && (
+            {authPdfUrl && (
               <a
-                href={pdfUrl}
+                href={authPdfUrl}
                 target="_blank"
                 rel="noreferrer"
                 className={styles.btnAction}
@@ -124,10 +127,10 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
         </div>
 
         {/* Real PDF iframe or Paper Document Canvas */}
-        {pdfUrl ? (
+        {authPdfUrl ? (
           <div className={styles.iframeContainer}>
             <iframe
-              src={pdfUrl}
+              src={authPdfUrl}
               className={styles.pdfIframe}
               title={pdfTitle}
             />

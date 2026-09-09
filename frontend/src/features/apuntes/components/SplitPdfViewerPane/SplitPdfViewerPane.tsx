@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './SplitPdfViewerPane.module.css';
 import { X, ExternalLink, UploadCloud, FileText, Loader2, Sparkles } from 'lucide-react';
 import type { MaterialEstudio } from '../../../../types/academic';
-import { materialesService } from '../../../../services';
+import { materialesService, getAuthenticatedFileUrl } from '../../../../services';
 
 interface SplitPdfViewerPaneProps {
   onClose: () => void;
@@ -67,6 +67,23 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
     return () => {
       isMounted = false;
     };
+  }, [activeMateriaId]);
+
+  // Reactive listener: when a material is uploaded anywhere, refresh list and auto-select newly uploaded doc
+  useEffect(() => {
+    const handleMaterialUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<MaterialEstudio>;
+      const newDoc = customEvent.detail;
+      if (newDoc && newDoc.id) {
+        setMaterials(prev => [newDoc, ...prev.filter(m => m.id !== newDoc.id)]);
+        handleSelectDoc(newDoc.id);
+      }
+      materialesService.getMateriales(activeMateriaId).then(docs => {
+        if (docs.length > 0) setMaterials(docs);
+      });
+    };
+    window.addEventListener('materiales:updated', handleMaterialUpdate);
+    return () => window.removeEventListener('materiales:updated', handleMaterialUpdate);
   }, [activeMateriaId]);
 
   const selectedDoc = materials.find(m => m.id === selectedDocId) || materials[0] || null;
@@ -153,7 +170,7 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
 
           {selectedDoc?.archivoUrl && (
             <a
-              href={selectedDoc.archivoUrl}
+              href={getAuthenticatedFileUrl(selectedDoc.archivoUrl)}
               target="_blank"
               rel="noreferrer"
               className={styles.toolBtn}
@@ -194,7 +211,7 @@ export const SplitPdfViewerPane: React.FC<SplitPdfViewerPaneProps> = ({
           </div>
         ) : selectedDoc?.archivoUrl ? (
           <iframe
-            src={selectedDoc.archivoUrl}
+            src={getAuthenticatedFileUrl(selectedDoc.archivoUrl)}
             className={styles.splitPdfIframe}
             title={selectedDoc.titulo}
           />

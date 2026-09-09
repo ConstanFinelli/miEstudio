@@ -21,10 +21,12 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 	router.Post("/materias/:materia_id/materiales", authMiddleware, h.Upload)
 	router.Delete("/materias/:materia_id/materiales", authMiddleware, h.DeleteByMateria)
 
-	// Rutas por material
+	// Stream de archivo para visores de PDF en iframe o apertura en nueva pestaña
+	router.Get("/materiales/:id/archivo", h.StreamFile)
+
+	// Rutas por material protegidas con autenticación
 	materialsGroup := router.Group("/materiales", authMiddleware)
 	materialsGroup.Get("/:id", h.GetByID)
-	materialsGroup.Get("/:id/archivo", h.StreamFile)
 	materialsGroup.Put("/:id", h.Update)
 	materialsGroup.Delete("/:id", h.Delete)
 }
