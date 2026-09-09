@@ -9,16 +9,17 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DBDriver    string
-	DBUser      string
-	DBPassword  string
-	DBHost      string
-	DBPort      string
-	DBName      string
-	StorageDir  string
-	CORSOrigins []string
-	JWTSecret   string
+	Port         string
+	DBDriver     string
+	DBUser       string
+	DBPassword   string
+	DBHost       string
+	DBPort       string
+	DBName       string
+	StorageDir   string
+	CORSOrigins  []string
+	JWTSecret    string
+	GeminiAPIKey string
 }
 
 func Load() *Config {
@@ -33,21 +34,23 @@ func Load() *Config {
 	dbName := getEnv("DB_NAME", "miestudio")
 	storageDir := getEnv("STORAGE_DIR", "./uploads")
 	jwtSecret := getEnv("JWT_SECRET", "miestudio-super-secret-jwt-key-change-in-production-32bytes")
+	geminiAPIKey := getEnv("GEMINI_API_KEY", "")
 
 	corsStr := getEnv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 	corsOrigins := strings.Split(corsStr, ",")
 
 	return &Config{
-		Port:        port,
-		DBDriver:    dbDriver,
-		DBUser:      dbUser,
-		DBPassword:  dbPassword,
-		DBHost:      dbHost,
-		DBPort:      dbPort,
-		DBName:      dbName,
-		StorageDir:  storageDir,
-		CORSOrigins: corsOrigins,
-		JWTSecret:   jwtSecret,
+		Port:         port,
+		DBDriver:     dbDriver,
+		DBUser:       dbUser,
+		DBPassword:   dbPassword,
+		DBHost:       dbHost,
+		DBPort:       dbPort,
+		DBName:       dbName,
+		StorageDir:   storageDir,
+		CORSOrigins:  corsOrigins,
+		JWTSecret:    jwtSecret,
+		GeminiAPIKey: geminiAPIKey,
 	}
 }
 

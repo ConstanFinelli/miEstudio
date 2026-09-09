@@ -15,8 +15,8 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) RegisterRoutes(router fiber.Router) {
-	group := router.Group("/evaluaciones")
+func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handler) {
+	group := router.Group("/evaluaciones", authMiddleware)
 	group.Get("/", h.GetAll)
 	group.Get("/proximas", h.GetProximas)
 	group.Get("/:id", h.GetByID)

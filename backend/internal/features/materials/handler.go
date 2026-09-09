@@ -15,13 +15,13 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) RegisterRoutes(router fiber.Router) {
+func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handler) {
 	// Rutas por materia
-	router.Get("/materias/:materia_id/materiales", h.GetByMateria)
-	router.Post("/materias/:materia_id/materiales", h.Upload)
+	router.Get("/materias/:materia_id/materiales", authMiddleware, h.GetByMateria)
+	router.Post("/materias/:materia_id/materiales", authMiddleware, h.Upload)
 
 	// Rutas por material
-	materialsGroup := router.Group("/materiales")
+	materialsGroup := router.Group("/materiales", authMiddleware)
 	materialsGroup.Get("/:id", h.GetByID)
 	materialsGroup.Get("/:id/archivo", h.StreamFile)
 	materialsGroup.Put("/:id", h.Update)
