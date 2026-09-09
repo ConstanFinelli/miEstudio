@@ -28,20 +28,33 @@ export const useMateriales = (materiaId?: string) => {
     fetchMateriales();
   }, [fetchMateriales]);
 
+  // Reactive listener for updates triggered from UploadMaterialModal or other views
+  useEffect(() => {
+    const handleUpdate = () => {
+      fetchMateriales();
+    };
+    window.addEventListener('materiales:updated', handleUpdate);
+    return () => window.removeEventListener('materiales:updated', handleUpdate);
+  }, [fetchMateriales]);
+
   const uploadMaterial = async (
     file: File,
     titulo: string,
-    categoria: MaterialEstudio['categoria']
+    categoria: MaterialEstudio['categoria'],
+    targetMateriaId?: string
   ) => {
-    if (!materiaId) throw new Error('No hay materia seleccionada');
-    const created = await materialesService.uploadMaterial(materiaId, file, titulo, categoria);
+    const idToUse = targetMateriaId || materiaId;
+    if (!idToUse) throw new Error('No hay materia seleccionada');
+    const created = await materialesService.uploadMaterial(idToUse, file, titulo, categoria);
     setMateriales(prev => [created, ...prev]);
+    window.dispatchEvent(new CustomEvent('materiales:updated', { detail: created }));
     return created;
   };
 
   const deleteMaterial = async (id: string) => {
     await materialesService.deleteMaterial(id);
     setMateriales(prev => prev.filter(m => m.id !== id));
+    window.dispatchEvent(new CustomEvent('materiales:updated'));
   };
 
   return {
