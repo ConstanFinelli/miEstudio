@@ -14,12 +14,16 @@ interface NoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (newNoteTitle: string) => void;
+  initialMateriaId?: string;
+  initialEvaluacionId?: string;
 }
 
 export const NoteModal: React.FC<NoteModalProps> = ({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
+  initialMateriaId,
+  initialEvaluacionId
 }) => {
   const { materias } = useMaterias();
   const { evaluaciones } = useEvaluaciones();
@@ -36,19 +40,79 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   const [syncAnki, setSyncAnki] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (materias.length > 0 && (!materiaId || !materias.some(m => m.id === materiaId))) {
-      setMateriaId(materias[0].id);
-    }
-  }, [materias, materiaId, isOpen]);
+  // Materias ordenadas ascendentemente por año de cursada, cuatrimestre y nombre
+  const sortedMaterias = React.useMemo(() => {
+    return [...materias].sort((a, b) => {
+      const yrA = a.anio ?? 1;
+      const yrB = b.anio ?? 1;
+      if (yrA !== yrB) return yrA - yrB;
 
+      const cuatriWeight = (c?: string) => (c === '1C' ? 1 : c === '2C' ? 2 : 3);
+      const wA = cuatriWeight(a.cuatrimestre);
+      const wB = cuatriWeight(b.cuatrimestre);
+      if (wA !== wB) return wA - wB;
+
+      return a.nombre.localeCompare(b.nombre);
+    });
+  }, [materias]);
+
+  // Años únicos para los grupos de materias en el select
+  const aniosDisponibles = React.useMemo(() => {
+    const years = Array.from(new Set(sortedMaterias.map(m => m.anio || 1)));
+    return years.sort((a, b) => a - b);
+  }, [sortedMaterias]);
+
+  // Filtrar instancias de evaluación restringidas estrictamente a la materia seleccionada
+  const filteredEvaluaciones = React.useMemo(() => {
+    if (!materiaId) return [];
+    const selectedMat = materias.find(m => m.id === materiaId);
+    return evaluaciones.filter(ev => {
+      if (ev.materiaId === materiaId) return true;
+      if (selectedMat) {
+        if (ev.materiaCodigo && selectedMat.codigo && ev.materiaCodigo === selectedMat.codigo) return true;
+        if (
+          ev.materiaNombre &&
+          selectedMat.nombre &&
+          ev.materiaNombre.trim().toLowerCase() === selectedMat.nombre.trim().toLowerCase()
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }, [evaluaciones, materiaId, materias]);
+
+  // Seleccionar materia inicial
+  useEffect(() => {
+    if (sortedMaterias.length > 0) {
+      if (initialMateriaId && sortedMaterias.some(m => m.id === initialMateriaId)) {
+        setMateriaId(initialMateriaId);
+      } else if (!materiaId || !sortedMaterias.some(m => m.id === materiaId)) {
+        setMateriaId(sortedMaterias[0].id);
+      }
+    }
+  }, [sortedMaterias, materiaId, initialMateriaId, isOpen]);
+
+  // Resetear o inicializar campos al abrir modal
   useEffect(() => {
     if (isOpen) {
       setTitulo('');
       setTags([]);
       setIsSubmitting(false);
+      if (initialEvaluacionId) {
+        setEvalId(initialEvaluacionId);
+      } else {
+        setEvalId('');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialEvaluacionId]);
+
+  // Si cambia la materia y la evaluación elegida no pertenece a ella, resetearla
+  useEffect(() => {
+    if (evalId && !filteredEvaluaciones.some(ev => ev.id === evalId)) {
+      setEvalId('');
+    }
+  }, [filteredEvaluaciones, evalId]);
 
   if (!isOpen) return null;
 
@@ -67,10 +131,10 @@ export const NoteModal: React.FC<NoteModalProps> = ({
     e.preventDefault();
     if (isSubmitting) return;
 
-    const selectedMat = materias.find(m => m.id === materiaId) || materias[0];
+    const selectedMat = materias.find(m => m.id === materiaId) || sortedMaterias[0];
     const materiaIdVal = selectedMat?.id || (customMateria.trim() ? `mat-${Date.now()}` : 'mat-general');
     const materiaNombreVal = selectedMat?.nombre || customMateria.trim() || 'General';
-    const selectedEval = evaluaciones.find(e => e.id === evalId);
+    const selectedEval = filteredEvaluaciones.find(e => e.id === evalId);
     const noteTitle = titulo.trim() || 'Nuevo Apunte';
 
     let initialContent = `# ${noteTitle}\n\n## 1. Introducción y Conceptos Clave\n\nComienza a escribir tus notas de ${materiaNombreVal} aquí...\n`;
@@ -144,19 +208,27 @@ export const NoteModal: React.FC<NoteModalProps> = ({
             <div className={styles.fieldGroup}>
               <div className={styles.fieldLabelRow}>
                 <span>Materia Vinculada *</span>
-                <span style={{ color: 'var(--text-dim)' }}>Obligatorio</span>
+                <span style={{ color: 'var(--text-dim)' }}>Ordenada por año</span>
               </div>
-              {materias.length > 0 ? (
+              {sortedMaterias.length > 0 ? (
                 <select
                   className={styles.fieldInput}
-                  value={materiaId || materias[0]?.id}
+                  value={materiaId || sortedMaterias[0]?.id}
                   onChange={(e) => setMateriaId(e.target.value)}
                 >
-                  {materias.map(m => (
-                    <option key={m.id} value={m.id}>
-                      {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
-                    </option>
-                  ))}
+                  {aniosDisponibles.map((yr) => {
+                    const matsInYear = sortedMaterias.filter(m => (m.anio || 1) === yr);
+                    if (matsInYear.length === 0) return null;
+                    return (
+                      <optgroup key={yr} label={`${yr}° Año`}>
+                        {matsInYear.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               ) : (
                 <input
@@ -173,17 +245,25 @@ export const NoteModal: React.FC<NoteModalProps> = ({
             <div className={styles.fieldGroup}>
               <div className={styles.fieldLabelRow}>
                 <span>Instancia de Evaluación</span>
-                <span style={{ color: 'var(--primary-glow)' }}>Opcional</span>
+                <span style={{ color: filteredEvaluaciones.length > 0 ? 'var(--primary-glow)' : 'var(--text-dim)' }}>
+                  {filteredEvaluaciones.length > 0
+                    ? `${filteredEvaluaciones.length} disponible${filteredEvaluaciones.length > 1 ? 's' : ''}`
+                    : 'Sin evaluaciones'}
+                </span>
               </div>
               <select
                 className={styles.fieldInput}
                 value={evalId}
                 onChange={(e) => setEvalId(e.target.value)}
               >
-                <option value="">General (sin evaluación asociada)</option>
-                {evaluaciones.map(ev => (
+                <option value="">
+                  {filteredEvaluaciones.length === 0
+                    ? 'General (sin evaluaciones para esta materia)'
+                    : 'General (sin evaluación asociada)'}
+                </option>
+                {filteredEvaluaciones.map(ev => (
                   <option key={ev.id} value={ev.id}>
-                    {ev.titulo}
+                    {ev.titulo} ({ev.tipo})
                   </option>
                 ))}
               </select>
