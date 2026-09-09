@@ -22,11 +22,6 @@
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-.kpiCard:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-1px);
-}
-
 .kpiHeader {
   display: flex;
   align-items: flex-start;

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import styles from './YearlyAverageChart.module.css';
-import type { AnioEstadistica } from '../../hooks/useProgresoAcademico';
+import React, { useState } from "react";
+import styles from "./YearlyAverageChart.module.css";
+import type { AnioEstadistica } from "../../hooks/useProgresoAcademico";
 
 interface YearlyAverageChartProps {
   evolucionPorAnio: AnioEstadistica[];
@@ -9,7 +9,7 @@ interface YearlyAverageChartProps {
 
 export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
   evolucionPorAnio,
-  promedioGeneral
+  promedioGeneral,
 }) => {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
@@ -19,11 +19,14 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
         <div className={styles.chartHeader}>
           <div className={styles.chartTitleGroup}>
             <span className={styles.chartLabel}>Rendimiento Anual</span>
-            <span className={styles.chartSub}>Curva de notas promedio por año lectivo</span>
+            <span className={styles.chartSub}>
+              Curva de notas promedio de materias aprobadas por año lectivo
+            </span>
           </div>
         </div>
         <div className={styles.emptyState}>
-          Registra notas finales o materias promocionadas para visualizar la evolución histórica de tu promedio.
+          Registra notas finales o materias promocionadas para visualizar la
+          evolución histórica de tu promedio.
         </div>
       </div>
     );
@@ -58,32 +61,35 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
     x: getX(idx),
     y: getY(item.promedio),
     item,
-    idx
+    idx,
   }));
 
   const linePathD = points.reduce(
-    (acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`,
-    ''
+    (acc, p, i) => `${acc} ${i === 0 ? "M" : "L"} ${p.x} ${p.y}`,
+    "",
   );
 
   const areaD =
     totalItems > 1
       ? `${linePathD} L ${points[points.length - 1].x} ${bottomAxisY} L ${points[0].x} ${bottomAxisY} Z`
-      : '';
+      : "";
 
-  const promoLineY = getY(8.0);
   const minPassLineY = getY(4.0);
 
   // Best year
-  const bestYear = [...evolucionPorAnio].sort((a, b) => b.promedio - a.promedio)[0];
+  const bestYear = [...evolucionPorAnio].sort(
+    (a, b) => b.promedio - a.promedio,
+  )[0];
 
   return (
     <div className={styles.chartCard}>
       <div className={styles.chartHeader}>
         <div className={styles.chartTitleGroup}>
-          <span className={styles.chartLabel}>Evolución del Promedio Anual</span>
+          <span className={styles.chartLabel}>
+            Evolución del Promedio Anual
+          </span>
           <span className={styles.chartSub}>
-            Rendimiento obtenido en cada ciclo lectivo acreditado
+            Rendimiento obtenido de las materias aprobadas en cada ciclo lectivo
           </span>
         </div>
 
@@ -92,19 +98,24 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
             <span className={styles.legendDotCurve} />
             <span>Promedio anual</span>
           </div>
-          <div className={styles.legendItem}>
-            <span className={styles.legendDotPromo} />
-            <span>Corte Promoción (8.0)</span>
-          </div>
         </div>
       </div>
 
       <div className={styles.chartSvgContainer}>
-        <svg width="100%" height="100%" viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="none">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          preserveAspectRatio="none"
+        >
           <defs>
             <linearGradient id="yearlyAvgGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
+              <stop
+                offset="100%"
+                stopColor="var(--primary)"
+                stopOpacity="0.0"
+              />
             </linearGradient>
           </defs>
 
@@ -126,29 +137,6 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
             fontFamily="var(--font-mono)"
           >
             4.0
-          </text>
-
-          {/* Reference line: Promocion 8.0 */}
-          <line
-            x1={leftPad}
-            y1={promoLineY}
-            x2={svgWidth - rightPad}
-            y2={promoLineY}
-            stroke="var(--amber)"
-            strokeDasharray="4 4"
-            strokeWidth="1.2"
-            opacity="0.5"
-          />
-          <text
-            x={leftPad - 8}
-            y={promoLineY + 3}
-            textAnchor="end"
-            fill="var(--amber)"
-            fontSize="9"
-            fontFamily="var(--font-mono)"
-            opacity="0.8"
-          >
-            8.0
           </text>
 
           {/* Top line: 10.0 */}
@@ -196,7 +184,7 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
                 key={p.idx}
                 onMouseEnter={() => setHoveredIdx(p.idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               >
                 {/* Vertical guide on hover */}
                 {isHovered && (
@@ -226,7 +214,9 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
                   x={p.x}
                   y={p.y - 9}
                   textAnchor="middle"
-                  fill={isHovered ? 'var(--primary-glow)' : 'var(--text-primary)'}
+                  fill={
+                    isHovered ? "var(--primary-glow)" : "var(--text-primary)"
+                  }
                   fontSize="11"
                   fontFamily="var(--font-mono)"
                   fontWeight="600"
@@ -240,7 +230,7 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
                     x={p.x}
                     y={p.y - 21}
                     textAnchor="middle"
-                    fill={delta >= 0 ? 'var(--emerald)' : 'var(--amber)'}
+                    fill={delta >= 0 ? "var(--emerald)" : "var(--amber)"}
                     fontSize="9"
                     fontFamily="var(--font-mono)"
                     fontWeight="600"
@@ -254,10 +244,10 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
                   x={p.x}
                   y={bottomAxisY + 16}
                   textAnchor="middle"
-                  fill={isHovered ? 'var(--primary-glow)' : 'var(--text-dim)'}
+                  fill={isHovered ? "var(--primary-glow)" : "var(--text-dim)"}
                   fontSize="11"
                   fontFamily="var(--font-mono)"
-                  fontWeight={isHovered ? '600' : 'normal'}
+                  fontWeight={isHovered ? "600" : "normal"}
                 >
                   {p.item.anio}
                 </text>
@@ -271,13 +261,16 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
         <div className={styles.footerStat}>
           <span>Promedio Histórico Global:</span>
           <span className={styles.footerStatVal}>
-            {promedioGeneral > 0 ? promedioGeneral.toFixed(2) : '---'}
+            {promedioGeneral > 0 ? promedioGeneral.toFixed(2) : "---"}
           </span>
         </div>
         {bestYear && (
           <div className={styles.footerStat}>
             <span>Mejor Año Académico:</span>
-            <span className={styles.footerStatVal} style={{ color: 'var(--emerald)' }}>
+            <span
+              className={styles.footerStatVal}
+              style={{ color: "var(--emerald)" }}
+            >
               {bestYear.anio} ({bestYear.promedio.toFixed(2)})
             </span>
           </div>

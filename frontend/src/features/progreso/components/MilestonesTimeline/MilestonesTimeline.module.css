@@ -9,10 +9,6 @@
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.card:hover {
-  border-color: var(--border-default);
-}
-
 .header {
   display: flex;
   align-items: flex-start;
