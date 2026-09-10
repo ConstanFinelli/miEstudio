@@ -16,6 +16,7 @@ import {
   LogOut,
   Plus,
   TrendingUp,
+  Network,
   PanelLeftClose,
   PanelLeftOpen,
   PanelLeft,
@@ -79,6 +80,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
     if (path.startsWith("/dashboard")) return "Dashboard";
+    if (path.startsWith("/malla")) return "Malla Curricular";
     if (path.startsWith("/progreso")) return "Progreso & Estadísticas";
     if (path.startsWith("/materias")) return "Materias";
     if (path.startsWith("/horarios")) return "Horarios";
@@ -238,6 +240,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             >
               <BookOpen className={styles.navIcon} />
               {!isSidebarCollapsed && <span>Materias</span>}
+            </NavLink>
+            <NavLink
+              to="/malla"
+              title={isSidebarCollapsed ? "Malla Curricular" : undefined}
+              className={({ isActive }) =>
+                `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
+              }
+            >
+              <Network className={styles.navIcon} />
+              {!isSidebarCollapsed && <span>Malla Curricular</span>}
             </NavLink>
             <NavLink
               to="/progreso"

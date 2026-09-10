@@ -82,6 +82,15 @@ func (s *service) CreateMateria(ctx context.Context, dto CreateMateriaDTO) (*Mat
 		ProfesorTitular:    dto.ProfesorTitular,
 		ProfesorJTP:        dto.ProfesorJTP,
 		ReglasAcreditacion: reglas,
+		CorrelativasCursar: dto.CorrelativasCursar,
+		CorrelativasRendir: dto.CorrelativasRendir,
+	}
+
+	if materia.CorrelativasCursar == nil {
+		materia.CorrelativasCursar = []string{}
+	}
+	if materia.CorrelativasRendir == nil {
+		materia.CorrelativasRendir = []string{}
 	}
 
 	if err := s.repo.Create(ctx, materia); err != nil {
@@ -132,6 +141,12 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 	}
 	if dto.ReglasAcreditacion != nil {
 		materia.ReglasAcreditacion = dto.ReglasAcreditacion
+	}
+	if dto.CorrelativasCursar != nil {
+		materia.CorrelativasCursar = *dto.CorrelativasCursar
+	}
+	if dto.CorrelativasRendir != nil {
+		materia.CorrelativasRendir = *dto.CorrelativasRendir
 	}
 
 	if err := s.repo.Update(ctx, materia); err != nil {

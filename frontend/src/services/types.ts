@@ -41,6 +41,8 @@ export interface MateriaDTO {
   profesor_titular?: string;
   profesor_jtp?: string;
   reglas_acreditacion?: ReglasAcreditacionDTO | null;
+  correlativas_cursar?: string[];
+  correlativas_rendir?: string[];
   created_at?: string;
   updated_at?: string;
 }

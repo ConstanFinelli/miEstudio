@@ -31,101 +31,103 @@ export const mockPerfil: PerfilEstudiante = {
 };
 
 export const mockMaterias: Materia[] = [
+  // --- 1° AÑO ---
   {
-    id: 'mat-1',
-    codigo: 'SIS-304',
-    nombre: 'Sistemas Distribuidos',
-    anio: 3,
+    id: 'mat-alg1',
+    codigo: 'ALG-101',
+    nombre: 'Álgebra y Geometría Analítica',
+    anio: 1,
     cuatrimestre: '1C',
-    estado: 'CURSANDO',
-    color: '#6366f1',
-    comision: 'Comisión K3012 Presencial',
+    estado: 'APROBADA',
+    color: '#10b981',
+    comision: 'Comisión K1011',
     modalidad: 'Presencial',
-    profesores: {
-      titular: 'Dr. Martín O. Balbis',
-      jtp: 'Ing. Valeria Morales'
+    profesores: { titular: 'Lic. Horacio Romero', jtp: 'Ing. Silvia Costa' },
+    promedio: 8.0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'Parciales ≥ 8', descripcion: 'Promocionada' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'Regularizada' }
     },
+    correlativasCursar: [],
+    correlativasRendir: []
+  },
+  {
+    id: 'mat-ana1',
+    codigo: 'MAT-102',
+    nombre: 'Análisis Matemático I',
+    anio: 1,
+    cuatrimestre: 'Anual',
+    estado: 'APROBADA',
+    color: '#10b981',
+    comision: 'Comisión K1024',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dra. María González', jtp: 'Lic. Pablo Rossi' },
     promedio: 8.5,
     reglasAcreditacion: {
-      promocion: {
-        permitePromocion: true,
-        condicion: 'Promedio ≥ 8.0 y cada parcial individual ≥ 7.0 (sin recuperatorio)',
-        minPromedio: 8.0,
-        minParcial: 7.0,
-        permiteRecuperatorio: false,
-        descripcion: 'Promedio ≥ 8.0 y cada parcial individual ≥ 7.0 (sin recuperatorio mayor).'
-      },
-      regularidad: {
-        condicion: 'Parciales ≥ 4.0, 75% de asistencia y TP de Laboratorio de Redes aprobado',
-        minNota: 4.0,
-        minAsistencia: 75,
-        descripcion: 'Todos los parciales ≥ 4.0 y 75% de asistencia mínima requerida.'
-      }
-    }
+      promocion: { permitePromocion: true, condicion: 'Parciales ≥ 8', descripcion: 'Promocionada' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'Regularizada' }
+    },
+    correlativasCursar: [],
+    correlativasRendir: []
   },
   {
-    id: 'mat-2',
-    codigo: 'DAT-301',
-    nombre: 'Bases de Datos II',
-    anio: 3,
+    id: 'mat-ayp',
+    codigo: 'PROG-103',
+    nombre: 'Algoritmos y Programación I',
+    anio: 1,
     cuatrimestre: '1C',
-    estado: 'CURSANDO',
-    color: '#3b82f6',
-    comision: 'Comisión K3001 Presencial',
+    estado: 'APROBADA',
+    color: '#10b981',
+    comision: 'Comisión K1002',
     modalidad: 'Presencial',
-    profesores: {
-      titular: 'Dra. Elena Rossi',
-      jtp: 'Lic. Fernando Gómez'
-    },
-    promedio: 7.0,
+    profesores: { titular: 'Ing. Lucas Díaz', jtp: 'Lic. Sofía Miller' },
+    promedio: 9.0,
     reglasAcreditacion: {
-      promocion: {
-        permitePromocion: false,
-        condicion: 'Sin promoción directa. Examen final obligatorio para acreditar la materia.',
-        minPromedio: 0,
-        minParcial: 0,
-        permiteRecuperatorio: false,
-        descripcion: 'Sin promoción directa. Examen final obligatorio para acreditar la materia.'
-      },
-      regularidad: {
-        condicion: '2 parciales aprobados con 4+, TP de SQL grupal entregado y aprobado',
-        minNota: 4.0,
-        minAsistencia: 75,
-        descripcion: 'Nota en exámenes ≥ 4.0 y entregas completas.'
-      }
-    }
+      promocion: { permitePromocion: true, condicion: 'Parciales ≥ 8 y TP C++', descripcion: 'Promocionada' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'Regularizada' }
+    },
+    correlativasCursar: [],
+    correlativasRendir: []
   },
   {
-    id: 'mat-3',
-    codigo: 'ALG-302',
-    nombre: 'Algoritmos y Estructuras III',
-    anio: 3,
-    cuatrimestre: '1C',
-    estado: 'CURSANDO',
-    color: '#a855f7',
-    comision: 'Cátedra Cormen & Sedgewick',
+    id: 'mat-syo',
+    codigo: 'SIS-104',
+    nombre: 'Sistemas y Organizaciones',
+    anio: 1,
+    cuatrimestre: '2C',
+    estado: 'APROBADA',
+    color: '#10b981',
+    comision: 'Comisión K1051',
     modalidad: 'Presencial',
-    profesores: {
-      titular: 'Dr. Alejandro Turing',
-      jtp: 'Ing. Lucas Díaz'
-    },
-    promedio: 7.8,
+    profesores: { titular: 'Dr. Roberto Blanco', jtp: 'Ing. Carolina Paz' },
+    promedio: 8.0,
     reglasAcreditacion: {
-      promocion: {
-        permitePromocion: true,
-        condicion: 'Parciales teóricos ≥ 7.5 en 1° intento y coloquio práctico aprobado',
-        minPromedio: 8.0,
-        minParcial: 7.5,
-        permiteRecuperatorio: false,
-        descripcion: 'Parciales teóricos ≥ 7.5 y coloquio práctico.'
-      },
-      regularidad: {
-        condicion: 'Promedio general ≥ 5.0, 75% asistencia a talleres y 4 de 5 TPs aprobados',
-        minNota: 5.0,
-        minAsistencia: 75,
-        descripcion: 'Promedio general ≥ 5.0.'
-      }
-    }
+      promocion: { permitePromocion: true, condicion: 'Parciales ≥ 7 y monografía', descripcion: 'Promocionada' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'Regularizada' }
+    },
+    correlativasCursar: [],
+    correlativasRendir: []
+  },
+
+  // --- 2° AÑO ---
+  {
+    id: 'mat-5',
+    codigo: 'PAR-201',
+    nombre: 'Paradigmas de Programación',
+    anio: 2,
+    cuatrimestre: '1C',
+    estado: 'APROBADA',
+    color: '#10b981',
+    comision: 'Comisión K2002 Presencial',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Lic. Clara Kay', jtp: 'Ing. Pablo McCarthy' },
+    promedio: 8.0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'Aprobada en mesa de final #1042', descripcion: 'Aprobada' },
+      regularidad: { condicion: '3 parciales de paradigmas ≥ 4 y TP Wollok', descripcion: 'Cumplida' }
+    },
+    correlativasCursar: ['mat-ayp'],
+    correlativasRendir: ['mat-ayp']
   },
   {
     id: 'mat-4',
@@ -137,59 +139,208 @@ export const mockMaterias: Materia[] = [
     color: '#10b981',
     comision: 'Comisión K2014 Presencial',
     modalidad: 'Presencial',
-    profesores: {
-      titular: 'Ing. Gustavo Patterson',
-      jtp: 'Ing. Matías Hennessy'
-    },
+    profesores: { titular: 'Ing. Gustavo Patterson', jtp: 'Ing. Matías Hennessy' },
     promedio: 9.0,
     reglasAcreditacion: {
-      promocion: {
-        permitePromocion: true,
-        condicion: 'Promocionada con distinción: Parciales ≥ 8 y coloquio de assembler',
-        minPromedio: 8.0,
-        minParcial: 7.0,
-        permiteRecuperatorio: false,
-        descripcion: 'Promocionada con distinción.'
-      },
-      regularidad: {
-        condicion: 'Parciales ≥ 4 y prácticas de laboratorio en Logisim aprobadas',
-        minNota: 4.0,
-        minAsistencia: 75,
-        descripcion: 'Condición cumplida.'
-      }
-    }
+      promocion: { permitePromocion: true, condicion: 'Parciales ≥ 8 y coloquio assembler', descripcion: 'Promocionada' },
+      regularidad: { condicion: 'Parciales ≥ 4 y labs en Logisim', descripcion: 'Cumplida' }
+    },
+    correlativasCursar: ['mat-ayp'],
+    correlativasRendir: ['mat-ayp']
   },
   {
-    id: 'mat-5',
-    codigo: 'PAR-201',
-    nombre: 'Paradigmas de Programación',
+    id: 'mat-ana2',
+    codigo: 'MAT-203',
+    nombre: 'Análisis Matemático II',
+    anio: 2,
+    cuatrimestre: 'Anual',
+    estado: 'REGULAR',
+    color: '#8b5cf6',
+    comision: 'Comisión K2033',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dr. Fernando Laplace', jtp: 'Lic. Marta Euler' },
+    promedio: 6.5,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: false, condicion: 'Requiere final obligatorio', descripcion: 'Sin promoción' },
+      regularidad: { condicion: 'Parciales ≥ 4.0', descripcion: 'Regularizada' }
+    },
+    correlativasCursar: ['mat-ana1', 'mat-alg1'],
+    correlativasRendir: ['mat-ana1', 'mat-alg1']
+  },
+  {
+    id: 'mat-sist',
+    codigo: 'SO-204',
+    nombre: 'Sistemas Operativos',
+    anio: 2,
+    cuatrimestre: '2C',
+    estado: 'REGULAR',
+    color: '#8b5cf6',
+    comision: 'Comisión K2041',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Ing. Andrés Tanenbaum', jtp: 'Lic. Daniel Torvalds' },
+    promedio: 7.0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: false, condicion: 'Final obligatorio', descripcion: 'Final pendiente' },
+      regularidad: { condicion: 'TP C y Threads aprobado + Parcial ≥ 4', descripcion: 'Regularizada' }
+    },
+    correlativasCursar: ['mat-4', 'mat-ayp'],
+    correlativasRendir: ['mat-4', 'mat-ayp']
+  },
+  {
+    id: 'mat-bd1',
+    codigo: 'DAT-205',
+    nombre: 'Bases de Datos I',
     anio: 2,
     cuatrimestre: '1C',
     estado: 'APROBADA',
     color: '#10b981',
-    comision: 'Comisión K2002 Presencial',
+    comision: 'Comisión K2020',
     modalidad: 'Presencial',
-    profesores: {
-      titular: 'Lic. Clara Kay',
-      jtp: 'Ing. Pablo McCarthy'
-    },
-    promedio: 8.0,
+    profesores: { titular: 'Dra. Elena Rossi', jtp: 'Lic. Carlos Codd' },
+    promedio: 8.5,
     reglasAcreditacion: {
-      promocion: {
-        permitePromocion: true,
-        condicion: 'Aprobada en mesa de final #1042 tras regularizar',
-        minPromedio: 8.0,
-        minParcial: 8.0,
-        permiteRecuperatorio: false,
-        descripcion: 'Aprobada en mesa de final #1042.'
-      },
-      regularidad: {
-        condicion: '3 parciales de paradigmas ≥ 4 y TP Wollok aprobado',
-        minNota: 4.0,
-        minAsistencia: 75,
-        descripcion: 'Condición cumplida.'
-      }
-    }
+      promocion: { permitePromocion: true, condicion: 'Parciales ≥ 8 y modelo relacional', descripcion: 'Promocionada' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'Regularizada' }
+    },
+    correlativasCursar: ['mat-ayp', 'mat-syo'],
+    correlativasRendir: ['mat-ayp', 'mat-syo']
+  },
+
+  // --- 3° AÑO ---
+  {
+    id: 'mat-1',
+    codigo: 'SIS-304',
+    nombre: 'Sistemas Distribuidos',
+    anio: 3,
+    cuatrimestre: '1C',
+    estado: 'CURSANDO',
+    color: '#6366f1',
+    comision: 'Comisión K3012 Presencial',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dr. Martín O. Balbis', jtp: 'Ing. Valeria Morales' },
+    promedio: 8.5,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'Promedio ≥ 8.0 y cada parcial individual ≥ 7.0', descripcion: 'Promocionable' },
+      regularidad: { condicion: 'Parciales ≥ 4.0, 75% asistencia y TP de Redes', descripcion: 'Regularidad' }
+    },
+    correlativasCursar: ['mat-sist', 'mat-bd1'],
+    correlativasRendir: ['mat-sist', 'mat-bd1']
+  },
+  {
+    id: 'mat-2',
+    codigo: 'DAT-301',
+    nombre: 'Bases de Datos II',
+    anio: 3,
+    cuatrimestre: '1C',
+    estado: 'CURSANDO',
+    color: '#3b82f6',
+    comision: 'Comisión K3001 Presencial',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dra. Elena Rossi', jtp: 'Lic. Fernando Gómez' },
+    promedio: 7.0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: false, condicion: 'Examen final obligatorio', descripcion: 'Sin promoción' },
+      regularidad: { condicion: '2 parciales ≥ 4 y TP de SQL grupal', descripcion: 'En curso' }
+    },
+    correlativasCursar: ['mat-bd1'],
+    correlativasRendir: ['mat-bd1']
+  },
+  {
+    id: 'mat-3',
+    codigo: 'ALG-302',
+    nombre: 'Algoritmos y Estructuras III',
+    anio: 3,
+    cuatrimestre: '1C',
+    estado: 'CURSANDO',
+    color: '#a855f7',
+    comision: 'Cátedra Cormen & Sedgewick',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dr. Alejandro Turing', jtp: 'Ing. Lucas Díaz' },
+    promedio: 7.8,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'Parciales teóricos ≥ 7.5 y coloquio práctico', descripcion: 'Promocionable' },
+      regularidad: { condicion: 'Promedio general ≥ 5.0 y 4 de 5 TPs', descripcion: 'En curso' }
+    },
+    correlativasCursar: ['mat-5'],
+    correlativasRendir: ['mat-5']
+  },
+  {
+    id: 'mat-red',
+    codigo: 'RED-303',
+    nombre: 'Redes de Información',
+    anio: 3,
+    cuatrimestre: '2C',
+    estado: 'CURSANDO',
+    color: '#06b6d4',
+    comision: 'Comisión K3044',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Ing. Jim Kurose', jtp: 'Lic. Keith Ross' },
+    promedio: 0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'Laboratorios Cisco y parciales ≥ 8', descripcion: 'Promocionable' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'En curso' }
+    },
+    correlativasCursar: ['mat-4', 'mat-sist'],
+    correlativasRendir: ['mat-4', 'mat-sist']
+  },
+
+  // --- 4° AÑO ---
+  {
+    id: 'mat-ia',
+    codigo: 'IA-401',
+    nombre: 'Inteligencia Artificial',
+    anio: 4,
+    cuatrimestre: '1C',
+    estado: 'CURSANDO',
+    color: '#ec4899',
+    comision: 'Comisión K4010',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dr. Stuart Russell', jtp: 'Ing. Peter Norvig' },
+    promedio: 0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'Proyecto de Machine Learning y examen ≥ 8', descripcion: 'Promoción' },
+      regularidad: { condicion: 'Parciales ≥ 4 y notebooks aprobados', descripcion: 'Regularidad' }
+    },
+    correlativasCursar: ['mat-3', 'mat-ana2'],
+    correlativasRendir: ['mat-3', 'mat-ana2']
+  },
+  {
+    id: 'mat-seg',
+    codigo: 'SEG-402',
+    nombre: 'Seguridad y Criptografía',
+    anio: 4,
+    cuatrimestre: '2C',
+    estado: 'CURSANDO',
+    color: '#f59e0b',
+    comision: 'Comisión K4022',
+    modalidad: 'Presencial',
+    profesores: { titular: 'Dr. Bruce Schneier', jtp: 'Lic. Alice Rivest' },
+    promedio: 0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: true, condicion: 'CTF y parciales ≥ 8', descripcion: 'Promoción' },
+      regularidad: { condicion: 'Parciales ≥ 4', descripcion: 'Regularidad' }
+    },
+    correlativasCursar: ['mat-red', 'mat-1'],
+    correlativasRendir: ['mat-red', 'mat-1']
+  },
+  {
+    id: 'mat-proy',
+    codigo: 'PROY-403',
+    nombre: 'Proyecto Final de Carrera',
+    anio: 4,
+    cuatrimestre: 'Anual',
+    estado: 'CURSANDO',
+    color: '#64748b',
+    comision: 'Tribunal Académico',
+    modalidad: 'Híbrida',
+    profesores: { titular: 'Comité de Tesis', jtp: 'Tutor Asignado' },
+    promedio: 0,
+    reglasAcreditacion: {
+      promocion: { permitePromocion: false, condicion: 'Defensa oral pública de tesis', descripcion: 'Defensa de Tesis' },
+      regularidad: { condicion: 'Informe de avance aprobado', descripcion: 'Regularidad' }
+    },
+    correlativasCursar: ['mat-1', 'mat-2', 'mat-3'],
+    correlativasRendir: ['mat-1', 'mat-2', 'mat-3', 'mat-ia', 'mat-seg']
   }
 ];
 

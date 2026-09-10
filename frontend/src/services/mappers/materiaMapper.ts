@@ -80,7 +80,9 @@ export const materiaMapper = {
         titular: dto.profesor_titular !== undefined ? dto.profesor_titular : (extra?.profesores?.titular || ''),
         jtp: dto.profesor_jtp !== undefined ? dto.profesor_jtp : (extra?.profesores?.jtp || '')
       },
-      reglasAcreditacion
+      reglasAcreditacion,
+      correlativasCursar: dto.correlativas_cursar ?? extra?.correlativasCursar ?? [],
+      correlativasRendir: dto.correlativas_rendir ?? extra?.correlativasRendir ?? []
     };
   },
 
@@ -104,6 +106,8 @@ export const materiaMapper = {
       promedio: materia.promedio,
       profesor_titular: materia.profesores?.titular,
       profesor_jtp: materia.profesores?.jtp,
+      correlativas_cursar: materia.correlativasCursar,
+      correlativas_rendir: materia.correlativasRendir,
       reglas_acreditacion: materia.reglasAcreditacion ? {
         promocion: {
           permite_promocion: materia.reglasAcreditacion.promocion.permitePromocion ?? true,

@@ -1,0 +1,193 @@
+.nodeCard {
+  position: relative;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  min-width: 175px;
+  max-width: 220px;
+}
+
+.nodeCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+/* Selected or Focused State */
+.nodeSelected {
+  border-color: var(--primary-glow) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3), 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+  z-index: 20;
+}
+
+/* Upstream / Prerequisite Highlight */
+.nodeUpstream {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 0 1.5px rgba(245, 158, 11, 0.4), 0 4px 12px rgba(245, 158, 11, 0.15) !important;
+  z-index: 15;
+}
+
+/* Downstream / Unlocked Highlight */
+.nodeDownstream {
+  border-color: var(--emerald) !important;
+  box-shadow: 0 0 0 1.5px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+  z-index: 15;
+}
+
+/* Dimmed State when focusing another branch */
+.nodeDimmed {
+  opacity: 0.35;
+  filter: grayscale(40%);
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.nodeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.codigo {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.cuatriBadge {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.nombre {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 32px;
+}
+
+.nodeFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Status Badges */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+}
+
+.statusAprobada {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--emerald);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.statusPromocionada {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.statusCursando {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary-glow);
+  border: 1px solid var(--primary-border);
+}
+
+.statusRegular {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.statusHabilitada {
+  background: rgba(6, 182, 212, 0.12);
+  color: #22d3ee;
+  border: 1px dashed rgba(6, 182, 212, 0.45);
+}
+
+.statusBloqueada {
+  background: rgba(100, 116, 139, 0.12);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.simulatedBadge {
+  font-size: 9px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Simulation Action Button */
+.simButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  color: var(--text-dim);
+  padding: 2px 5px;
+  font-size: 9.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.simButton:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary-border);
+  color: var(--text-primary);
+}
+
+.simButtonActive {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--emerald-border);
+  color: var(--emerald);
+}
+
+.reqPill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}

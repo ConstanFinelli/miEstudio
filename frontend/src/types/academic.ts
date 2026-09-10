@@ -58,6 +58,8 @@ export interface Materia {
       descripcion?: string;
     };
   };
+  correlativasCursar?: string[];
+  correlativasRendir?: string[];
 }
 
 export interface InstanciaEvaluacion {

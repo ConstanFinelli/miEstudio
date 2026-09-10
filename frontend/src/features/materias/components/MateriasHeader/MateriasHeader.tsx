@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./MateriasHeader.module.css";
-import { Plus } from "lucide-react";
+import { Plus, Network } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface MateriasHeaderProps {
   onRegisterMateria?: () => void;
@@ -9,6 +10,8 @@ interface MateriasHeaderProps {
 export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
   onRegisterMateria,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className={styles.headerArea}>
       <div className={styles.headerLeft}>
@@ -33,6 +36,16 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
       </div>
 
       <div className={styles.headerRight}>
+        <button
+          type="button"
+          className={styles.btnSecondary}
+          onClick={() => navigate("/malla")}
+          title="Ver mapa interactivo de correlatividades y proyección"
+        >
+          <Network size={14} />
+          <span>Malla Curricular</span>
+        </button>
+
         {onRegisterMateria && (
           <button className={styles.btnPrimary} onClick={onRegisterMateria}>
             <Plus size={14} />

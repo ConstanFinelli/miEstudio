@@ -96,3 +96,24 @@
 .btnPrimary:hover {
   filter: brightness(1.1);
 }
+
+.btnSecondary {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnSecondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-default);
+}
+

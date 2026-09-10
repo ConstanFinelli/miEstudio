@@ -114,6 +114,8 @@ type Materia struct {
 	ProfesorTitular    string                 `gorm:"type:varchar(255);default:''" json:"profesor_titular"`
 	ProfesorJTP        string                 `gorm:"type:varchar(255);default:''" json:"profesor_jtp"`
 	ReglasAcreditacion *ReglasAcreditacionDTO `gorm:"type:text" json:"reglas_acreditacion"`
+	CorrelativasCursar []string               `gorm:"type:text;serializer:json" json:"correlativas_cursar"`
+	CorrelativasRendir []string               `gorm:"type:text;serializer:json" json:"correlativas_rendir"`
 	CreatedAt          time.Time              `json:"created_at"`
 	UpdatedAt          time.Time              `json:"updated_at"`
 	DeletedAt          gorm.DeletedAt         `gorm:"index" json:"-"`
@@ -134,6 +136,8 @@ type CreateMateriaDTO struct {
 	ProfesorTitular    string                 `json:"profesor_titular"`
 	ProfesorJTP        string                 `json:"profesor_jtp"`
 	ReglasAcreditacion *ReglasAcreditacionDTO `json:"reglas_acreditacion"`
+	CorrelativasCursar []string               `json:"correlativas_cursar"`
+	CorrelativasRendir []string               `json:"correlativas_rendir"`
 }
 
 type UpdateMateriaDTO struct {
@@ -150,4 +154,6 @@ type UpdateMateriaDTO struct {
 	ProfesorTitular    *string                `json:"profesor_titular"`
 	ProfesorJTP        *string                `json:"profesor_jtp"`
 	ReglasAcreditacion *ReglasAcreditacionDTO `json:"reglas_acreditacion"`
+	CorrelativasCursar *[]string              `json:"correlativas_cursar"`
+	CorrelativasRendir *[]string              `json:"correlativas_rendir"`
 }

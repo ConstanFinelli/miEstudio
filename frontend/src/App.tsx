@@ -7,6 +7,7 @@ import { CalendarioView } from './features/calendario/CalendarioView';
 import { HorariosView } from './features/horarios';
 import { ApuntesView } from './features/apuntes/ApuntesView';
 import { ProgresoView } from './features/progreso';
+import { MallaCurricularView } from './features/malla';
 import { LoginView, RegisterView } from './features/auth';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
@@ -82,6 +83,7 @@ export const App: React.FC = () => {
                     />
                   }
                 />
+                <Route path="/malla" element={<MallaCurricularView />} />
                 <Route path="/progreso" element={<ProgresoView />} />
                 <Route path="/horarios" element={<HorariosView />} />
                 <Route

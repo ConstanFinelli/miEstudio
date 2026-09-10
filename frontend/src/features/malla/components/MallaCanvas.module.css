@@ -1,0 +1,110 @@
+.canvasScrollWrapper {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  padding: 24px;
+  background-color: var(--surface-0);
+  background-image: 
+    radial-gradient(circle at 1px 1px, var(--border-subtle) 1px, transparent 0);
+  background-size: 28px 28px;
+  display: flex;
+  min-height: 0;
+}
+
+.canvasInner {
+  position: relative;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  min-width: max-content;
+  padding-bottom: 32px;
+}
+
+.yearColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 215px;
+  flex-shrink: 0;
+}
+
+.yearHeader {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.yearHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.yearTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.yearStatsBadge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.yearProgressBar {
+  width: 100%;
+  height: 4px;
+  background: var(--surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.yearProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--emerald) 100%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.periodGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.periodDivider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.periodDividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.periodDividerLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.nodesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

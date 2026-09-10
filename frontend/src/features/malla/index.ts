@@ -1,0 +1,1 @@
+export { MallaCurricularView } from './MallaCurricularView';
