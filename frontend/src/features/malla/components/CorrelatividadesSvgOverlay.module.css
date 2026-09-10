@@ -46,3 +46,14 @@
     stroke-dashoffset: 20;
   }
 }
+
+.originDotUpstream {
+  fill: var(--amber);
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.7));
+}
+
+.originDotDownstream {
+  fill: var(--emerald);
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.7));
+}
+

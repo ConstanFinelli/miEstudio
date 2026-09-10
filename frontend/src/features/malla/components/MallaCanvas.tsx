@@ -32,6 +32,7 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
   onToggleSimulate
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
 
   const focusedId = hoveredMateriaId || selectedMateriaId;
 
@@ -74,11 +75,12 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
 
   return (
     <div className={styles.canvasScrollWrapper} ref={containerRef}>
-      <div className={styles.canvasInner}>
+      <div className={styles.canvasInner} ref={innerRef}>
         {/* SVG Dynamic Overlay */}
         <CorrelatividadesSvgOverlay
           connections={activeConnections}
-          containerRef={containerRef}
+          innerRef={innerRef}
+          scrollContainerRef={containerRef}
         />
 
         {/* Columns by Year */}

@@ -4,7 +4,8 @@ import type { ConnectionLink } from '../types';
 
 interface CorrelatividadesSvgOverlayProps {
   connections: ConnectionLink[];
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  innerRef: React.RefObject<HTMLDivElement | null>;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 interface PathGeometry {
@@ -12,24 +13,26 @@ interface PathGeometry {
   d: string;
   direction: 'UPSTREAM' | 'DOWNSTREAM';
   tipo: 'CURSAR' | 'RENDIR';
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
 }
 
 export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProps> = ({
   connections,
-  containerRef
+  innerRef,
+  scrollContainerRef
 }) => {
   const [paths, setPaths] = useState<PathGeometry[]>([]);
 
   const recalculatePaths = useCallback(() => {
-    if (!containerRef.current || connections.length === 0) {
+    if (!innerRef.current || connections.length === 0) {
       setPaths([]);
       return;
     }
 
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const scrollLeft = containerRef.current.scrollLeft;
-    const scrollTop = containerRef.current.scrollTop;
-
+    const innerRect = innerRef.current.getBoundingClientRect();
     const newPaths: PathGeometry[] = [];
 
     connections.forEach(conn => {
@@ -38,63 +41,85 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
 
       if (!sourceEl || !targetEl) return;
 
-      const sourceRect = sourceEl.getBoundingClientRect();
-      const targetRect = targetEl.getBoundingClientRect();
+      const sRect = sourceEl.getBoundingClientRect();
+      const tRect = targetEl.getBoundingClientRect();
 
-      // Coordenadas relativas al contenedor
-      const isLeftToRight = sourceRect.left <= targetRect.left;
+      // Coordenadas exactas relativas al lienzo interno (sin desfase de padding ni scroll)
+      const sLeft = sRect.left - innerRect.left;
+      const sRight = sRect.right - innerRect.left;
+      const sCenterY = sRect.top + sRect.height / 2 - innerRect.top;
+
+      const tLeft = tRect.left - innerRect.left;
+      const tRight = tRect.right - innerRect.left;
+      const tCenterY = tRect.top + tRect.height / 2 - innerRect.top;
 
       let x1: number, y1: number, x2: number, y2: number;
+      let d = '';
 
-      if (isLeftToRight) {
-        // Source sale por la derecha, target entra por la izquierda
-        x1 = sourceRect.right - containerRect.left + scrollLeft;
-        y1 = sourceRect.top + sourceRect.height / 2 - containerRect.top + scrollTop;
-        x2 = targetRect.left - containerRect.left + scrollLeft;
-        y2 = targetRect.top + targetRect.height / 2 - containerRect.top + scrollTop;
-      } else {
-        // Source sale por la izquierda, target entra por la derecha (misma columna o retroceso)
-        x1 = sourceRect.left - containerRect.left + scrollLeft;
-        y1 = sourceRect.top + sourceRect.height / 2 - containerRect.top + scrollTop;
-        x2 = targetRect.right - containerRect.left + scrollLeft;
-        y2 = targetRect.top + targetRect.height / 2 - containerRect.top + scrollTop;
+      // Caso 1: Misma columna (mismo año lectivo, tarjetas apiladas verticalmente)
+      if (Math.abs(sLeft - tLeft) < 50) {
+        x1 = sRight;
+        y1 = sCenterY;
+        x2 = tRight;
+        y2 = tCenterY;
+
+        const loopOffset = 40;
+        d = `M ${x1} ${y1} C ${x1 + loopOffset} ${y1}, ${x2 + loopOffset} ${y2}, ${x2} ${y2}`;
       }
+      // Caso 2: De izquierda a derecha (año anterior a posterior)
+      else if (sLeft < tLeft) {
+        x1 = sRight;
+        y1 = sCenterY;
+        x2 = tLeft;
+        y2 = tCenterY;
 
-      const dx = Math.abs(x2 - x1) * 0.45;
-      const control1X = isLeftToRight ? x1 + dx : x1 - dx;
-      const control2X = isLeftToRight ? x2 - dx : x2 + dx;
+        const dx = Math.max(32, (x2 - x1) * 0.45);
+        d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+      }
+      // Caso 3: De derecha a izquierda (año posterior a anterior)
+      else {
+        x1 = sLeft;
+        y1 = sCenterY;
+        x2 = tRight;
+        y2 = tCenterY;
 
-      const d = `M ${x1} ${y1} C ${control1X} ${y1}, ${control2X} ${y2}, ${x2} ${y2}`;
+        const dx = Math.max(32, (x1 - x2) * 0.45);
+        d = `M ${x1} ${y1} C ${x1 - dx} ${y1}, ${x2 + dx} ${y2}, ${x2} ${y2}`;
+      }
 
       newPaths.push({
         id: conn.id,
         d,
         direction: conn.direction,
-        tipo: conn.tipo
+        tipo: conn.tipo,
+        x1,
+        y1,
+        x2,
+        y2
       });
     });
 
     setPaths(newPaths);
-  }, [connections, containerRef]);
+  }, [connections, innerRef]);
 
   useEffect(() => {
     recalculatePaths();
 
-    const container = containerRef.current;
-    if (!container) return;
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
 
     const handleScroll = () => {
       requestAnimationFrame(recalculatePaths);
     };
 
     window.addEventListener('resize', recalculatePaths);
-    container.addEventListener('scroll', handleScroll);
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('resize', recalculatePaths);
-      container.removeEventListener('scroll', handleScroll);
+      scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  }, [recalculatePaths, containerRef]);
+  }, [recalculatePaths, scrollContainerRef]);
 
   if (paths.length === 0) return null;
 
@@ -105,38 +130,49 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
         <marker
           id="malla-arrow-upstream"
           viewBox="0 0 10 10"
-          refX="8"
+          refX="7"
           refY="5"
           markerWidth="6"
           markerHeight="6"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--amber)" />
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--amber)" />
         </marker>
 
         {/* Arrow Marker Downstream (Emerald) */}
         <marker
           id="malla-arrow-downstream"
           viewBox="0 0 10 10"
-          refX="8"
+          refX="7"
           refY="5"
           markerWidth="6"
           markerHeight="6"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--emerald)" />
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--emerald)" />
         </marker>
       </defs>
 
       {paths.map(path => (
-        <path
-          key={path.id}
-          d={path.d}
-          className={`${styles.linkPath} ${
-            path.direction === 'UPSTREAM' ? styles.linkUpstream : styles.linkDownstream
-          }`}
-          markerEnd={`url(#malla-arrow-${path.direction.toLowerCase()})`}
-        />
+        <g key={path.id}>
+          {/* Main animated dashed path */}
+          <path
+            d={path.d}
+            className={`${styles.linkPath} ${
+              path.direction === 'UPSTREAM' ? styles.linkUpstream : styles.linkDownstream
+            }`}
+            markerEnd={`url(#malla-arrow-${path.direction.toLowerCase()})`}
+          />
+          {/* Origin anchor dot directly on the starting subject edge */}
+          <circle
+            cx={path.x1}
+            cy={path.y1}
+            r={3.5}
+            className={
+              path.direction === 'UPSTREAM' ? styles.originDotUpstream : styles.originDotDownstream
+            }
+          />
+        </g>
       ))}
     </svg>
   );
