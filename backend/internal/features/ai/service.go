@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"miestudio/backend/internal/features/materials"
-	"miestudio/backend/internal/features/notes"
 	"miestudio/backend/internal/storage"
 )
 
@@ -31,25 +30,22 @@ type Service interface {
 type service struct {
 	client        GeminiClient
 	materialsRepo materials.Repository
-	notesRepo     notes.Repository
 	storage       storage.StorageService
 }
 
 func NewService(
 	client GeminiClient,
 	materialsRepo materials.Repository,
-	notesRepo notes.Repository,
 	storage storage.StorageService,
 ) Service {
 	return &service{
 		client:        client,
 		materialsRepo: materialsRepo,
-		notesRepo:     notesRepo,
 		storage:       storage,
 	}
 }
 
-func (s *service) prepareContext(ctx context.Context, userID string, materialID, apunteID *string) ([]Part, error) {
+func (s *service) prepareContext(ctx context.Context, userID string, materialID *string) ([]Part, error) {
 	var parts []Part
 
 	hasMaterial := materialID != nil && *materialID != ""
@@ -90,7 +86,7 @@ func (s *service) prepareContext(ctx context.Context, userID string, materialID,
 }
 
 func (s *service) Chat(ctx context.Context, userID string, req ChatRequest) (*ChatResponse, error) {
-	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID, req.ApunteID)
+	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +121,7 @@ func (s *service) Chat(ctx context.Context, userID string, req ChatRequest) (*Ch
 }
 
 func (s *service) StreamChat(ctx context.Context, userID string, req ChatRequest, onChunk func(chunk string) error) error {
-	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID, req.ApunteID)
+	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return err
 	}
@@ -149,7 +145,7 @@ func (s *service) StreamChat(ctx context.Context, userID string, req ChatRequest
 }
 
 func (s *service) Resumir(ctx context.Context, userID string, req ResumenRequest) (*ResumenResponse, error) {
-	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID, req.ApunteID)
+	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +189,7 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 }
 
 func (s *service) GenerarFlashcards(ctx context.Context, userID string, req FlashcardsRequest) (*FlashcardsResponse, error) {
-	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID, req.ApunteID)
+	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +245,7 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 }
 
 func (s *service) GenerarQuiz(ctx context.Context, userID string, req QuizRequest) (*QuizResponse, error) {
-	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID, req.ApunteID)
+	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
 	}

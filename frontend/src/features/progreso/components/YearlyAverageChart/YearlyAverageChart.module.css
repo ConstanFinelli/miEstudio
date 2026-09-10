@@ -50,12 +50,6 @@
   gap: 6px;
 }
 
-.legendDotPromo {
-  width: 10px;
-  height: 2px;
-  background-color: var(--amber);
-}
-
 .legendDotCurve {
   width: 12px;
   height: 3px;

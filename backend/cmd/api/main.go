@@ -126,7 +126,7 @@ func main() {
 		log.Printf("🤖 Gemini AI configurado y listo (Modelo primario: %s con fallback automático).", cfg.GeminiModel)
 	}
 	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey, cfg.GeminiModel)
-	aiService := ai.NewService(geminiClient, materialsRepo, notesRepo, storageService)
+	aiService := ai.NewService(geminiClient, materialsRepo, storageService)
 	aiHandler := ai.NewHandler(aiService)
 	aiHandler.RegisterRoutes(api, authMiddleware)
 
