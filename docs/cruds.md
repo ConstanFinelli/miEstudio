@@ -106,9 +106,10 @@ CRUD para la gestión de archivos bibliográficos y recursos asociados a cada ma
 * `POST /api/materias/:materia_id/materiales` - Carga de archivo multipart (`multipart/form-data`) con metadatos asociados.
 * `GET /api/materias/:materia_id/materiales` - Lista de materiales de la materia, con filtro opcional por `categoria`.
 * `GET /api/materiales/:id` - Metadatos de un material específico.
-* `GET /api/materiales/:id/archivo` - Descarga o visualización directa del binario. Soporta headers de `Content-Disposition: inline` y `Accept-Ranges: bytes` para permitir navegación por páginas en el visor web sin transferir el archivo completo de golpe.
+* `GET /api/materiales/:id/archivo` - Streaming de archivo PDF optimizado para navegadores e iframes. Soporta headers de `Content-Disposition: inline` y `Accept-Ranges: bytes`, y acepta autenticación tanto por header `Authorization: Bearer` como por parámetro de consulta `?token=...`.
 * `PUT /api/materiales/:id` - Actualización de metadatos (título, categoría).
 * `DELETE /api/materiales/:id` - Elimina el registro en la base de datos y borra el archivo físico correspondiente del storage.
+* `DELETE /api/materias/:materia_id/materiales` - Depuración por materia: elimina todos los archivos físicos y registros de materiales de una materia (usado opcionalmente al aprobar/promocionar la materia).
 
 ---
 
@@ -130,10 +131,10 @@ Gestión de identidad, sesiones y datos personales del estudiante.
 
 ---
 
-## 7. Carreras Universitarias (Careers)
-Soporte multi-carrera para estudiantes cursando o graduados de múltiples planes de estudio.
+## 7. Carreras Universitarias y Aprobaciones Históricas (Careers & Approvals)
+Soporte multi-carrera para estudiantes cursando o graduados de múltiples planes de estudio, con tracking histórico de notas finales y modalidades de aprobación.
 
-**Modelo de Datos:**
+**Modelo de Datos (Carreras):**
 * `id` (UUID, PK)
 * `usuario_id` (UUID, FK -> Users)
 * `nombre` (String, ej: "Ingeniería en Informática")
@@ -144,10 +145,23 @@ Soporte multi-carrera para estudiantes cursando o graduados de múltiples planes
 * `is_activa` (Boolean) - Identifica qué carrera está activa en la sesión.
 * `created_at`, `updated_at`
 
+**Modelo de Datos (Aprobaciones):**
+* `id` (UUID, PK)
+* `carrera_id` (UUID, FK -> Carreras)
+* `materia_id` (UUID, FK -> Materias, Nullable)
+* `materia_nombre` (String)
+* `nota_final` (Float, ej: 8.5)
+* `modalidad` (Enum: PROMOCION, FINAL, EQUIVALENCIA, RESOLUCION)
+* `libro`, `folio` (String, opcionales para actas universitarias)
+* `fecha_aprobacion` (Date)
+* `anio_cursada` (Int)
+
 **Endpoints (Go):**
 * `GET /api/carreras` - Lista de carreras pertenecientes al usuario autenticado.
 * `POST /api/carreras` - Registra una nueva carrera para el estudiante.
 * `POST /api/carreras/:id/seleccionar` - Establece la carrera como activa para la sesión.
+* `GET /api/carreras/:id/aprobaciones` - Obtiene las acreditaciones históricas para el módulo de Progreso Académico y analíticas de promedio.
+* `POST /api/carreras/aprobaciones/crear` - Registra una aprobación formal de materia.
 
 ---
 
@@ -167,4 +181,18 @@ Organización semanal de cursado por materia.
 * `GET /api/horarios` - Trae la grilla semanal completa de horarios de la carrera activa.
 * `POST /api/materias/:id/horarios` - Añade una franja horaria de cursado a una materia.
 * `DELETE /api/horarios/:id` - Elimina una franja horaria.
+
+---
+
+## 9. Inteligencia Asistida & Copiloto de Estudio (Gemini AI)
+Módulo asistido por IA fundamentado en los materiales oficiales de cátedra (PDFs).
+
+**Endpoints (Go):**
+* `POST /api/ai/chat` - Consulta puntual al copiloto con contexto de un material PDF.
+* `GET /api/ai/chat/stream` - Chat conversacional en tiempo real con Server-Sent Events (SSE).
+* `POST /api/ai/resumir` - Generación de resúmenes estructurados en formato JSON (conceptos clave, fórmulas en LaTeX y tips de examen).
+* `POST /api/ai/flashcards` - Creación automática de barajas de estudio para Active Recall.
+* `POST /api/ai/quiz` - Cuestionarios interactivos de autoevaluación con alternativas y retroalimentación explicativa.
+* `POST /api/ai/explicar` - Explicación pedagógica de fragmentos de texto seleccionados (simplificar, ejemplificar, desglose paso a paso, conversión a LaTeX).
+
 

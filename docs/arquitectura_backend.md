@@ -19,7 +19,8 @@ internal/
     evaluations/      # Feature: Instancias de Evaluación (Parciales, TPs, Finales)
     schedules/        # Feature: Grilla semanal de horarios de cursada
     notes/            # Feature: Apuntes Markdown, carpetas y etiquetas
-    materials/        # Feature: Materiales y Archivos (subida multipart, streaming HTTP Range)
+    materials/        # Feature: Materiales y Archivos (subida multipart, streaming HTTP Range, depuración selectiva)
+    ai/               # Feature: Copiloto de IA con Gemini API (Chat SSE, Resumen, Flashcards, Quiz, Multi-tenant)
 ```
 
 ### Estrategia de Almacenamiento de Archivos (PDFs)

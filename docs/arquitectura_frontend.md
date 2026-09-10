@@ -9,7 +9,7 @@ src/
   components/           # Componentes UI compartidos y modales del sistema
     auth/               # ProtectedRoute
     layout/             # AppLayout (Sidebar, Topbar, Breadcrumbs, Selector de Carreras)
-    modals/             # Modales: MateriaModal, EvaluationModal, NoteModal, CarreraModal, EditUserModal, PdfViewerModal
+    modals/             # Modales: MateriaModal, EvaluationModal, NoteModal, CarreraModal, EditUserModal, PdfViewerModal, CleanApprovedPdfsModal
   context/              # AuthContext (sesión y carrera activa), ThemeContext (modo oscuro/claro)
   data/                 # Datos mockeados y seeds demostrativos
   features/             # <-- FEATURE-DRIVEN MODULES
@@ -18,9 +18,10 @@ src/
     materias/           # MateriasView, MateriaDetail, Reglas de acreditación, Materiales, Horarios
     horarios/           # HorariosView (grilla horaria semanal interactiva)
     calendario/         # CalendarioView (agenda de exámenes, parciales y eventos)
-    apuntes/            # ApuntesView, FoldersSidebar, NoteEditor, NoteReader, Split PDF Study
-  hooks/                # Custom hooks (useMaterias, useEvaluaciones, useApuntes, usePerfil, etc.)
-  services/             # Clientes HTTP hacia el backend Go (apiClient, materiasService, apuntesService, etc.)
+    apuntes/            # ApuntesView, FoldersSidebar, NoteEditor, NoteReader, Split PDF Study, AiCopilotPane (Chat, Resumen, Flashcards, Quiz)
+    progreso/           # ProgresoView (Progreso analítico, KPIs, evolución histórica de notas, modalidades de aprobación y timeline de hitos)
+  hooks/                # Custom hooks (useMaterias, useEvaluaciones, useApuntes, useMateriales, useProgresoAcademico, usePerfil, etc.)
+  services/             # Clientes HTTP hacia el backend Go (apiClient, materiasService, apuntesService, aiService, etc.)
   types/                # Definiciones TypeScript de dominio académico
 ```
 
