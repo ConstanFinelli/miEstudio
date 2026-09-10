@@ -224,7 +224,10 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
     return yrs.sort((a, b) => a - b);
   }, [materiasByYear]);
 
-  // Materia enfocada activa (hover o seleccionada)
+  // Materia seleccionada explícitamente con click (para abrir el Drawer lateral de diagnóstico)
+  const selectedMateriaData = selectedMateriaId ? nodesMap.get(selectedMateriaId) || null : null;
+
+  // Materia enfocada activa (hover o seleccionada, para conexiones SVG y spotlight)
   const focusedMateriaId = hoveredMateriaId || selectedMateriaId;
   const activeMateriaData = focusedMateriaId ? nodesMap.get(focusedMateriaId) || null : null;
 
@@ -344,6 +347,7 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
     hoveredMateriaId,
     setHoveredMateriaId,
     focusedMateriaId,
+    selectedMateriaData,
     activeMateriaData,
     activeConnections,
     nodesMap,

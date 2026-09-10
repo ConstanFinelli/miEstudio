@@ -24,7 +24,7 @@ export const MallaCurricularView: React.FC = () => {
     setSelectedMateriaId,
     hoveredMateriaId,
     setHoveredMateriaId,
-    activeMateriaData,
+    selectedMateriaData,
     activeConnections,
     materiasByYear,
     yearsList,
@@ -228,7 +228,7 @@ export const MallaCurricularView: React.FC = () => {
           statusFilter={statusFilter}
           searchQuery={searchQuery}
           isSimulationActive={isSimulationActive}
-          onSelectMateria={(id) => setSelectedMateriaId(id)}
+          onSelectMateria={(id) => setSelectedMateriaId(prev => prev === id ? null : id)}
           onHoverMateria={(id) => setHoveredMateriaId(id)}
           onToggleSimulate={toggleSimulateSubject}
         />
@@ -236,7 +236,7 @@ export const MallaCurricularView: React.FC = () => {
 
       {/* Side Drawer with subject diagnosis */}
       <MateriaDrawer
-        nodeData={activeMateriaData}
+        nodeData={selectedMateriaData}
         onClose={() => setSelectedMateriaId(null)}
         onSelectMateria={(id) => setSelectedMateriaId(id)}
         onOpenEditCorrelativas={(id) => setEditingMateriaId(id)}
