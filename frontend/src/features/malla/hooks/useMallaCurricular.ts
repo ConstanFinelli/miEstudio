@@ -13,7 +13,6 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
   const [simulatedApprovedIds, setSimulatedApprovedIds] = useState<Set<string>>(new Set());
   const [filterMode, setFilterMode] = useState<FilterMode>('TODAS');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('TODOS');
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Map de acceso rápido por ID
   const materiasMap = useMemo(() => {
@@ -227,8 +226,9 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
   // Materia seleccionada explícitamente con click (para abrir el Drawer lateral de diagnóstico)
   const selectedMateriaData = selectedMateriaId ? nodesMap.get(selectedMateriaId) || null : null;
 
-  // Materia enfocada activa (hover o seleccionada, para conexiones SVG y spotlight)
-  const focusedMateriaId = hoveredMateriaId || selectedMateriaId;
+  // Materia enfocada activa: Si hay una materia seleccionada, TIENE PRIORIDAD ABSOLUTA.
+  // El hover solo actúa cuando NO hay ninguna materia seleccionada.
+  const focusedMateriaId = selectedMateriaId ? selectedMateriaId : hoveredMateriaId;
   const activeMateriaData = focusedMateriaId ? nodesMap.get(focusedMateriaId) || null : null;
 
   // Conexiones de grafo activas para la materia enfocada
@@ -300,6 +300,7 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
   // Estadísticas globales y de simulación
   const stats = useMemo(() => {
     let aprobadasCount = 0;
+    let promocionadasCount = 0;
     let cursandoCount = 0;
     let regularesCount = 0;
     let habilitadasCount = 0;
@@ -308,8 +309,11 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
     nodesMap.forEach(node => {
       switch (node.computedStatus) {
         case 'APROBADA':
+          aprobadasCount++;
+          break;
         case 'PROMOCIONADA':
           aprobadasCount++;
+          promocionadasCount++;
           break;
         case 'CURSANDO':
           cursandoCount++;
@@ -332,6 +336,7 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
     return {
       totalMaterias: total,
       aprobadasCount,
+      promocionadasCount,
       cursandoCount,
       regularesCount,
       habilitadasCount,
@@ -341,11 +346,22 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
     };
   }, [nodesMap, materias.length, simulatedApprovedIds.size]);
 
+  // Manejar hover evitando desincronizar cuando hay una materia seleccionada
+  const handleSetHoveredMateriaId = useCallback((id: string | null) => {
+    if (selectedMateriaId) return;
+    setHoveredMateriaId(id);
+  }, [selectedMateriaId]);
+
+  const handleSetSelectedMateriaId = useCallback((action: string | null | ((prev: string | null) => string | null)) => {
+    setHoveredMateriaId(null);
+    setSelectedMateriaId(action);
+  }, []);
+
   return {
     selectedMateriaId,
-    setSelectedMateriaId,
+    setSelectedMateriaId: handleSetSelectedMateriaId,
     hoveredMateriaId,
-    setHoveredMateriaId,
+    setHoveredMateriaId: handleSetHoveredMateriaId,
     focusedMateriaId,
     selectedMateriaData,
     activeMateriaData,
@@ -362,8 +378,6 @@ export const useMallaCurricular = ({ materias }: UseMallaCurricularProps) => {
     setFilterMode,
     statusFilter,
     setStatusFilter,
-    searchQuery,
-    setSearchQuery,
     stats
   };
 };

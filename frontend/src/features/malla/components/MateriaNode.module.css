@@ -56,12 +56,27 @@
   gap: 6px;
 }
 
+.codigoGroup {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.badgesGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .codigo {
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .cuatriBadge {
@@ -73,6 +88,69 @@
   background: var(--surface-2);
   color: var(--text-muted);
   border: 1px solid var(--border-subtle);
+}
+
+.notaBadge {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--emerald);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.simBadge {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  color: #ffffff;
+  letter-spacing: 0.03em;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconAprobada {
+  color: var(--emerald);
+  flex-shrink: 0;
+}
+
+.iconPromocionada {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+.iconCursando {
+  color: var(--primary-glow);
+  flex-shrink: 0;
+}
+
+.iconRegular {
+  color: #c084fc;
+  flex-shrink: 0;
+}
+
+.dotHabilitada {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 6px rgba(34, 211, 238, 0.6);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.iconBloqueada {
+  color: var(--text-dim);
+  flex-shrink: 0;
 }
 
 .nombre {
@@ -91,68 +169,87 @@
 .nodeFooter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border-subtle);
+  justify-content: flex-end;
+  min-height: 18px;
 }
 
-/* Status Badges */
-.statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-pill);
-}
-
+/* ==========================================================================
+   Status Backgrounds & Borders
+   ========================================================================== */
 .statusAprobada {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--emerald);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.16) 0%, rgba(6, 78, 59, 0.18) 100%);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.statusAprobada:hover {
+  border-color: var(--emerald);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
 }
 
 .statusPromocionada {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.24) 0%, rgba(6, 182, 212, 0.16) 100%);
+  border-color: rgba(52, 211, 153, 0.55);
+}
+
+.statusPromocionada:hover {
+  border-color: #34d399;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
 }
 
 .statusCursando {
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--primary-glow);
-  border: 1px solid var(--primary-border);
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.18) 0%, rgba(30, 58, 138, 0.25) 100%);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.statusCursando:hover {
+  border-color: var(--primary-glow);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.28);
 }
 
 .statusRegular {
-  background: rgba(139, 92, 246, 0.15);
-  color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.16) 0%, rgba(88, 28, 135, 0.22) 100%);
+  border-color: rgba(168, 85, 247, 0.45);
+}
+
+.statusRegular:hover {
+  border-color: #c084fc;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.25);
 }
 
 .statusHabilitada {
-  background: rgba(6, 182, 212, 0.12);
-  color: #22d3ee;
-  border: 1px dashed rgba(6, 182, 212, 0.45);
+  background: linear-gradient(145deg, rgba(6, 182, 212, 0.12) 0%, rgba(14, 116, 144, 0.15) 100%);
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+.statusHabilitada:hover {
+  border-color: #22d3ee;
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.22);
 }
 
 .statusBloqueada {
-  background: rgba(100, 116, 139, 0.12);
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
+  background: rgba(15, 23, 42, 0.55);
+  border-color: rgba(51, 65, 85, 0.45);
+  opacity: 0.72;
 }
 
-.simulatedBadge {
-  font-size: 9px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  color: #ffffff;
-  padding: 1px 5px;
-  border-radius: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+.statusBloqueada .nombre {
+  color: var(--text-secondary);
+}
+
+.statusBloqueada:hover {
+  opacity: 0.95;
+  border-color: rgba(100, 116, 139, 0.65);
+}
+
+[data-theme="light"] .statusBloqueada {
+  background: rgba(241, 245, 249, 0.65);
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+/* Simulated State Glow */
+.nodeSimulated {
+  outline: 2px dashed var(--emerald);
+  outline-offset: 1px;
 }
 
 /* Simulation Action Button */
@@ -160,11 +257,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 3px;
   background: var(--surface-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xs);
   color: var(--text-dim);
-  padding: 2px 5px;
+  padding: 2px 6px;
   font-size: 9.5px;
   font-weight: 600;
   cursor: pointer;

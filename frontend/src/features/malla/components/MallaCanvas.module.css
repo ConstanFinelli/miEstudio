@@ -1,20 +1,29 @@
+.canvasContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
 .canvasScrollWrapper {
   flex: 1;
   position: relative;
   overflow: auto;
-  padding: 24px;
+  padding: 20px 24px;
   background-color: var(--surface-0);
   background-image: 
     radial-gradient(circle at 1px 1px, var(--border-subtle) 1px, transparent 0);
   background-size: 28px 28px;
   display: flex;
   min-height: 0;
+  scroll-behavior: smooth;
 }
 
 .canvasInner {
   position: relative;
   display: flex;
-  gap: 28px;
   align-items: flex-start;
   min-width: max-content;
   padding-bottom: 32px;
@@ -26,6 +35,25 @@
   gap: 14px;
   width: 215px;
   flex-shrink: 0;
+  margin-right: 28px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left center;
+}
+
+.yearColumn:last-child {
+  margin-right: 0;
+}
+
+/* Collapsed column when unrelated to focused subject */
+.yearColumnCollapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  transform: scaleX(0);
 }
 
 .yearHeader {
@@ -36,6 +64,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .yearHeaderTop {
@@ -79,6 +108,16 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.periodGroupCollapsed {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 .periodDivider {
@@ -106,5 +145,24 @@
 .nodesList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+}
+
+.nodeWrapper {
+  margin-bottom: 12px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top center;
+}
+
+.nodeWrapper:last-child {
+  margin-bottom: 0;
+}
+
+.nodeWrapperCollapsed {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.9);
 }

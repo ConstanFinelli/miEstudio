@@ -1,15 +1,14 @@
-import React from 'react';
-import styles from './MateriaNode.module.css';
-import type { MateriaNodeData } from '../types';
+import React from "react";
+import styles from "./MateriaNode.module.css";
+import type { MateriaNodeData } from "../types";
 import {
   CheckCircle2,
   Lock,
   Sparkles,
   Award,
   BookOpen,
-  HelpCircle,
-  FlaskConical
-} from 'lucide-react';
+  FlaskConical,
+} from "lucide-react";
 
 interface MateriaNodeProps {
   nodeData: MateriaNodeData;
@@ -34,75 +33,82 @@ export const MateriaNode: React.FC<MateriaNodeProps> = ({
   isSimulationActive,
   onSelect,
   onHover,
-  onToggleSimulate
+  onToggleSimulate,
 }) => {
   const { materia, computedStatus, isSimulated } = nodeData;
 
-  const getStatusIcon = () => {
+  const statusClass = (() => {
     switch (computedStatus) {
-      case 'APROBADA':
-        return <CheckCircle2 size={11} />;
-      case 'PROMOCIONADA':
-        return <Award size={11} />;
-      case 'CURSANDO':
-        return <BookOpen size={11} />;
-      case 'REGULAR':
-        return <CheckCircle2 size={11} />;
-      case 'HABILITADA':
-        return <Sparkles size={11} />;
-      case 'BLOQUEADA':
-        return <Lock size={11} />;
-      default:
-        return <HelpCircle size={11} />;
-    }
-  };
-
-  const getStatusLabel = () => {
-    if (isSimulated) return 'Simulada';
-    switch (computedStatus) {
-      case 'APROBADA':
-        return materia.promedio > 0 ? `Nota: ${materia.promedio}` : 'Aprobada';
-      case 'PROMOCIONADA':
-        return materia.promedio > 0 ? `Prom: ${materia.promedio}` : 'Promoción';
-      case 'CURSANDO':
-        return 'Cursando';
-      case 'REGULAR':
-        return 'Regular';
-      case 'HABILITADA':
-        return 'Habilitada';
-      case 'BLOQUEADA':
-        return `Faltan ${nodeData.correlativasCursarFaltantes.length}`;
-      default:
-        return computedStatus;
-    }
-  };
-
-  const getStatusClass = () => {
-    switch (computedStatus) {
-      case 'APROBADA':
+      case "APROBADA":
         return styles.statusAprobada;
-      case 'PROMOCIONADA':
+      case "PROMOCIONADA":
         return styles.statusPromocionada;
-      case 'CURSANDO':
+      case "CURSANDO":
         return styles.statusCursando;
-      case 'REGULAR':
+      case "REGULAR":
         return styles.statusRegular;
-      case 'HABILITADA':
+      case "HABILITADA":
         return styles.statusHabilitada;
-      case 'BLOQUEADA':
+      case "BLOQUEADA":
         return styles.statusBloqueada;
       default:
-        return '';
+        return "";
     }
-  };
+  })();
 
   const cardClasses = [
     styles.nodeCard,
-    isSelected ? styles.nodeSelected : '',
-    isUpstream ? styles.nodeUpstream : '',
-    isDownstream ? styles.nodeDownstream : '',
-    isDimmed ? styles.nodeDimmed : ''
-  ].filter(Boolean).join(' ');
+    statusClass,
+    isSelected ? styles.nodeSelected : "",
+    isUpstream ? styles.nodeUpstream : "",
+    isDownstream ? styles.nodeDownstream : "",
+    isDimmed ? styles.nodeDimmed : "",
+    isSimulated ? styles.nodeSimulated : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const renderStatusIcon = () => {
+    switch (computedStatus) {
+      case "APROBADA":
+        return (
+          <span title="Aprobada" className={styles.iconWrap}>
+            <CheckCircle2 size={12} className={styles.iconAprobada} />
+          </span>
+        );
+      case "PROMOCIONADA":
+        return (
+          <span title="Promocionada" className={styles.iconWrap}>
+            <Award size={12} className={styles.iconPromocionada} />
+          </span>
+        );
+      case "CURSANDO":
+        return (
+          <span title="Cursando" className={styles.iconWrap}>
+            <BookOpen size={12} className={styles.iconCursando} />
+          </span>
+        );
+      case "REGULAR":
+        return (
+          <span title="Regularizada (Pendiente de Final)" className={styles.iconWrap}>
+            <Sparkles size={12} className={styles.iconRegular} />
+          </span>
+        );
+      case "HABILITADA":
+        return (
+          <span
+            className={styles.dotHabilitada}
+            title="Habilitada para cursar"
+          />
+        );
+      case "BLOQUEADA":
+        return (
+          <span title="Bloqueada por correlativas" className={styles.iconWrap}>
+            <Lock size={11} className={styles.iconBloqueada} />
+          </span>
+        );
+    }
+  };
 
   return (
     <div
@@ -111,40 +117,62 @@ export const MateriaNode: React.FC<MateriaNodeProps> = ({
       onClick={() => onSelect(materia.id)}
       onMouseEnter={() => onHover(materia.id)}
       onMouseLeave={() => onHover(null)}
-      title={`${materia.nombre} (${materia.codigo}) - ${computedStatus}`}
+      title={`${materia.nombre} (${materia.codigo}) - Estado: ${computedStatus}${isSimulated ? " (Simulada)" : ""}`}
     >
       <div className={styles.nodeHeader}>
-        <span className={styles.codigo}>{materia.codigo}</span>
-        <span className={styles.cuatriBadge}>{materia.cuatrimestre}</span>
+        <div className={styles.codigoGroup}>
+          {renderStatusIcon()}
+          <span className={styles.codigo}>{materia.codigo}</span>
+        </div>
+        <div className={styles.badgesGroup}>
+          {isSimulated && (
+            <span className={styles.simBadge} title="Simulada como aprobada">
+              SIM
+            </span>
+          )}
+          {materia.promedio > 0 &&
+            (computedStatus === "APROBADA" ||
+              computedStatus === "PROMOCIONADA") && (
+              <span
+                className={styles.notaBadge}
+                title={`Calificación: ${materia.promedio}`}
+              >
+                {materia.promedio}
+              </span>
+            )}
+          <span className={styles.cuatriBadge}>{materia.cuatrimestre}</span>
+        </div>
       </div>
 
       <div className={styles.nombre}>{materia.nombre}</div>
 
       <div className={styles.nodeFooter}>
-        <div className={`${styles.statusBadge} ${getStatusClass()}`}>
-          {getStatusIcon()}
-          <span>{getStatusLabel()}</span>
-        </div>
-
         {/* Simulation trigger */}
         {isSimulationActive ? (
           <button
             type="button"
-            className={`${styles.simButton} ${isSimulated ? styles.simButtonActive : ''}`}
+            className={`${styles.simButton} ${isSimulated ? styles.simButtonActive : ""}`}
             onClick={(e) => {
               e.stopPropagation();
               onToggleSimulate(materia.id);
             }}
-            title={isSimulated ? 'Quitar simulación de aprobación' : 'Simular como aprobada'}
+            title={
+              isSimulated
+                ? "Quitar simulación de aprobación"
+                : "Simular como aprobada"
+            }
           >
             <FlaskConical size={10} />
-            <span>{isSimulated ? 'Aprobada' : 'Simular'}</span>
+            <span>{isSimulated ? "Aprobada" : "Simular"}</span>
           </button>
         ) : (
-          (nodeData.correlativasCursarFaltantes.length > 0 || nodeData.correlativasCursarCumplidas.length > 0) && (
+          (nodeData.correlativasCursarFaltantes.length > 0 ||
+            nodeData.correlativasCursarCumplidas.length > 0) && (
             <span className={styles.reqPill} title="Correlativas requeridas">
               {nodeData.correlativasCursarCumplidas.length}/
-              {nodeData.correlativasCursarCumplidas.length + nodeData.correlativasCursarFaltantes.length} req
+              {nodeData.correlativasCursarCumplidas.length +
+                nodeData.correlativasCursarFaltantes.length}{" "}
+              req
             </span>
           )
         )}

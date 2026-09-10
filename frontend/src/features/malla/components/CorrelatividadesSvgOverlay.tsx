@@ -35,11 +35,32 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
     const innerRect = innerRef.current.getBoundingClientRect();
     const newPaths: PathGeometry[] = [];
 
+    // Helper to verify that an element is visible, not collapsed, and rendered with real dimensions
+    const isElementVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      if (el.offsetParent === null && window.getComputedStyle(el).position !== 'fixed') {
+        return false;
+      }
+      const r = el.getBoundingClientRect();
+      if (r.width < 10 || r.height < 10) return false;
+
+      // Check if inside any collapsed container or wrapper
+      const collapsedParent = el.closest('[class*="Collapsed"]');
+      if (collapsedParent) return false;
+
+      const st = window.getComputedStyle(el);
+      if (st.display === 'none' || st.visibility === 'hidden' || parseFloat(st.opacity) < 0.1) {
+        return false;
+      }
+      return true;
+    };
+
     connections.forEach(conn => {
       const sourceEl = document.getElementById(`materia-node-${conn.sourceId}`);
       const targetEl = document.getElementById(`materia-node-${conn.targetId}`);
 
       if (!sourceEl || !targetEl) return;
+      if (!isElementVisible(sourceEl) || !isElementVisible(targetEl)) return;
 
       const sRect = sourceEl.getBoundingClientRect();
       const tRect = targetEl.getBoundingClientRect();
@@ -105,21 +126,56 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
   useEffect(() => {
     recalculatePaths();
 
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+    // Run animation frame loop during transition (500ms) to smoothly update curves as cards slide
+    let animId: number;
+    const start = performance.now();
+    const duration = 500;
 
+    const animateTransition = (now: number) => {
+      recalculatePaths();
+      if (now - start < duration) {
+        animId = requestAnimationFrame(animateTransition);
+      }
+    };
+
+    animId = requestAnimationFrame(animateTransition);
+
+    // Call recalculatePaths after transition definitely finishes to settle perfectly
+    const t1 = setTimeout(recalculatePaths, 150);
+    const t2 = setTimeout(recalculatePaths, 360);
+    const t3 = setTimeout(recalculatePaths, 550);
+
+    // ResizeObserver to detect layout and dimension changes on innerRef
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && innerRef.current) {
+      ro = new ResizeObserver(() => {
+        recalculatePaths();
+      });
+      ro.observe(innerRef.current);
+    }
+
+    const scrollContainer = scrollContainerRef.current;
     const handleScroll = () => {
       requestAnimationFrame(recalculatePaths);
     };
 
     window.addEventListener('resize', recalculatePaths);
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     return () => {
+      cancelAnimationFrame(animId);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      if (ro) ro.disconnect();
       window.removeEventListener('resize', recalculatePaths);
-      scrollContainer.removeEventListener('scroll', handleScroll);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
     };
-  }, [recalculatePaths, scrollContainerRef]);
+  }, [recalculatePaths, scrollContainerRef, connections, innerRef]);
 
   if (paths.length === 0) return null;
 

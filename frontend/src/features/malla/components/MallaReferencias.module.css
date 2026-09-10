@@ -1,0 +1,301 @@
+.referenciasContainer {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.leftGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.legendTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-right: 2px;
+}
+
+.chipsList {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.statusChip:hover {
+  transform: translateY(-1px);
+  color: var(--text-primary);
+}
+
+.statusChipActive {
+  box-shadow: 0 0 0 1px var(--surface-1), 0 0 0 2px var(--border-focus);
+}
+
+/* Specific Chip Colors */
+.chipAprobada {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: var(--emerald);
+}
+
+.chipAprobada:hover,
+.chipAprobada.statusChipActive {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: var(--emerald);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+.chipPromocionada {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16) 0%, rgba(6, 182, 212, 0.12) 100%);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #34d399;
+}
+
+.chipPromocionada:hover,
+.chipPromocionada.statusChipActive {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.26) 0%, rgba(6, 182, 212, 0.2) 100%);
+  border-color: #34d399;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.25);
+}
+
+.chipCursando {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: var(--primary-glow);
+}
+
+.chipCursando:hover,
+.chipCursando.statusChipActive {
+  background: rgba(59, 130, 246, 0.24);
+  border-color: var(--primary-glow);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+}
+
+.chipRegular {
+  background: rgba(168, 85, 247, 0.14);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+}
+
+.chipRegular:hover,
+.chipRegular.statusChipActive {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: #c084fc;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+}
+
+.chipHabilitada {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.35);
+  color: #22d3ee;
+}
+
+.chipHabilitada:hover,
+.chipHabilitada.statusChipActive {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: #22d3ee;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+}
+
+.chipBloqueada {
+  background: rgba(100, 116, 139, 0.12);
+  border-color: rgba(100, 116, 139, 0.25);
+  color: var(--text-muted);
+}
+
+.chipBloqueada:hover,
+.chipBloqueada.statusChipActive {
+  background: rgba(100, 116, 139, 0.2);
+  border-color: var(--text-secondary);
+}
+
+.chipDot {
+  width: 6.5px;
+  height: 6.5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+
+.chipCount {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
+/* Right Connections & Info */
+.rightGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.connectionsLegend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.connectionItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.lineSampleAmber {
+  width: 18px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--amber) 0,
+    var(--amber) 4px,
+    transparent 4px,
+    transparent 7px
+  );
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.5);
+  display: inline-block;
+}
+
+.lineSampleEmerald {
+  width: 18px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--emerald) 0,
+    var(--emerald) 4px,
+    transparent 4px,
+    transparent 7px
+  );
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+  display: inline-block;
+}
+
+.infoToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.infoToggleBtn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.infoToggleBtnActive {
+  background: var(--surface-active);
+  border-color: var(--primary-border);
+  color: var(--primary-glow);
+}
+
+/* ==========================================================================
+   Detailed Guide Drawer / Accordion
+   ========================================================================== */
+.guidePanel {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guideSectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.guideList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guideItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.guideItemTitle {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.guideItemDesc {
+  color: var(--text-muted);
+}
