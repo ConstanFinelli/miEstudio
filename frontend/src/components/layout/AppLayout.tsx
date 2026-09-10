@@ -80,7 +80,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const getBreadcrumbTitle = () => {
     const path = location.pathname;
     if (path.startsWith("/dashboard")) return "Dashboard";
-    if (path.startsWith("/malla")) return "Malla Curricular";
+    if (path.startsWith("/plan-de-estudio")) return "Plan de Estudio";
     if (path.startsWith("/progreso")) return "Progreso & Estadísticas";
     if (path.startsWith("/materias")) return "Materias";
     if (path.startsWith("/horarios")) return "Horarios";
@@ -242,14 +242,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               {!isSidebarCollapsed && <span>Materias</span>}
             </NavLink>
             <NavLink
-              to="/malla"
-              title={isSidebarCollapsed ? "Malla Curricular" : undefined}
+              to="/plan-de-estudio"
+              title={isSidebarCollapsed ? "Plan de Estudio" : undefined}
               className={({ isActive }) =>
                 `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
               }
             >
               <Network className={styles.navIcon} />
-              {!isSidebarCollapsed && <span>Malla Curricular</span>}
+              {!isSidebarCollapsed && <span>Plan de Estudio</span>}
             </NavLink>
             <NavLink
               to="/progreso"
@@ -349,7 +349,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               {!isSidebarCollapsed && (
                 <div className={styles.userDetails}>
                   <span className={styles.userName}>{displayNombre}</span>
-                  <span className={styles.userSub}>Legajo: {displayLegajo}</span>
+                  <span className={styles.userSub}>
+                    Legajo: {displayLegajo}
+                  </span>
                 </div>
               )}
             </div>

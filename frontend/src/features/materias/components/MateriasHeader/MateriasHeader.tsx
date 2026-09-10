@@ -31,7 +31,8 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
         </div>
 
         <p className={styles.pageDesc}>
-          Seguimiento de instancias de examen, ponderación y proyección de regularidad y acreditación.
+          Seguimiento de instancias de examen, ponderación y proyección de
+          regularidad y acreditación.
         </p>
       </div>
 
@@ -39,11 +40,11 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
         <button
           type="button"
           className={styles.btnSecondary}
-          onClick={() => navigate("/malla")}
+          onClick={() => navigate("/plan-de-estudio")}
           title="Ver mapa interactivo de correlatividades y proyección"
         >
           <Network size={14} />
-          <span>Malla Curricular</span>
+          <span>Plan de Estudio</span>
         </button>
 
         {onRegisterMateria && (

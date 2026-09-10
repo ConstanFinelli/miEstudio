@@ -1,28 +1,39 @@
-import React, { useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { AppLayout } from './components/layout/AppLayout';
-import { DashboardView } from './features/dashboard/DashboardView';
-import { MateriasView } from './features/materias/MateriasView';
-import { CalendarioView } from './features/calendario/CalendarioView';
-import { HorariosView } from './features/horarios';
-import { ApuntesView } from './features/apuntes/ApuntesView';
-import { ProgresoView } from './features/progreso';
-import { MallaCurricularView } from './features/malla';
-import { LoginView, RegisterView } from './features/auth';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import React, { useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { AppLayout } from "./components/layout/AppLayout";
+import { DashboardView } from "./features/dashboard/DashboardView";
+import { MateriasView } from "./features/materias/MateriasView";
+import { CalendarioView } from "./features/calendario/CalendarioView";
+import { HorariosView } from "./features/horarios";
+import { ApuntesView } from "./features/apuntes/ApuntesView";
+import { ProgresoView } from "./features/progreso";
+import { MallaCurricularView } from "./features/malla";
+import { LoginView, RegisterView } from "./features/auth";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
-import { EvaluationModal, NoteModal, PdfViewerModal, MateriaModal } from './components/modals';
-import { Toast } from './features/components';
-import type { EstadoMateria, InstanciaEvaluacion } from './types/academic';
+import {
+  EvaluationModal,
+  NoteModal,
+  PdfViewerModal,
+  MateriaModal,
+} from "./components/modals";
+import { Toast } from "./features/components";
+import type { EstadoMateria, InstanciaEvaluacion } from "./types/academic";
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
-  const [evaluationToEdit, setEvaluationToEdit] = useState<InstanciaEvaluacion | null>(null);
+  const [evaluationToEdit, setEvaluationToEdit] =
+    useState<InstanciaEvaluacion | null>(null);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isMateriaModalOpen, setIsMateriaModalOpen] = useState(false);
-  const [materiaInitialEstado, setMateriaInitialEstado] = useState<EstadoMateria | undefined>(undefined);
-  const [activePdf, setActivePdf] = useState<{ title: string; url: string } | null>(null);
+  const [materiaInitialEstado, setMateriaInitialEstado] = useState<
+    EstadoMateria | undefined
+  >(undefined);
+  const [activePdf, setActivePdf] = useState<{
+    title: string;
+    url: string;
+  } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -57,11 +68,11 @@ export const App: React.FC = () => {
 
               {/* Main Routed Views */}
               <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route
-                  path="/dashboard"
-                  element={<DashboardView />}
+                  path="/"
+                  element={<Navigate to="/dashboard" replace />}
                 />
+                <Route path="/dashboard" element={<DashboardView />} />
                 <Route
                   path="/materias"
                   element={
@@ -83,7 +94,10 @@ export const App: React.FC = () => {
                     />
                   }
                 />
-                <Route path="/malla" element={<MallaCurricularView />} />
+                <Route
+                  path="/plan-de-estudio"
+                  element={<MallaCurricularView />}
+                />
                 <Route path="/progreso" element={<ProgresoView />} />
                 <Route path="/horarios" element={<HorariosView />} />
                 <Route
@@ -105,7 +119,10 @@ export const App: React.FC = () => {
                     />
                   }
                 />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route
+                  path="*"
+                  element={<Navigate to="/dashboard" replace />}
+                />
               </Routes>
 
               {/* Materia Modal (Registro de Cursada & Materias Aprobadas) */}
@@ -117,8 +134,10 @@ export const App: React.FC = () => {
                 }}
                 initialEstado={materiaInitialEstado}
                 onSuccess={(created) => {
-                  showToast(`✓ Materia "${created.nombre}" registrada con éxito`);
-                  navigate('/materias');
+                  showToast(
+                    `✓ Materia "${created.nombre}" registrada con éxito`,
+                  );
+                  navigate("/materias");
                 }}
               />
 
@@ -134,8 +153,8 @@ export const App: React.FC = () => {
                   const isEdit = !!evaluationToEdit;
                   showToast(
                     isEdit
-                      ? `✓ Evaluación "${saved?.titulo || 'Instancia'}" actualizada con éxito`
-                      : `✓ Evaluación "${saved?.titulo || 'Nueva instancia'}" registrada con éxito`
+                      ? `✓ Evaluación "${saved?.titulo || "Instancia"}" actualizada con éxito`
+                      : `✓ Evaluación "${saved?.titulo || "Nueva instancia"}" registrada con éxito`,
                   );
                 }}
               />
@@ -146,7 +165,7 @@ export const App: React.FC = () => {
                 onClose={() => setIsNoteModalOpen(false)}
                 onSuccess={(title) => {
                   showToast(`✓ Apunte "${title.slice(0, 25)}..." creado`);
-                  navigate('/apuntes');
+                  navigate("/apuntes");
                 }}
               />
 
@@ -154,11 +173,11 @@ export const App: React.FC = () => {
               <PdfViewerModal
                 isOpen={!!activePdf}
                 onClose={() => setActivePdf(null)}
-                pdfTitle={activePdf?.title || ''}
+                pdfTitle={activePdf?.title || ""}
                 pdfUrl={activePdf?.url}
                 onOpenSplitNote={() => {
                   setActivePdf(null);
-                  navigate('/apuntes');
+                  navigate("/apuntes");
                 }}
               />
             </AppLayout>
