@@ -18,7 +18,7 @@ type Evaluacion struct {
 	Fecha         time.Time         `gorm:"not null" json:"fecha"`
 	Horario       string            `gorm:"type:varchar(20);default:'09:00'" json:"horario"`
 	Nota          *float64          `json:"nota"`
-	Peso          int               `gorm:"default:25" json:"peso"`
+	Peso          int               `gorm:"default:100" json:"peso"`
 	EsAprobatorio bool              `gorm:"default:true" json:"es_aprobatorio"`
 	Aula          string            `gorm:"type:varchar(100)" json:"aula"`
 	Modalidad     string            `gorm:"type:varchar(50);default:'Presencial'" json:"modalidad"`

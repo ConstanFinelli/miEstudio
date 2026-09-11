@@ -32,7 +32,7 @@ export const evaluacionMapper = {
       tipo: dto.tipo,
       fecha: dto.fecha,
       horario: dto.horario || '09:00',
-      peso: dto.peso ?? 25,
+      peso: dto.peso ?? 100,
       nota: dto.nota,
       estado: dto.nota !== null && dto.nota !== undefined ? 'CALIFICADO' : 'PENDIENTE',
       aula: dto.aula || 'A confirmar',

@@ -38,8 +38,8 @@ func (s *service) CreateCarrera(usuarioID string, dto CreateCarreraDTO) (*Carrer
 		duracion = 5
 	}
 	totalMaterias := dto.TotalMateriasPlan
-	if totalMaterias <= 0 {
-		totalMaterias = 40
+	if totalMaterias < 0 {
+		totalMaterias = 0
 	}
 	semestre := dto.SemestreActual
 	if semestre == "" {

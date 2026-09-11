@@ -57,4 +57,5 @@ export interface RegisterData {
   carrera_nombre?: string;
   facultad_sede?: string;
   legajo?: string;
+  duracion_anios?: number;
 }

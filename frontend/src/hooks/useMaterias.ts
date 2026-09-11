@@ -50,6 +50,15 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
     return () => window.removeEventListener('materias:updated', handleUpdate);
   }, [fetchMaterias]);
 
+  // Reactive listener for updates triggered when evaluations change (updates promedio of materias)
+  useEffect(() => {
+    const handleEvaluacionesUpdate = () => {
+      fetchMaterias();
+    };
+    window.addEventListener('evaluaciones:updated', handleEvaluacionesUpdate);
+    return () => window.removeEventListener('evaluaciones:updated', handleEvaluacionesUpdate);
+  }, [fetchMaterias]);
+
   const createMateria = async (newMateria: Partial<Materia>) => {
     const created = await materiasService.createMateria(newMateria);
     setMaterias(prev => [...prev, created]);

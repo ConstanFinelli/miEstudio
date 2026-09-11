@@ -11,6 +11,7 @@ import {
   useMaterias,
   useHorarios,
 } from "../../../../hooks";
+import { useAuth } from "../../../../context/AuthContext";
 
 interface DashboardKpisProps {
   onGoToMaterias: () => void;
@@ -22,6 +23,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   onGoToMaterias,
   onGoToHorarios,
 }) => {
+  const { activeCarrera } = useAuth();
   const { perfil } = usePerfil();
   const { materias } = useMaterias();
   const { horarios } = useHorarios();
@@ -65,11 +67,20 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
     (m) => m.estado === "APROBADA" || m.estado === "PROMOCIONADA",
   );
   const totalApproved =
-    perfil.materiasAprobadas > 0
+    perfil?.materiasAprobadas && perfil.materiasAprobadas > 0
       ? perfil.materiasAprobadas
       : approvedSubjects.length;
+
+  // Si no hay materias cargadas en la carrera, el total debe ser 0 para no mostrar números falsos/hardcodeados
   const totalPlan =
-    perfil.materiasTotales > 0 ? perfil.materiasTotales : materias.length;
+    materias.length === 0
+      ? 0
+      : (activeCarrera?.total_materias_plan && activeCarrera.total_materias_plan > 0
+          ? Math.max(activeCarrera.total_materias_plan, materias.length)
+          : (perfil?.materiasTotales && perfil.materiasTotales > 0
+              ? Math.max(perfil.materiasTotales, materias.length)
+              : materias.length));
+
   const progressPercent =
     totalPlan > 0
       ? Math.min(100, Math.round((totalApproved / totalPlan) * 100))
@@ -147,7 +158,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
             <span className={styles.kpiSub}>
               {totalPlan > 0
                 ? `${totalApproved} de ${totalPlan} materias aprobadas`
-                : "Plan de carrera"}
+                : "Sin materias cargadas"}
             </span>
           </div>
           <div className={styles.kpiIconBox}>
@@ -160,7 +171,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
             <span className={styles.kpiSubValue}>
               {totalPlan > 0
                 ? `${Math.max(0, totalPlan - totalApproved)} pendientes`
-                : "Por iniciar"}
+                : "Plan por iniciar"}
             </span>
           </div>
           <div className={styles.progressBarBg}>
@@ -180,12 +191,12 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
             </>
           ) : (
             <>
-              <span>Sin materias aprobadas aún</span>
+              <span>Sin materias cargadas aún</span>
               <span
                 style={{ cursor: "pointer", color: "var(--primary-glow)" }}
                 onClick={onGoToMaterias}
               >
-                Ver materias →
+                Cargar materias →
               </span>
             </>
           )}

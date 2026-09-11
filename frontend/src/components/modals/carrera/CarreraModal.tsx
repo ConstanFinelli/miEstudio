@@ -24,7 +24,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
   const [semestreActual, setSemestreActual] = useState('1º Semestre');
   const [cicloActivo, setCicloActivo] = useState('1C 2026');
   const [duracionAnios, setDuracionAnios] = useState<number>(5);
-  const [totalMateriasPlan, setTotalMateriasPlan] = useState<number>(36);
+  const [totalMateriasPlan, setTotalMateriasPlan] = useState<number | ''>('');
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
         semestre_actual: semestreActual.trim(),
         ciclo_activo: cicloActivo.trim(),
         duracion_anios: Number(duracionAnios) || 5,
-        total_materias_plan: Number(totalMateriasPlan) || 36
+        total_materias_plan: Number(totalMateriasPlan) || 0
       });
 
       await reloadCarreras();
@@ -183,11 +183,12 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
                   <input
                     id="carrera-total-materias"
                     type="number"
-                    min="1"
+                    min="0"
                     max="100"
                     className={styles.input}
+                    placeholder="Opcional (ej: 38)"
                     value={totalMateriasPlan}
-                    onChange={(e) => setTotalMateriasPlan(Number(e.target.value))}
+                    onChange={(e) => setTotalMateriasPlan(e.target.value === '' ? '' : Number(e.target.value))}
                     disabled={isLoading}
                   />
                 </div>

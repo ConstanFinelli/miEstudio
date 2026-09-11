@@ -10,7 +10,7 @@ import (
 
 type CarreraProvider interface {
 	GetActiveCarrera(usuarioID string) (id string, data interface{}, err error)
-	CreateInitialCarrera(usuarioID, nombre, facultadSede, legajo string) (id string, data interface{}, err error)
+	CreateInitialCarrera(usuarioID, nombre, facultadSede, legajo string, duracionAnios int) (id string, data interface{}, err error)
 }
 
 type Service interface {
@@ -82,7 +82,7 @@ func (s *service) Register(req RegisterRequest) (*AuthResponse, error) {
 		if carreraNombre == "" {
 			carreraNombre = "Mi Carrera"
 		}
-		activeID, activeData, _ = s.carreraProvider.CreateInitialCarrera(newUser.ID, carreraNombre, req.FacultadSede, req.Legajo)
+		activeID, activeData, _ = s.carreraProvider.CreateInitialCarrera(newUser.ID, carreraNombre, req.FacultadSede, req.Legajo, req.DuracionAnios)
 	}
 
 	return s.generateAuthResponse(newUser, activeID, activeData)

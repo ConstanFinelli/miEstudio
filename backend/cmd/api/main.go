@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -86,6 +87,11 @@ func main() {
 	// Feature: Evaluaciones (Protegido con authMiddleware)
 	evalRepo := evaluaciones.NewRepository(database)
 	evalService := evaluaciones.NewService(evalRepo)
+	if err := evalService.SincronizarTodosLosPromedios(context.Background()); err != nil {
+		log.Printf("⚠️  Error al sincronizar promedios de materias: %v", err)
+	} else {
+		log.Println("📊 Sincronización de promedios de materias completada.")
+	}
 	evalHandler := evaluaciones.NewHandler(evalService)
 	evalHandler.RegisterRoutes(api, authMiddleware)
 

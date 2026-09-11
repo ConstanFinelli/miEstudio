@@ -8,6 +8,7 @@ import (
 
 type Perfil struct {
 	ID                string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID         string         `gorm:"type:varchar(36);index" json:"usuario_id"`
 	Nombre            string         `gorm:"type:varchar(255);not null" json:"nombre"`
 	Legajo            string         `gorm:"type:varchar(50);not null" json:"legajo"`
 	Carrera           string         `gorm:"type:varchar(255);not null" json:"carrera"`

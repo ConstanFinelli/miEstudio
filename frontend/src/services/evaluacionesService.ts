@@ -75,7 +75,7 @@ export const evaluacionesService = {
         tipo: evaluacion.tipo || 'PARCIAL',
         fecha: evaluacion.fecha || new Date().toISOString(),
         horario: evaluacion.horario || '09:00',
-        peso: evaluacion.peso ?? 25,
+        peso: evaluacion.peso ?? 100,
         nota: evaluacion.nota ?? null,
         estado: evaluacion.nota !== null && evaluacion.nota !== undefined ? 'CALIFICADO' : 'PENDIENTE',
         aula: evaluacion.aula || 'A confirmar',

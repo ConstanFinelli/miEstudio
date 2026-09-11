@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./RegisterView.module.css";
@@ -28,6 +29,7 @@ export const RegisterView: React.FC = () => {
 
   // Datos de la Carrera Inicial
   const [carreraNombre, setCarreraNombre] = useState("");
+  const [duracionAnios, setDuracionAnios] = useState<number>(5);
   const [facultadSede, setFacultadSede] = useState("");
   const [legajo, setLegajo] = useState("");
 
@@ -56,6 +58,7 @@ export const RegisterView: React.FC = () => {
         email: email.trim(),
         password,
         carrera_nombre: carreraNombre.trim() || "Mi Carrera Universitaria",
+        duracion_anios: duracionAnios,
         facultad_sede: facultadSede.trim() || "Facultad / Universidad",
         legajo: legajo.trim() || "S/N",
       });
@@ -226,20 +229,25 @@ export const RegisterView: React.FC = () => {
 
           <div className={styles.row}>
             <div className={styles.fieldGroup}>
-              <label htmlFor="reg-facultad" className={styles.label}>
-                Universidad / Facultad / Sede
+              <label htmlFor="reg-duracion" className={styles.label}>
+                Duración del Plan
               </label>
               <div className={styles.inputWrapper}>
-                <Building2 size={16} className={styles.inputIcon} />
-                <input
-                  id="reg-facultad"
-                  type="text"
+                <Clock size={16} className={styles.inputIcon} />
+                <select
+                  id="reg-duracion"
                   className={styles.input}
-                  placeholder="Ej: UBA / UTN / UNLP"
-                  value={facultadSede}
-                  onChange={(e) => setFacultadSede(e.target.value)}
+                  value={duracionAnios}
+                  onChange={(e) => setDuracionAnios(Number(e.target.value))}
                   disabled={isLoading}
-                />
+                >
+                  <option value={1}>1 Año</option>
+                  <option value={2}>2 Años</option>
+                  <option value={3}>3 Años</option>
+                  <option value={4}>4 Años</option>
+                  <option value={5}>5 Años</option>
+                  <option value={6}>6 Años</option>
+                </select>
               </div>
             </div>
 
@@ -259,6 +267,24 @@ export const RegisterView: React.FC = () => {
                   disabled={isLoading}
                 />
               </div>
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-facultad" className={styles.label}>
+              Universidad / Facultad / Sede
+            </label>
+            <div className={styles.inputWrapper}>
+              <Building2 size={16} className={styles.inputIcon} />
+              <input
+                id="reg-facultad"
+                type="text"
+                className={styles.input}
+                placeholder="Ej: UBA / UTN / UNLP"
+                value={facultadSede}
+                onChange={(e) => setFacultadSede(e.target.value)}
+                disabled={isLoading}
+              />
             </div>
           </div>
 

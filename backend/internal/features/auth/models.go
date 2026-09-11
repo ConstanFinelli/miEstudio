@@ -59,6 +59,7 @@ type RegisterRequest struct {
 	CarreraNombre string `json:"carrera_nombre,omitempty"`
 	FacultadSede  string `json:"facultad_sede,omitempty"`
 	Legajo        string `json:"legajo,omitempty"`
+	DuracionAnios int    `json:"duracion_anios,omitempty"`
 }
 
 type LoginRequest struct {

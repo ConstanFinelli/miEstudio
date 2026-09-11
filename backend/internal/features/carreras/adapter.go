@@ -22,7 +22,7 @@ func (a *AuthCarreraAdapter) GetActiveCarrera(usuarioID string) (id string, data
 	return carrera.ID, carrera, nil
 }
 
-func (a *AuthCarreraAdapter) CreateInitialCarrera(usuarioID, nombre, facultadSede, legajo string) (id string, data interface{}, err error) {
+func (a *AuthCarreraAdapter) CreateInitialCarrera(usuarioID, nombre, facultadSede, legajo string, duracionAnios int) (id string, data interface{}, err error) {
 	if nombre == "" {
 		nombre = "Carrera de Grado"
 	}
@@ -31,6 +31,9 @@ func (a *AuthCarreraAdapter) CreateInitialCarrera(usuarioID, nombre, facultadSed
 	}
 	if legajo == "" {
 		legajo = "S/N"
+	}
+	if duracionAnios <= 0 {
+		duracionAnios = 5
 	}
 
 	carrera := &Carrera{
@@ -41,8 +44,8 @@ func (a *AuthCarreraAdapter) CreateInitialCarrera(usuarioID, nombre, facultadSed
 		Legajo:            legajo,
 		SemestreActual:    "1º Semestre",
 		CicloActivo:       "1C 2026",
-		DuracionAnios:     5,
-		TotalMateriasPlan: 36,
+		DuracionAnios:     duracionAnios,
+		TotalMateriasPlan: 0,
 		IsActiva:          true,
 		CreatedAt:         time.Now(),
 		UpdatedAt:         time.Now(),

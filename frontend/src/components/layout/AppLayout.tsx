@@ -9,7 +9,6 @@ import {
   FileText,
   Settings,
   PlusCircle,
-  User,
   Sun,
   Moon,
   ChevronDown,
@@ -27,6 +26,7 @@ import { useTheme, useAuth, useLayout } from "../../context";
 import { usePerfil } from "../../hooks";
 import { CarreraModal, EditUserModal } from "../modals";
 import type { EstadoMateria } from "../../types/academic";
+import getInitials from "../../utils/getInitials";
 
 const defaultEmptyPerfil = {
   nombre: "Estudiante",
@@ -343,7 +343,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     border: "1px solid var(--border-subtle)",
                   }}
                 >
-                  <User size={15} />
+                  <div className={styles.avatar}>
+                    {getInitials(user?.nombre || displayNombre)}
+                  </div>
                 </div>
               )}
               {!isSidebarCollapsed && (

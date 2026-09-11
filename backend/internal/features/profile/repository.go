@@ -8,7 +8,7 @@ import (
 )
 
 type Repository interface {
-	Get(ctx context.Context) (*Perfil, error)
+	GetByUserID(ctx context.Context, userID string) (*Perfil, error)
 	Save(ctx context.Context, perfil *Perfil) error
 }
 
@@ -20,9 +20,9 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Get(ctx context.Context) (*Perfil, error) {
+func (r *repository) GetByUserID(ctx context.Context, userID string) (*Perfil, error) {
 	var p Perfil
-	if err := r.db.WithContext(ctx).First(&p).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("usuario_id = ?", userID).First(&p).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

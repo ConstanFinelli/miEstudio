@@ -46,7 +46,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const [horario, setHorario] = useState('19:00');
   const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
-  const [peso, setPeso] = useState<number>(35);
+  const [peso, setPeso] = useState<number>(100);
   const [esAprobatorio, setEsAprobatorio] = useState(true);
   const [nota, setNota] = useState('');
   const [temarioText, setTemarioText] = useState('');
@@ -71,7 +71,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
       setHorario(evaluationToEdit.horario ? evaluationToEdit.horario.replace(' hs', '').replace('hs', '') : '19:00');
       setAula(evaluationToEdit.aula || '');
       setModalidad(evaluationToEdit.modalidad || 'Presencial');
-      setPeso(evaluationToEdit.peso ?? 35);
+      setPeso(evaluationToEdit.peso ?? 100);
       setEsAprobatorio(evaluationToEdit.esAprobatorio ?? true);
       setNota(
         evaluationToEdit.nota !== null && evaluationToEdit.nota !== undefined
@@ -95,7 +95,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
       setHorario('19:00');
       setAula('');
       setModalidad('Presencial');
-      setPeso(35);
+      setPeso(100);
       setEsAprobatorio(true);
       setNota('');
       setTemarioText('');
@@ -124,11 +124,6 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
 
   const handleTypeChange = (newTipo: TipoEvaluacion) => {
     setTipo(newTipo);
-    if (newTipo === 'FINAL') setPeso(50);
-    else if (newTipo === 'PARCIAL') setPeso(35);
-    else if (newTipo === 'TP') setPeso(25);
-    else if (newTipo === 'LABORATORIO') setPeso(20);
-    else if (newTipo === 'QUIZ') setPeso(10);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,7 +150,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           horario: horario.trim() || '19:00',
           aula: aula.trim() || 'A confirmar',
           modalidad,
-          peso: Number(peso) > 0 ? Number(peso) : 25,
+          peso: Number(peso) > 0 ? Number(peso) : 100,
           esAprobatorio,
           nota: parsedNota,
           temario: parsedTemario
@@ -175,7 +170,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           horario: horario.trim() || '19:00',
           aula: aula.trim() || 'A confirmar',
           modalidad,
-          peso: Number(peso) > 0 ? Number(peso) : 25,
+          peso: Number(peso) > 0 ? Number(peso) : 100,
           esAprobatorio,
           nota: parsedNota,
           temario: parsedTemario

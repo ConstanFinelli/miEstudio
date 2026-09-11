@@ -19,6 +19,8 @@ type Service interface {
 	UpdateEvaluacion(ctx context.Context, id string, dto UpdateEvaluacionDTO) (*Evaluacion, error)
 	UpdateNota(ctx context.Context, id string, nota float64) (*Evaluacion, error)
 	DeleteEvaluacion(ctx context.Context, id string) error
+	RecalcularPromedioMateria(ctx context.Context, materiaID string) error
+	SincronizarTodosLosPromedios(ctx context.Context) error
 }
 
 type service struct {
@@ -87,7 +89,7 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 	}
 	peso := dto.Peso
 	if peso <= 0 {
-		peso = 25
+		peso = 100
 	}
 	esAprobatorio := true
 	if dto.EsAprobatorio != nil {
@@ -126,6 +128,8 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 		return nil, err
 	}
 
+	_ = s.repo.RecalcularPromedioMateria(ctx, evaluacion.MateriaID)
+
 	if reloaded, err := s.repo.GetByID(ctx, evaluacion.ID); err == nil {
 		return reloaded, nil
 	}
@@ -138,6 +142,8 @@ func (s *service) UpdateEvaluacion(ctx context.Context, id string, dto UpdateEva
 	if err != nil {
 		return nil, err
 	}
+
+	oldMateriaID := ev.MateriaID
 
 	if dto.MateriaID != nil && *dto.MateriaID != "" {
 		ev.MateriaID = *dto.MateriaID
@@ -191,6 +197,11 @@ func (s *service) UpdateEvaluacion(ctx context.Context, id string, dto UpdateEva
 		return nil, err
 	}
 
+	_ = s.repo.RecalcularPromedioMateria(ctx, ev.MateriaID)
+	if oldMateriaID != "" && oldMateriaID != ev.MateriaID {
+		_ = s.repo.RecalcularPromedioMateria(ctx, oldMateriaID)
+	}
+
 	if reloaded, err := s.repo.GetByID(ctx, ev.ID); err == nil {
 		return reloaded, nil
 	}
@@ -208,9 +219,31 @@ func (s *service) UpdateNota(ctx context.Context, id string, nota float64) (*Eva
 		return nil, err
 	}
 
+	_ = s.repo.RecalcularPromedioMateria(ctx, ev.MateriaID)
+
 	return ev, nil
 }
 
 func (s *service) DeleteEvaluacion(ctx context.Context, id string) error {
-	return s.repo.Delete(ctx, id)
+	ev, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	materiaID := ev.MateriaID
+
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	_ = s.repo.RecalcularPromedioMateria(ctx, materiaID)
+	return nil
 }
+
+func (s *service) RecalcularPromedioMateria(ctx context.Context, materiaID string) error {
+	return s.repo.RecalcularPromedioMateria(ctx, materiaID)
+}
+
+func (s *service) SincronizarTodosLosPromedios(ctx context.Context) error {
+	return s.repo.SincronizarPromedios(ctx)
+}
+

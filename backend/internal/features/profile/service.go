@@ -8,8 +8,8 @@ import (
 )
 
 type Service interface {
-	GetPerfil(ctx context.Context) (*PerfilDTO, error)
-	UpdatePerfil(ctx context.Context, dto UpdatePerfilDTO) (*PerfilDTO, error)
+	GetPerfil(ctx context.Context, userID string) (*PerfilDTO, error)
+	UpdatePerfil(ctx context.Context, userID string, dto UpdatePerfilDTO) (*PerfilDTO, error)
 }
 
 type service struct {
@@ -20,8 +20,8 @@ func NewService(repo Repository) Service {
 	return &service{repo: repo}
 }
 
-func (s *service) GetPerfil(ctx context.Context) (*PerfilDTO, error) {
-	p, err := s.repo.Get(ctx)
+func (s *service) GetPerfil(ctx context.Context, userID string) (*PerfilDTO, error) {
+	p, err := s.repo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -29,6 +29,7 @@ func (s *service) GetPerfil(ctx context.Context) (*PerfilDTO, error) {
 	if p == nil {
 		p = &Perfil{
 			ID:                uuid.New().String(),
+			UsuarioID:         userID,
 			Nombre:            "Estudiante",
 			Legajo:            "---",
 			Carrera:           "Carrera de Grado",
@@ -50,13 +51,16 @@ func (s *service) GetPerfil(ctx context.Context) (*PerfilDTO, error) {
 	return toDTO(p), nil
 }
 
-func (s *service) UpdatePerfil(ctx context.Context, dto UpdatePerfilDTO) (*PerfilDTO, error) {
-	p, err := s.repo.Get(ctx)
+func (s *service) UpdatePerfil(ctx context.Context, userID string, dto UpdatePerfilDTO) (*PerfilDTO, error) {
+	p, err := s.repo.GetByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	if p == nil {
-		p = &Perfil{ID: uuid.New().String()}
+		p = &Perfil{
+			ID:        uuid.New().String(),
+			UsuarioID: userID,
+		}
 	}
 
 	if dto.Nombre != nil {

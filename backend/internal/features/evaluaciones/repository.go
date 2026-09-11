@@ -2,8 +2,10 @@ package evaluaciones
 
 import (
 	"context"
+	"math"
 
 	"gorm.io/gorm"
+	"miestudio/backend/internal/features/subjects"
 )
 
 type Repository interface {
@@ -13,6 +15,8 @@ type Repository interface {
 	Create(ctx context.Context, evaluacion *Evaluacion) error
 	Update(ctx context.Context, evaluacion *Evaluacion) error
 	Delete(ctx context.Context, id string) error
+	RecalcularPromedioMateria(ctx context.Context, materiaID string) error
+	SincronizarPromedios(ctx context.Context) error
 }
 
 type repository struct {
@@ -72,3 +76,74 @@ func (r *repository) Update(ctx context.Context, evaluacion *Evaluacion) error {
 func (r *repository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Delete(&Evaluacion{}, "id = ?", id).Error
 }
+
+func (r *repository) RecalcularPromedioMateria(ctx context.Context, materiaID string) error {
+	if materiaID == "" {
+		return nil
+	}
+
+	var materia subjects.Materia
+	if err := r.db.WithContext(ctx).First(&materia, "id = ?", materiaID).Error; err != nil {
+		return nil // Materia inexistente o eliminada
+	}
+
+	var evals []Evaluacion
+	if err := r.db.WithContext(ctx).Where("materia_id = ? AND nota IS NOT NULL", materiaID).Find(&evals).Error; err != nil {
+		return err
+	}
+
+	if len(evals) == 0 {
+		// Si es cursando o regular y no tiene evaluaciones calificadas, el promedio es 0
+		if materia.Estado == "CURSANDO" || materia.Estado == "REGULAR" {
+			return r.db.WithContext(ctx).Model(&subjects.Materia{}).Where("id = ?", materiaID).Update("promedio", 0).Error
+		}
+		return nil
+	}
+
+	var totalWeighted float64
+	var totalWeight float64
+	var totalSimple float64
+	var count float64
+
+	for _, ev := range evals {
+		if ev.Nota == nil {
+			continue
+		}
+		peso := float64(ev.Peso)
+		if peso <= 0 {
+			peso = 1
+		}
+		totalWeighted += (*ev.Nota) * peso
+		totalWeight += peso
+		totalSimple += *ev.Nota
+		count++
+	}
+
+	var nuevoPromedio float64
+	if totalWeight > 0 {
+		nuevoPromedio = totalWeighted / totalWeight
+	} else if count > 0 {
+		nuevoPromedio = totalSimple / count
+	}
+
+	nuevoPromedio = math.Round(nuevoPromedio*100) / 100
+
+	return r.db.WithContext(ctx).Model(&subjects.Materia{}).Where("id = ?", materiaID).Update("promedio", nuevoPromedio).Error
+}
+
+func (r *repository) SincronizarPromedios(ctx context.Context) error {
+	var materiaIDs []string
+	err := r.db.WithContext(ctx).Model(&Evaluacion{}).
+		Where("nota IS NOT NULL AND materia_id != ''").
+		Distinct("materia_id").
+		Pluck("materia_id", &materiaIDs).Error
+	if err != nil {
+		return err
+	}
+
+	for _, mID := range materiaIDs {
+		_ = r.RecalcularPromedioMateria(ctx, mID)
+	}
+	return nil
+}
+

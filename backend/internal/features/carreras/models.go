@@ -15,7 +15,7 @@ type Carrera struct {
 	SemestreActual    string         `gorm:"type:varchar(50);default:'1° Año - 1C'" json:"semestre_actual"`
 	CicloActivo       string         `gorm:"type:varchar(50);default:'1C 2026'" json:"ciclo_activo"`
 	DuracionAnios     int            `gorm:"default:5" json:"duracion_anios"`
-	TotalMateriasPlan int            `gorm:"default:40" json:"total_materias_plan"`
+	TotalMateriasPlan int            `gorm:"default:0" json:"total_materias_plan"`
 	IsActiva          bool           `gorm:"default:true;index" json:"is_activa"`
 	PromedioGeneral   float64        `gorm:"default:0" json:"promedio_general"`
 	MateriasAprobadas int            `gorm:"default:0" json:"materias_aprobadas"`

@@ -207,6 +207,16 @@
   color: var(--text-muted, #64748b);
 }
 
+select.input {
+  cursor: pointer;
+  appearance: auto;
+}
+
+select.input option {
+  background: var(--surface-1, #0f172a);
+  color: var(--text-primary, #f8fafc);
+}
+
 .eyeBtn {
   position: absolute;
   right: 0.75rem;

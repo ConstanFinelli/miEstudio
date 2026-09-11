@@ -133,7 +133,14 @@ export const useProgresoAcademico = () => {
 
   // 1. Estadísticas de Ritmo y Avance
   const statsRitmo = useMemo<StatsRitmo>(() => {
-    const totalPlan = activeCarrera?.total_materias_plan || perfil?.materiasTotales || (materias.length > 0 ? materias.length : 45);
+    const totalPlan =
+      materias.length === 0
+        ? 0
+        : (activeCarrera?.total_materias_plan && activeCarrera.total_materias_plan > 0
+            ? Math.max(activeCarrera.total_materias_plan, materias.length)
+            : (perfil?.materiasTotales && perfil.materiasTotales > 0
+                ? Math.max(perfil.materiasTotales, materias.length)
+                : materias.length));
     const totalAprobadas = aprobadasConsolidadas.length;
     const progresoPercent = totalPlan > 0 ? Math.min(100, Math.round((totalAprobadas / totalPlan) * 100)) : 0;
     const materiasRestantes = Math.max(0, totalPlan - totalAprobadas);

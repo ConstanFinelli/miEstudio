@@ -39,7 +39,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
 
   const [nombre, setNombre] = useState('');
   const [codigo, setCodigo] = useState('');
-  const [anio, setAnio] = useState<number>(3);
+  const [anio, setAnio] = useState<number>(1);
   const [cuatrimestre, setCuatrimestre] = useState<'1C' | '2C' | 'Anual'>('1C');
   const [estado, setEstado] = useState<EstadoMateria>('CURSANDO');
   const [color, setColor] = useState('#3b82f6');
@@ -83,7 +83,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
     if (materiaToEdit) {
       setNombre(materiaToEdit.nombre || '');
       setCodigo(materiaToEdit.codigo || '');
-      setAnio(materiaToEdit.anio || 3);
+      setAnio(materiaToEdit.anio || 1);
       setCuatrimestre(materiaToEdit.cuatrimestre || '1C');
       const editEst = materiaToEdit.estado || 'CURSANDO';
       setEstado(editEst);
@@ -136,7 +136,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
     } else {
       setNombre('');
       setCodigo('');
-      setAnio(3);
+      setAnio(1);
       setCuatrimestre('1C');
       const defaultEst = initialEstado || 'CURSANDO';
       setEstado(defaultEst);
@@ -358,12 +358,14 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                 value={anio}
                 onChange={e => setAnio(Number(e.target.value))}
               >
-                <option value={1}>1° Año</option>
-                <option value={2}>2° Año</option>
-                <option value={3}>3° Año</option>
-                <option value={4}>4° Año</option>
-                <option value={5}>5° Año</option>
-                <option value={6}>6° Año</option>
+                {Array.from(
+                  { length: Math.max(activeCarrera?.duracion_anios || 5, anio, 1) },
+                  (_, i) => i + 1
+                ).map(yr => (
+                  <option key={yr} value={yr}>
+                    {yr}° Año
+                  </option>
+                ))}
               </select>
             </div>
 
