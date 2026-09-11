@@ -1,0 +1,7 @@
+.git
+.DS_Store
+api
+uploads
+miestudio.db
+*.log
+tmp
