@@ -9,6 +9,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.schedulesHeaderTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
 }
 
 .btnPrimary {
@@ -27,8 +36,54 @@
   box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
 }
 
+.btnAddSmall {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
 .btnPrimary:hover {
   filter: brightness(1.1);
+}
+
+.emptyState {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-style: italic;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.diaBadge {
+  background: var(--surface-3);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.evalItemLocationRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.venueBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.roomBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+  font-size: 12px;
 }
 
 .evalItemRow {

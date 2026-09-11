@@ -24,6 +24,10 @@
   text-transform: uppercase;
 }
 
+.headerMetaDim {
+  color: var(--text-dim);
+}
+
 .headerTitleRow {
   display: flex;
   align-items: center;

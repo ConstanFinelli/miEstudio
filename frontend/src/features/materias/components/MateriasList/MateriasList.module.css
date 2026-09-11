@@ -16,6 +16,80 @@
   padding: 0 4px;
 }
 
+.masterSub {
+  color: var(--text-dim);
+}
+
+.emptyContainer {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.emptyTitle {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.emptyDesc {
+  font-size: 11px;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.btnEmptyAdd {
+  padding: 6px 14px;
+  font-size: 11px;
+  margin: 0 auto;
+}
+
+.cardHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metricEmerald {
+  color: var(--emerald);
+}
+
+.regimenPill {
+  font-size: 11px;
+}
+
+.regimenSuccess {
+  color: var(--emerald);
+}
+
+.regimenWarning {
+  color: var(--amber);
+}
+
+.accreditedCard {
+  padding: 8px;
+  background: var(--bg-canvas);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accreditedCardLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.accreditedCardScore {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+
 .subjectCard {
   background-color: var(--surface-1);
   border: 1px solid var(--border-subtle);

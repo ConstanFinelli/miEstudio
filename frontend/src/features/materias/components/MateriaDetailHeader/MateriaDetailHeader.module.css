@@ -33,6 +33,51 @@
   color: var(--text-dim);
 }
 
+.staffTeacher {
+  color: var(--text-secondary);
+}
+
+.unassignedStaff {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.detailHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.averageBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 4px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.averageLabel {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.averageValue {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--emerald);
+}
+
+.averageMax {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
 .detailHeaderActions {
   display: flex;
   align-items: center;

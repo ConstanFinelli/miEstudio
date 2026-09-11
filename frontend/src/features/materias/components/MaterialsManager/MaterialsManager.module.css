@@ -7,6 +7,84 @@
   padding-top: 16px;
 }
 
+.materialsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.materialsTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.btnAddMaterial {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btnAddInitial {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.materialMetaContent {
+  min-width: 0;
+}
+
+.materialTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.materialActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btnActionWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btnDownloadIcon {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyCategoryText {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.emptyStateTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.emptyStateDesc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  max-width: 360px;
+}
+
 .btnPrimary {
   background: linear-gradient(135deg, var(--primary), #4f46e5);
   border: 1px solid var(--primary-glow);

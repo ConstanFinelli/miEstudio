@@ -78,14 +78,13 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
   return (
     <div className={styles.materialsSection}>
       {/* Header bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+      <div className={styles.materialsHeader}>
+        <div className={styles.materialsTitle}>
           MATERIALES DE ESTUDIO & VISOR DE PDFS ({materials.length})
         </div>
         <button
-          className={styles.btnPrimary}
+          className={`${styles.btnPrimary} ${styles.btnAddMaterial}`}
           onClick={onOpenUploadModal}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}
         >
           <UploadCloud size={14} />
           <span>+ Subir PDF / Guía</span>
@@ -122,8 +121,8 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
           <div key={mat.id} className={styles.materialCardItem}>
             <div className={styles.materialLeft}>
               <span className={styles.pdfBadge}>PDF</span>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div className={styles.materialMetaContent}>
+                <div className={styles.materialTitleRow}>
                   <span className={styles.materialTitle}>{mat.titulo}</span>
                   <span className={`${styles.catBadge} ${getCategoryBadgeClass(mat.categoria)}`}>
                     {getCategoryLabel(mat.categoria)}
@@ -138,11 +137,10 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div className={styles.materialActions}>
               <button
-                className={styles.btnActionLight}
+                className={`${styles.btnActionLight} ${styles.btnActionWithIcon}`}
                 onClick={() => onViewPdf(mat.titulo, mat.archivoUrl)}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                 title="Abrir visor de lectura"
               >
                 <Eye size={13} />
@@ -154,9 +152,8 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
                 download={mat.archivoNombre}
                 target="_blank"
                 rel="noreferrer"
-                className={styles.iconBtnSmall}
+                className={`${styles.iconBtnSmall} ${styles.btnDownloadIcon}`}
                 title={`Descargar ${mat.archivoNombre}`}
-                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <FileDown size={13} />
               </a>
@@ -175,7 +172,7 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
         ))
       ) : materials.length > 0 ? (
         <div className={styles.materialsEmptyState}>
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+          <div className={styles.emptyCategoryText}>
             No hay materiales en la categoría seleccionada ({selectedCategory}).
           </div>
           <button
@@ -188,16 +185,15 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
       ) : (
         <div className={styles.materialsEmptyState}>
           <FileText size={28} color="var(--text-dim)" />
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+          <div className={styles.emptyStateTitle}>
             Sin materiales de estudio para {materiaNombre}
           </div>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 6px', maxWidth: '360px' }}>
+          <p className={styles.emptyStateDesc}>
             Subí el programa, diapositivas, guías prácticas o parciales viejos en PDF para tenerlos siempre a mano y visualizarlos en pantalla.
           </p>
           <button
-            className={styles.btnPrimary}
+            className={`${styles.btnPrimary} ${styles.btnAddInitial}`}
             onClick={onOpenUploadModal}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '12px' }}
           >
             <UploadCloud size={14} />
             <span>Subir primer PDF</span>

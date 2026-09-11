@@ -9,6 +9,33 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.evalHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.evalHeaderTitle {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.avgPill {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--emerald);
+  background: rgba(16, 185, 129, 0.12);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .btnPrimary {
@@ -27,8 +54,45 @@
   box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
 }
 
+.btnAddSmall {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
 .btnPrimary:hover {
   filter: brightness(1.1);
+}
+
+.emptyState {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-subtle);
+}
+
+.tipoBadge {
+  background: var(--surface-3);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--text-secondary);
+}
+
+.scoreMax {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.noScoreBadge {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
 }
 
 .evalItemRow {

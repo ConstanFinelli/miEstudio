@@ -23,45 +23,20 @@ export const MateriasList: React.FC<MateriasListProps> = ({
     <div className={styles.masterColumn}>
       <div className={styles.masterHeader}>
         <span>Materias Registradas ({materias.length})</span>
-        <span style={{ color: "var(--text-dim)" }}>Clic para inspeccionar</span>
+        <span className={styles.masterSub}>Clic para inspeccionar</span>
       </div>
 
       {materias.length === 0 ? (
-        <div
-          style={{
-            padding: "32px 16px",
-            textAlign: "center",
-            color: "var(--text-muted)",
-          }}
-        >
-          <p
-            style={{
-              fontSize: "13px",
-              fontWeight: "500",
-              marginBottom: "6px",
-              color: "var(--text-secondary)",
-            }}
-          >
+        <div className={styles.emptyContainer}>
+          <p className={styles.emptyTitle}>
             No hay materias en este filtro
           </p>
-          <span
-            style={{
-              fontSize: "11px",
-              color: "var(--text-dim)",
-              display: "block",
-              marginBottom: "12px",
-            }}
-          >
+          <span className={styles.emptyDesc}>
             Usa el botón "+ Nueva Materia" para registrar tu primera cursada.
           </span>
           {onOpenMateriaModal && (
             <button
-              className={styles.btnPrimary}
-              style={{
-                padding: "6px 14px",
-                fontSize: "11px",
-                margin: "0 auto",
-              }}
+              className={`${styles.btnPrimary} ${styles.btnEmptyAdd}`}
               onClick={onOpenMateriaModal}
             >
               + Nueva Materia
@@ -82,9 +57,7 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                 <span className={styles.cardCodeMeta}>
                   {materia.codigo} · {materia.anio}° Año, {materia.cuatrimestre}
                 </span>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
+                <div className={styles.cardHeaderActions}>
                   <StatusBadge status={materia.estado} />
                   {onDeleteMateria && (
                     <button
@@ -108,10 +81,7 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                   <div className={styles.cardMetricsRow}>
                     <div className={styles.cardMetricBlock}>
                       <span className={styles.cardMetricLabel}>Promedio</span>
-                      <span
-                        className={styles.cardMetricVal}
-                        style={{ color: "var(--emerald)" }}
-                      >
+                      <span className={`${styles.cardMetricVal} ${styles.metricEmerald}`}>
                         {materia.promedio.toFixed(2)}
                       </span>
                     </div>
@@ -124,15 +94,11 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                     <div className={styles.cardMetricBlock}>
                       <span className={styles.cardMetricLabel}>Régimen</span>
                       <span
-                        className={styles.cardMetricVal}
-                        style={{
-                          fontSize: "11px",
-                          color:
-                            materia.reglasAcreditacion?.promocion
-                              ?.permitePromocion === false
-                              ? "var(--amber)"
-                              : "var(--emerald)",
-                        }}
+                        className={`${styles.cardMetricVal} ${styles.regimenPill} ${
+                          materia.reglasAcreditacion?.promocion?.permitePromocion === false
+                            ? styles.regimenWarning
+                            : styles.regimenSuccess
+                        }`}
                       >
                         {materia.reglasAcreditacion?.promocion
                           ?.permitePromocion === false
@@ -157,32 +123,13 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                   </div>
                 </>
               ) : (
-                <div
-                  style={{
-                    padding: "8px",
-                    background: "var(--bg-canvas)",
-                    borderRadius: "var(--radius-xs)",
-                    border: "1px solid var(--border-subtle)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span
-                    style={{ fontSize: "11px", color: "var(--text-muted)" }}
-                  >
+                <div className={styles.accreditedCard}>
+                  <span className={styles.accreditedCardLabel}>
                     {materia.estado === "PROMOCIONADA"
                       ? "Calificación Final Acreditada"
                       : "Acta Examen Final #1042"}
                   </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "16px",
-                      fontWeight: 700,
-                      color: "var(--emerald)",
-                    }}
-                  >
+                  <span className={styles.accreditedCardScore}>
                     {materia.promedio?.toFixed(1)} / 10
                   </span>
                 </div>

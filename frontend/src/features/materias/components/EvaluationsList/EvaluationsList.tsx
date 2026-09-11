@@ -16,29 +16,48 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
   onEditEvaluation,
   onDeleteEvaluation,
 }) => {
+  const gradedEvaluations = evaluations.filter(
+    (e) => e.nota !== null && e.nota !== undefined && !isNaN(Number(e.nota))
+  );
+
+  const totalWeighted = gradedEvaluations.reduce(
+    (acc, e) => acc + Number(e.nota) * (Number(e.peso) > 0 ? Number(e.peso) : 1),
+    0
+  );
+  const totalWeight = gradedEvaluations.reduce(
+    (acc, e) => acc + (Number(e.peso) > 0 ? Number(e.peso) : 1),
+    0
+  );
+  const currentAvg = totalWeight > 0 ? totalWeighted / totalWeight : 0;
+
   return (
     <div className={styles.evalListSection}>
       <div className={styles.evalListHeader}>
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-          }}
-        >
-          INSTANCIAS DE EVALUACIÓN ({evaluations.length} REGISTRADAS)
+        <div className={styles.evalHeaderLeft}>
+          <div className={styles.evalHeaderTitle}>
+            INSTANCIAS DE EVALUACIÓN ({evaluations.length} REGISTRADAS)
+          </div>
+          {gradedEvaluations.length > 0 && (
+            <span className={styles.avgPill}>
+              Promedio ponderado: {currentAvg.toFixed(2)} / 10
+            </span>
+          )}
         </div>
         <button
-          className={styles.btnPrimary}
+          className={`${styles.btnPrimary} ${styles.btnAddSmall}`}
           onClick={onOpenEvaluationModal}
-          style={{ padding: "4px 10px", fontSize: "11px" }}
         >
           <Plus size={12} />
           <span>Agregar Instancia de Evaluación</span>
         </button>
       </div>
 
-      {evaluations.map((evalItem) => (
+      {evaluations.length === 0 ? (
+        <div className={styles.emptyState}>
+          No hay instancias de evaluación registradas para esta materia.
+        </div>
+      ) : (
+        evaluations.map((evalItem) => (
         <div key={evalItem.id} className={styles.evalItemRow}>
           <div className={styles.evalItemLeft}>
             <div className={styles.evalIconSquare}>
@@ -46,14 +65,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
             </div>
             <div className={styles.evalInfo}>
               <div className={styles.evalMetaPills}>
-                <span
-                  style={{
-                    background: "var(--surface-3)",
-                    padding: "1px 5px",
-                    borderRadius: "2px",
-                    color: "var(--text-secondary)",
-                  }}
-                >
+                <span className={styles.tipoBadge}>
                   {evalItem.tipo}
                 </span>
                 <span>
@@ -80,22 +92,10 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
             {evalItem.nota !== null ? (
               <div className={styles.scorePill}>
                 <span>{evalItem.nota.toFixed(1)}</span>
-                <span style={{ fontSize: "11px", color: "var(--text-dim)" }}>
-                  / 10
-                </span>
+                <span className={styles.scoreMax}>/ 10</span>
               </div>
             ) : (
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "var(--text-muted)",
-                  fontFamily: "var(--font-mono)",
-                  padding: "3px 8px",
-                  borderRadius: "var(--radius-sm)",
-                  background: "var(--surface-2)",
-                  border: "1px solid var(--border-subtle)",
-                }}
-              >
+              <span className={styles.noScoreBadge}>
                 Sin nota
               </span>
             )}
@@ -120,7 +120,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
             )}
           </div>
         </div>
-      ))}
+      )))}
     </div>
   );
 };

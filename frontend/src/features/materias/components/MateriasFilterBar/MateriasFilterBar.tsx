@@ -3,6 +3,7 @@ import styles from './MateriasFilterBar.module.css';
 import { Search } from 'lucide-react';
 import type { Materia } from '../../../../types/academic';
 import { useMaterias } from '../../../../hooks';
+import { useAuth } from '../../../../context/AuthContext';
 
 interface MateriasFilterBarProps {
   selectedYear: number | 'TODOS';
@@ -27,13 +28,21 @@ export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
   onSelectEstado,
   materias: propMaterias
 }) => {
+  const { activeCarrera } = useAuth();
   const { materias: hookMaterias } = useMaterias();
   const currentMaterias = propMaterias || hookMaterias;
+
+  const maxYear = Math.max(
+    activeCarrera?.duracion_anios || 5,
+    ...currentMaterias.map(m => m.anio || 1),
+    1
+  );
+  const yearsList = Array.from({ length: maxYear }, (_, i) => i + 1);
 
   return (
     <div className={styles.filtersBar}>
       <div className={styles.filtersLeft}>
-        {/* Year Pills (1 a 6 y Todos) */}
+        {/* Year Pills (Dinámicos según duración de carrera y Todos) */}
         <div className={styles.pillGroup}>
           <button
             className={`${styles.pillBtn} ${selectedYear === 'TODOS' ? styles.pillBtnActive : ''}`}
@@ -42,7 +51,7 @@ export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
           >
             Todos
           </button>
-          {[1, 2, 3, 4, 5, 6].map(yr => (
+          {yearsList.map(yr => (
             <button
               key={yr}
               className={`${styles.pillBtn} ${selectedYear === yr ? styles.pillBtnActive : ''}`}
@@ -87,7 +96,7 @@ export const MateriasFilterBar: React.FC<MateriasFilterBarProps> = ({
 
       {/* Status Tabs */}
       <div className={styles.statusTabs}>
-        <span style={{ color: 'var(--text-dim)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>ESTADO:</span>
+        <span className={styles.statusFilterLabel}>ESTADO:</span>
         {['TODOS', 'CURSANDO', 'REGULAR', 'APROBADA', 'PROMOCIONADA'].map(st => {
           const count = st === 'TODOS'
             ? currentMaterias.length

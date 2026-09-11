@@ -20,7 +20,7 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
           <span>·</span>
           <span>PLAN DE ESTUDIO</span>
           <span>·</span>
-          <span style={{ color: "var(--text-dim)" }}>
+          <span className={styles.headerMetaDim}>
             SEGUIMIENTO ACADÉMICO
           </span>
         </div>

@@ -187,63 +187,22 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     return (
       <div className={styles.container}>
         <MateriasHeader onRegisterMateria={onOpenMateriaModal} />
-        <div
-          style={{
-            backgroundColor: "var(--surface-1)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: "var(--radius-md)",
-            padding: "60px 24px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "16px",
-            textAlign: "center",
-            marginTop: "20px",
-          }}
-        >
-          <div
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "50%",
-              backgroundColor: "var(--surface-2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--primary)",
-            }}
-          >
+        <div className={styles.emptyViewCard}>
+          <div className={styles.emptyViewIcon}>
             <BookOpen size={28} />
           </div>
           <div>
-            <h2
-              style={{
-                fontSize: "18px",
-                fontWeight: 700,
-                color: "var(--text-primary)",
-                marginBottom: "6px",
-              }}
-            >
+            <h2 className={styles.emptyViewTitle}>
               No tenés materias registradas todavía
             </h2>
-            <p
-              style={{
-                fontSize: "13px",
-                color: "var(--text-secondary)",
-                maxWidth: "440px",
-                lineHeight: 1.5,
-                margin: 0,
-              }}
-            >
+            <p className={styles.emptyViewDesc}>
               Registrá tus materias del cuatrimestre para comenzar a hacer el
               seguimiento de notas, fechas de examen, apuntes y bibliografía.
             </p>
           </div>
           {onOpenMateriaModal && (
             <button
-              className={styles.btnPrimary}
-              style={{ padding: "10px 20px", fontSize: "13px" }}
+              className={`${styles.btnPrimary} ${styles.emptyViewBtn}`}
               onClick={onOpenMateriaModal}
             >
               <Plus size={16} />
@@ -322,27 +281,11 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
             />
           </div>
         ) : (
-          <div
-            style={{
-              padding: "60px 20px",
-              textAlign: "center",
-              backgroundColor: "var(--surface-1)",
-              borderRadius: "var(--radius-md)",
-              border: "1px dashed var(--border-subtle)",
-              color: "var(--text-muted)",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-                marginBottom: "4px",
-              }}
-            >
+          <div className={styles.noFilteredResults}>
+            <p className={styles.noFilteredTitle}>
               Ninguna materia coincide con los filtros
             </p>
-            <span style={{ fontSize: "12px", color: "var(--text-dim)" }}>
+            <span className={styles.noFilteredSub}>
               Probá seleccionando "Todos" los años o cuatrimestres para explorar
               tus asignaturas registradas.
             </span>

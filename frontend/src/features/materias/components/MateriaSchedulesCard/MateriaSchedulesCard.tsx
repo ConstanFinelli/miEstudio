@@ -45,19 +45,12 @@ export const MateriaSchedulesCard: React.FC<MateriaSchedulesCardProps> = ({
   return (
     <div className={styles.evalListSection}>
       <div className={styles.evalListHeader}>
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            color: "var(--text-muted)",
-          }}
-        >
+        <div className={styles.schedulesHeaderTitle}>
           HORARIOS DE CURSADA ({materiaHorarios.length} CLASES SEMANALES)
         </div>
         <button
-          className={styles.btnPrimary}
+          className={`${styles.btnPrimary} ${styles.btnAddSmall}`}
           onClick={handleAdd}
-          style={{ padding: "4px 10px", fontSize: "11px" }}
         >
           <Plus size={12} />
           <span>Agregar Horario de Cursada</span>
@@ -65,17 +58,7 @@ export const MateriaSchedulesCard: React.FC<MateriaSchedulesCardProps> = ({
       </div>
 
       {materiaHorarios.length === 0 ? (
-        <div
-          style={{
-            padding: "16px",
-            textAlign: "center",
-            color: "var(--text-dim)",
-            fontSize: "12px",
-            fontStyle: "italic",
-            background: "var(--surface-2)",
-            borderRadius: "var(--radius-sm)",
-          }}
-        >
+        <div className={styles.emptyState}>
           No hay horarios de cursada configurados para esta materia.
         </div>
       ) : (
@@ -93,15 +76,7 @@ export const MateriaSchedulesCard: React.FC<MateriaSchedulesCardProps> = ({
               </div>
               <div className={styles.evalInfo}>
                 <div className={styles.evalMetaPills}>
-                  <span
-                    style={{
-                      background: "var(--surface-3)",
-                      padding: "1px 6px",
-                      borderRadius: "2px",
-                      color: "var(--text-primary)",
-                      fontWeight: 600,
-                    }}
-                  >
+                  <span className={styles.diaBadge}>
                     {h.diaSemana}
                   </span>
                   <span>
@@ -110,39 +85,15 @@ export const MateriaSchedulesCard: React.FC<MateriaSchedulesCardProps> = ({
                   {h.tipoClase && <span>{h.tipoClase}</span>}
                   {h.modalidad && <span>{h.modalidad}</span>}
                 </div>
-                <div
-                  className={styles.evalItemTitle}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginTop: "2px",
-                  }}
-                >
+                <div className={styles.evalItemLocationRow}>
                   {h.facultadSede && (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        color: "var(--text-secondary)",
-                        fontSize: "12px",
-                      }}
-                    >
+                    <span className={styles.venueBadge}>
                       <Building2 size={12} />
                       {h.facultadSede}
                     </span>
                   )}
                   {h.aula && (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        color: "var(--text-dim)",
-                        fontSize: "12px",
-                      }}
-                    >
+                    <span className={styles.roomBadge}>
                       <MapPin size={12} />
                       {h.aula}
                     </span>

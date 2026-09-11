@@ -27,38 +27,54 @@ export const MateriaDetailHeader: React.FC<MateriaDetailHeaderProps> = ({
         </div>
         <h2 className={styles.detailTitle}>{materia.nombre}</h2>
         <p className={styles.detailStaff}>
-          {titular && <span>Titular: <strong style={{ color: "var(--text-secondary)" }}>{titular}</strong></span>}
+          {titular && <span>Titular: <strong className={styles.staffTeacher}>{titular}</strong></span>}
           {titular && jtp && <span> · </span>}
-          {jtp && <span>JTP: <strong style={{ color: "var(--text-secondary)" }}>{jtp}</strong></span>}
+          {jtp && <span>JTP: <strong className={styles.staffTeacher}>{jtp}</strong></span>}
           {!titular && !jtp && (
-            <span style={{ color: "var(--text-dim)", fontStyle: "italic" }}>
+            <span className={styles.unassignedStaff}>
               Docentes sin asignar
             </span>
           )}
         </p>
       </div>
 
-      <div className={styles.detailHeaderActions}>
-        {onEditMateria && (
-          <button
-            type="button"
-            className={styles.iconBtnSmall}
-            onClick={onEditMateria}
-            title="Editar Materia"
-          >
-            <Edit2 size={13} />
-          </button>
+      <div className={styles.detailHeaderRight}>
+        {materia.promedio > 0 && (
+          <div className={styles.averageBox}>
+            <span className={styles.averageLabel}>
+              Promedio
+            </span>
+            <span className={styles.averageValue}>
+              {materia.promedio.toFixed(2)}{" "}
+              <span className={styles.averageMax}>
+                / 10
+              </span>
+            </span>
+          </div>
         )}
-        {onDeleteMateria && (
-          <button
-            className={styles.deleteBtn}
-            onClick={() => onDeleteMateria(materia.id, materia.nombre)}
-            title={`Eliminar ${materia.nombre}`}
-          >
-            <Trash2 size={13} />
-            <span>Eliminar</span>
-          </button>
-        )}
+
+        <div className={styles.detailHeaderActions}>
+          {onEditMateria && (
+            <button
+              type="button"
+              className={styles.iconBtnSmall}
+              onClick={onEditMateria}
+              title="Editar Materia"
+            >
+              <Edit2 size={13} />
+            </button>
+          )}
+          {onDeleteMateria && (
+            <button
+              className={styles.deleteBtn}
+              onClick={() => onDeleteMateria(materia.id, materia.nombre)}
+              title={`Eliminar ${materia.nombre}`}
+            >
+              <Trash2 size={13} />
+              <span>Eliminar</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

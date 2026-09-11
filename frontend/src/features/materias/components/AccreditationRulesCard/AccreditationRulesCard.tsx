@@ -24,20 +24,20 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
   // pero habilitar la opción de verlas y configurarlas si el usuario lo desea.
   if (isAprobada && !showRules) {
     return (
-      <div className={styles.sectionBox} style={{ padding: "12px 16px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: "12px", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div className={`${styles.sectionBox} ${styles.sectionBoxCompact}`}>
+        <div className={styles.accreditedRow}>
+          <div className={styles.accreditedInfo}>
             <CheckCircle size={15} color="var(--emerald)" />
             <div>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>
+              <span className={styles.accreditedTitle}>
                 Materia Acreditada ({estado === "PROMOCIONADA" ? "Promoción Directa" : "Examen Final Aprobado"})
               </span>
-              <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "var(--text-dim)" }}>
+              <p className={styles.accreditedSubtitle}>
                 Las reglas de cursada y acreditación ya fueron cumplimentadas.
               </p>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className={styles.headerActions}>
             <button
               type="button"
               className={styles.btnConfigureRules}
@@ -67,11 +67,11 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
   return (
     <div className={styles.sectionBox}>
       <div className={styles.boxHeader}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className={styles.boxHeaderRow}>
+          <div className={styles.boxHeaderTitle}>
             <span>=≠ REGLAS DE ACREDITACIÓN CONFIGURADAS</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className={styles.headerActions}>
             {isAprobada && (
               <button
                 type="button"
@@ -147,10 +147,7 @@ export const AccreditationRulesCard: React.FC<AccreditationRulesCardProps> = ({
               </>
             ) : (
               <>
-                <span
-                  className={styles.rulePill}
-                  style={{ color: "var(--amber)" }}
-                >
+                <span className={`${styles.rulePill} ${styles.rulePillWarning}`}>
                   🚫 No admite promoción directa
                 </span>
                 <span className={styles.rulePill}>
