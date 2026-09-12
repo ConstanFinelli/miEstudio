@@ -1,13 +1,7 @@
-import React, { useEffect } from 'react';
-import styles from './MallaFocusBar.module.css';
-import type { MateriaNodeData } from '../types';
-import {
-  Sparkles,
-  ExternalLink,
-  X,
-  Minimize2,
-  Maximize2,
-} from 'lucide-react';
+import React, { useEffect } from "react";
+import styles from "./MallaFocusBar.module.css";
+import type { MateriaNodeData } from "../../../../types/malla";
+import { Sparkles, ExternalLink, X, Minimize2, Maximize2 } from "lucide-react";
 
 interface MallaFocusBarProps {
   nodeData: MateriaNodeData;
@@ -26,19 +20,19 @@ export const MallaFocusBar: React.FC<MallaFocusBarProps> = ({
   downstreamCount,
   onToggleFocusMode,
   onOpenDrawer,
-  onClearSelection
+  onClearSelection,
 }) => {
   const { materia } = nodeData;
 
   // Esc keyboard shortcut to close focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClearSelection();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClearSelection]);
 
   return (
@@ -48,7 +42,10 @@ export const MallaFocusBar: React.FC<MallaFocusBarProps> = ({
           <Sparkles size={11} />
           <span>Enfoque</span>
         </span>
-        <div className={styles.materiaTitle} title={`${materia.nombre} (${materia.codigo})`}>
+        <div
+          className={styles.materiaTitle}
+          title={`${materia.nombre} (${materia.codigo})`}
+        >
           {materia.nombre}
           <span className={styles.materiaCode}>[{materia.codigo}]</span>
         </div>
@@ -60,7 +57,9 @@ export const MallaFocusBar: React.FC<MallaFocusBarProps> = ({
           title="Materias correlativas requeridas para cursar o rendir esta materia"
         >
           <span>{upstreamCount}</span>
-          <span>{upstreamCount === 1 ? 'previa requerida' : 'previas requeridas'}</span>
+          <span>
+            {upstreamCount === 1 ? "previa requerida" : "previas requeridas"}
+          </span>
         </span>
 
         <span
@@ -68,7 +67,7 @@ export const MallaFocusBar: React.FC<MallaFocusBarProps> = ({
           title="Materias que podrás cursar o rendir al aprobar esta materia"
         >
           <span>{downstreamCount}</span>
-          <span>{downstreamCount === 1 ? 'desbloquea' : 'desbloquea'}</span>
+          <span>{downstreamCount === 1 ? "desbloquea" : "desbloquea"}</span>
         </span>
       </div>
 
@@ -76,16 +75,18 @@ export const MallaFocusBar: React.FC<MallaFocusBarProps> = ({
         {/* Toggle proximity / full grid */}
         <button
           type="button"
-          className={`${styles.btnAction} ${isFocusMode ? styles.btnActionActive : ''}`}
+          className={`${styles.btnAction} ${isFocusMode ? styles.btnActionActive : ""}`}
           onClick={onToggleFocusMode}
           title={
             isFocusMode
-              ? 'Ver todas las columnas de la malla completa'
-              : 'Acercar las correlativas ocultando materias no relacionadas'
+              ? "Ver todas las columnas de la malla completa"
+              : "Acercar las correlativas ocultando materias no relacionadas"
           }
         >
           {isFocusMode ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-          <span>{isFocusMode ? 'Correlativas Cercanas' : 'Malla Completa'}</span>
+          <span>
+            {isFocusMode ? "Correlativas Cercanas" : "Malla Completa"}
+          </span>
         </button>
 
         {/* View full subject diagnosis drawer */}

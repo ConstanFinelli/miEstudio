@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import styles from './MallaReferencias.module.css';
-import type { StatusFilter } from '../types';
+import React, { useState } from "react";
+import styles from "./MallaReferencias.module.css";
+import type { StatusFilter } from "../../../../types/malla";
 import {
   CheckCircle2,
   Award,
@@ -10,8 +10,8 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
-  Network
-} from 'lucide-react';
+  Network,
+} from "lucide-react";
 
 interface MallaReferenciasProps {
   stats: {
@@ -36,7 +36,7 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
 
   const handleChipClick = (target: StatusFilter) => {
     if (statusFilter === target) {
-      onSelectStatusFilter('TODOS');
+      onSelectStatusFilter("TODOS");
     } else {
       onSelectStatusFilter(target);
     }
@@ -56,9 +56,9 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
             <button
               type="button"
               className={`${styles.statusChip} ${styles.chipAprobada} ${
-                statusFilter === 'APROBADAS' ? styles.statusChipActive : ''
+                statusFilter === "APROBADAS" ? styles.statusChipActive : ""
               }`}
-              onClick={() => handleChipClick('APROBADAS')}
+              onClick={() => handleChipClick("APROBADAS")}
               title="Filtrar por materias aprobadas o promocionadas"
             >
               <CheckCircle2 size={12} />
@@ -70,25 +70,28 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
             <button
               type="button"
               className={`${styles.statusChip} ${styles.chipPromocionada} ${
-                statusFilter === 'APROBADAS' ? styles.statusChipActive : ''
+                statusFilter === "APROBADAS" ? styles.statusChipActive : ""
               }`}
-              onClick={() => handleChipClick('APROBADAS')}
+              onClick={() => handleChipClick("APROBADAS")}
               title="Materias acreditadas por promoción directa"
             >
               <Award size={12} />
               <span>Promocionada</span>
-              {typeof stats.promocionadasCount === 'number' && stats.promocionadasCount > 0 && (
-                <span className={styles.chipCount}>({stats.promocionadasCount})</span>
-              )}
+              {typeof stats.promocionadasCount === "number" &&
+                stats.promocionadasCount > 0 && (
+                  <span className={styles.chipCount}>
+                    ({stats.promocionadasCount})
+                  </span>
+                )}
             </button>
 
             {/* Cursando */}
             <button
               type="button"
               className={`${styles.statusChip} ${styles.chipCursando} ${
-                statusFilter === 'CURSANDO' ? styles.statusChipActive : ''
+                statusFilter === "CURSANDO" ? styles.statusChipActive : ""
               }`}
-              onClick={() => handleChipClick('CURSANDO')}
+              onClick={() => handleChipClick("CURSANDO")}
               title="Filtrar por materias en cursada actual"
             >
               <BookOpen size={12} />
@@ -100,9 +103,9 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
             <button
               type="button"
               className={`${styles.statusChip} ${styles.chipRegular} ${
-                statusFilter === 'REGULARES' ? styles.statusChipActive : ''
+                statusFilter === "REGULARES" ? styles.statusChipActive : ""
               }`}
-              onClick={() => handleChipClick('REGULARES')}
+              onClick={() => handleChipClick("REGULARES")}
               title="Filtrar por materias regulares (cursada aprobada, pendiente examen final)"
             >
               <Sparkles size={12} />
@@ -114,37 +117,41 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
             <button
               type="button"
               className={`${styles.statusChip} ${styles.chipHabilitada} ${
-                statusFilter === 'HABILITADAS' ? styles.statusChipActive : ''
+                statusFilter === "HABILITADAS" ? styles.statusChipActive : ""
               }`}
-              onClick={() => handleChipClick('HABILITADAS')}
+              onClick={() => handleChipClick("HABILITADAS")}
               title="Filtrar por materias habilitadas para cursar"
             >
               <span className={styles.chipDot} />
               <span>Habilitada</span>
-              <span className={styles.chipCount}>({stats.habilitadasCount})</span>
+              <span className={styles.chipCount}>
+                ({stats.habilitadasCount})
+              </span>
             </button>
 
             {/* Bloqueada */}
             <button
               type="button"
               className={`${styles.statusChip} ${styles.chipBloqueada} ${
-                statusFilter === 'BLOQUEADAS' ? styles.statusChipActive : ''
+                statusFilter === "BLOQUEADAS" ? styles.statusChipActive : ""
               }`}
-              onClick={() => handleChipClick('BLOQUEADAS')}
+              onClick={() => handleChipClick("BLOQUEADAS")}
               title="Filtrar por materias con correlativas faltantes"
             >
               <Lock size={11} />
               <span>Bloqueada</span>
-              <span className={styles.chipCount}>({stats.bloqueadasCount})</span>
+              <span className={styles.chipCount}>
+                ({stats.bloqueadasCount})
+              </span>
             </button>
 
             {/* Reset filter button if one is active */}
-            {statusFilter !== 'TODOS' && (
+            {statusFilter !== "TODOS" && (
               <button
                 type="button"
                 className={styles.statusChip}
-                onClick={() => onSelectStatusFilter('TODOS')}
-                style={{ background: 'transparent', borderStyle: 'dashed' }}
+                onClick={() => onSelectStatusFilter("TODOS")}
+                style={{ background: "transparent", borderStyle: "dashed" }}
                 title="Mostrar todos los estados"
               >
                 <span>Mostrar todas</span>
@@ -174,8 +181,8 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
 
           <button
             type="button"
-            className={`${styles.infoToggleBtn} ${showGuide ? styles.infoToggleBtnActive : ''}`}
-            onClick={() => setShowGuide(prev => !prev)}
+            className={`${styles.infoToggleBtn} ${showGuide ? styles.infoToggleBtnActive : ""}`}
+            onClick={() => setShowGuide((prev) => !prev)}
             title="Ver guía y significado de cada estado"
           >
             <Info size={13} />
@@ -195,25 +202,39 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
             </div>
             <div className={styles.guideList}>
               <div className={styles.guideItem}>
-                <CheckCircle2 size={12} color="var(--emerald)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <CheckCircle2
+                  size={12}
+                  color="var(--emerald)"
+                  style={{ marginTop: "2px", flexShrink: 0 }}
+                />
                 <div>
                   <span className={styles.guideItemTitle}>Aprobada: </span>
                   <span className={styles.guideItemDesc}>
-                    Cursada acreditada y examen final aprobado con su calificación final.
+                    Cursada acreditada y examen final aprobado con su
+                    calificación final.
                   </span>
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <Award size={12} color="#34d399" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <Award
+                  size={12}
+                  color="#34d399"
+                  style={{ marginTop: "2px", flexShrink: 0 }}
+                />
                 <div>
                   <span className={styles.guideItemTitle}>Promocionada: </span>
                   <span className={styles.guideItemDesc}>
-                    Acreditada directamente por promedio de cursada sin necesidad de rendir final.
+                    Acreditada directamente por promedio de cursada sin
+                    necesidad de rendir final.
                   </span>
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <BookOpen size={12} color="var(--primary-glow)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <BookOpen
+                  size={12}
+                  color="var(--primary-glow)"
+                  style={{ marginTop: "2px", flexShrink: 0 }}
+                />
                 <div>
                   <span className={styles.guideItemTitle}>Cursando: </span>
                   <span className={styles.guideItemDesc}>
@@ -222,29 +243,43 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <Sparkles size={12} color="#c084fc" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <Sparkles
+                  size={12}
+                  color="#c084fc"
+                  style={{ marginTop: "2px", flexShrink: 0 }}
+                />
                 <div>
                   <span className={styles.guideItemTitle}>Regular: </span>
                   <span className={styles.guideItemDesc}>
-                    Cursada aprobada (regularizada). Habilitado para presentarse a rendir el examen final.
+                    Cursada aprobada (regularizada). Habilitado para presentarse
+                    a rendir el examen final.
                   </span>
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <span className={styles.chipDot} style={{ color: '#22d3ee', marginTop: '5px', flexShrink: 0 }} />
+                <span
+                  className={styles.chipDot}
+                  style={{ color: "#22d3ee", marginTop: "5px", flexShrink: 0 }}
+                />
                 <div>
                   <span className={styles.guideItemTitle}>Habilitada: </span>
                   <span className={styles.guideItemDesc}>
-                    Cumple todas las correlativas previas requeridas. Lista para cursar.
+                    Cumple todas las correlativas previas requeridas. Lista para
+                    cursar.
                   </span>
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <Lock size={12} color="var(--text-muted)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <Lock
+                  size={12}
+                  color="var(--text-muted)"
+                  style={{ marginTop: "2px", flexShrink: 0 }}
+                />
                 <div>
                   <span className={styles.guideItemTitle}>Bloqueada: </span>
                   <span className={styles.guideItemDesc}>
-                    Aún adeuda correlativas requeridas para poder inscribirse o cursar.
+                    Aún adeuda correlativas requeridas para poder inscribirse o
+                    cursar.
                   </span>
                 </div>
               </div>
@@ -258,32 +293,48 @@ export const MallaReferencias: React.FC<MallaReferenciasProps> = ({
             </div>
             <div className={styles.guideList}>
               <div className={styles.guideItem}>
-                <span style={{ color: 'var(--amber)', fontWeight: 700 }}>•</span>
+                <span style={{ color: "var(--amber)", fontWeight: 700 }}>
+                  •
+                </span>
                 <div>
-                  <span className={styles.guideItemTitle}>Inspección de correlatividades: </span>
+                  <span className={styles.guideItemTitle}>
+                    Inspección de correlatividades:{" "}
+                  </span>
                   <span className={styles.guideItemDesc}>
-                    Haz clic o pasa el cursor sobre cualquier materia para visualizar las curvas de dependencias.
-                    Hacia la izquierda (ámbar) verás qué necesitas antes; hacia la derecha (verde) qué se habilitará.
+                    Haz clic o pasa el cursor sobre cualquier materia para
+                    visualizar las curvas de dependencias. Hacia la izquierda
+                    (ámbar) verás qué necesitas antes; hacia la derecha (verde)
+                    qué se habilitará.
                   </span>
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <span style={{ color: 'var(--emerald)', fontWeight: 700 }}>•</span>
+                <span style={{ color: "var(--emerald)", fontWeight: 700 }}>
+                  •
+                </span>
                 <div>
-                  <span className={styles.guideItemTitle}>Modo Simulación: </span>
+                  <span className={styles.guideItemTitle}>
+                    Modo Simulación:{" "}
+                  </span>
                   <span className={styles.guideItemDesc}>
-                    Haz clic en "Simular Aprobaciones" en la barra superior para activar el sandbox interactivo y proyectar
-                    en tiempo real el impacto de aprobar cualquier materia.
+                    Haz clic en "Simular Aprobaciones" en la barra superior para
+                    activar el sandbox interactivo y proyectar en tiempo real el
+                    impacto de aprobar cualquier materia.
                   </span>
                 </div>
               </div>
               <div className={styles.guideItem}>
-                <span style={{ color: 'var(--primary-glow)', fontWeight: 700 }}>•</span>
+                <span style={{ color: "var(--primary-glow)", fontWeight: 700 }}>
+                  •
+                </span>
                 <div>
-                  <span className={styles.guideItemTitle}>Panel de diagnóstico: </span>
+                  <span className={styles.guideItemTitle}>
+                    Panel de diagnóstico:{" "}
+                  </span>
                   <span className={styles.guideItemDesc}>
-                    Al hacer clic en cualquier materia se abre el panel lateral donde puedes consultar el detalle de
-                    correlativas cumplidas y faltantes, tanto para cursar como para rendir.
+                    Al hacer clic en cualquier materia se abre el panel lateral
+                    donde puedes consultar el detalle de correlativas cumplidas
+                    y faltantes, tanto para cursar como para rendir.
                   </span>
                 </div>
               </div>

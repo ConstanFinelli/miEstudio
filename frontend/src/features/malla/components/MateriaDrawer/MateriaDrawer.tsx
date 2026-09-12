@@ -1,6 +1,6 @@
-import React from 'react';
-import styles from './MateriaDrawer.module.css';
-import type { MateriaNodeData } from '../types';
+import React from "react";
+import styles from "./MateriaDrawer.module.css";
+import type { MateriaNodeData } from "../../../../types/malla";
 import {
   X,
   CheckCircle2,
@@ -9,9 +9,9 @@ import {
   Edit3,
   ExternalLink,
   Lock,
-  ArrowRight
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+  ArrowRight,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface MateriaDrawerProps {
   nodeData: MateriaNodeData | null;
@@ -24,7 +24,7 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
   nodeData,
   onClose,
   onSelectMateria,
-  onOpenEditCorrelativas
+  onOpenEditCorrelativas,
 }) => {
   const navigate = useNavigate();
 
@@ -40,15 +40,20 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
     desbloqueaDirectas,
     desbloqueaTotalCount,
     puedeCursar,
-    puedeRendir
+    puedeRendir,
   } = nodeData;
 
-  const totalCursarReqs = correlativasCursarCumplidas.length + correlativasCursarFaltantes.length;
-  const totalRendirReqs = correlativasRendirCumplidas.length + correlativasRendirFaltantes.length;
+  const totalCursarReqs =
+    correlativasCursarCumplidas.length + correlativasCursarFaltantes.length;
+  const totalRendirReqs =
+    correlativasRendirCumplidas.length + correlativasRendirFaltantes.length;
 
   return (
     <div className={styles.drawerOverlay} onClick={onClose}>
-      <div className={styles.drawerContent} onClick={e => e.stopPropagation()}>
+      <div
+        className={styles.drawerContent}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className={styles.drawerHeader}>
           <div className={styles.headerInfo}>
@@ -78,20 +83,21 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
             <span className={styles.statusLabel}>Estado Académico</span>
             <span
               style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '11px',
+                fontFamily: "var(--font-mono)",
+                fontSize: "11px",
                 fontWeight: 700,
-                textTransform: 'uppercase',
+                textTransform: "uppercase",
                 color:
-                  computedStatus === 'APROBADA' || computedStatus === 'PROMOCIONADA'
-                    ? 'var(--emerald)'
-                    : computedStatus === 'CURSANDO'
-                    ? 'var(--primary-glow)'
-                    : computedStatus === 'HABILITADA'
-                    ? '#22d3ee'
-                    : computedStatus === 'REGULAR'
-                    ? '#a78bfa'
-                    : 'var(--text-muted)'
+                  computedStatus === "APROBADA" ||
+                  computedStatus === "PROMOCIONADA"
+                    ? "var(--emerald)"
+                    : computedStatus === "CURSANDO"
+                      ? "var(--primary-glow)"
+                      : computedStatus === "HABILITADA"
+                        ? "#22d3ee"
+                        : computedStatus === "REGULAR"
+                          ? "#a78bfa"
+                          : "var(--text-muted)",
               }}
             >
               {computedStatus}
@@ -110,17 +116,25 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
                 )}
                 <span>Correlativas para Cursar</span>
               </span>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--text-dim)",
+                }}
+              >
                 {correlativasCursarCumplidas.length}/{totalCursarReqs}
               </span>
             </div>
 
             {totalCursarReqs === 0 ? (
-              <div className={styles.emptyPill}>Sin correlativas previas requeridas para cursar.</div>
+              <div className={styles.emptyPill}>
+                Sin correlativas previas requeridas para cursar.
+              </div>
             ) : (
               <div className={styles.reqList}>
                 {/* Cumplidas */}
-                {correlativasCursarCumplidas.map(req => (
+                {correlativasCursarCumplidas.map((req) => (
                   <div
                     key={req.id}
                     className={styles.reqItem}
@@ -128,28 +142,46 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
                     title={`Ver ${req.nombre}`}
                   >
                     <div className={styles.reqItemLeft}>
-                      <CheckCircle2 size={13} className={styles.reqIconPassed} />
+                      <CheckCircle2
+                        size={13}
+                        className={styles.reqIconPassed}
+                      />
                       <span className={styles.reqName}>{req.nombre}</span>
                     </div>
-                    <span className={styles.reqStatusBadge} style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--emerald)' }}>
+                    <span
+                      className={styles.reqStatusBadge}
+                      style={{
+                        background: "rgba(16, 185, 129, 0.15)",
+                        color: "var(--emerald)",
+                      }}
+                    >
                       {req.estado}
                     </span>
                   </div>
                 ))}
                 {/* Faltantes */}
-                {correlativasCursarFaltantes.map(req => (
+                {correlativasCursarFaltantes.map((req) => (
                   <div
                     key={req.id}
                     className={styles.reqItem}
                     onClick={() => onSelectMateria(req.id)}
                     title={`Ver ${req.nombre} (Requisito faltante)`}
-                    style={{ borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                    style={{ borderColor: "rgba(245, 158, 11, 0.4)" }}
                   >
                     <div className={styles.reqItemLeft}>
-                      <AlertCircle size={13} className={styles.reqIconMissing} />
+                      <AlertCircle
+                        size={13}
+                        className={styles.reqIconMissing}
+                      />
                       <span className={styles.reqName}>{req.nombre}</span>
                     </div>
-                    <span className={styles.reqStatusBadge} style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--amber)' }}>
+                    <span
+                      className={styles.reqStatusBadge}
+                      style={{
+                        background: "rgba(245, 158, 11, 0.15)",
+                        color: "var(--amber)",
+                      }}
+                    >
                       Falta regularizar
                     </span>
                   </div>
@@ -169,16 +201,24 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
                 )}
                 <span>Correlativas para Rendir Final</span>
               </span>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--text-dim)",
+                }}
+              >
                 {correlativasRendirCumplidas.length}/{totalRendirReqs}
               </span>
             </div>
 
             {totalRendirReqs === 0 ? (
-              <div className={styles.emptyPill}>Sin correlativas para rendir examen final.</div>
+              <div className={styles.emptyPill}>
+                Sin correlativas para rendir examen final.
+              </div>
             ) : (
               <div className={styles.reqList}>
-                {correlativasRendirCumplidas.map(req => (
+                {correlativasRendirCumplidas.map((req) => (
                   <div
                     key={req.id}
                     className={styles.reqItem}
@@ -186,27 +226,42 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
                     title={`Ver ${req.nombre}`}
                   >
                     <div className={styles.reqItemLeft}>
-                      <CheckCircle2 size={13} className={styles.reqIconPassed} />
+                      <CheckCircle2
+                        size={13}
+                        className={styles.reqIconPassed}
+                      />
                       <span className={styles.reqName}>{req.nombre}</span>
                     </div>
-                    <span className={styles.reqStatusBadge} style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--emerald)' }}>
+                    <span
+                      className={styles.reqStatusBadge}
+                      style={{
+                        background: "rgba(16, 185, 129, 0.15)",
+                        color: "var(--emerald)",
+                      }}
+                    >
                       {req.estado}
                     </span>
                   </div>
                 ))}
-                {correlativasRendirFaltantes.map(req => (
+                {correlativasRendirFaltantes.map((req) => (
                   <div
                     key={req.id}
                     className={styles.reqItem}
                     onClick={() => onSelectMateria(req.id)}
                     title={`Ver ${req.nombre} (Requiere final aprobado)`}
-                    style={{ borderColor: 'rgba(239, 68, 68, 0.35)' }}
+                    style={{ borderColor: "rgba(239, 68, 68, 0.35)" }}
                   >
                     <div className={styles.reqItemLeft}>
-                      <AlertCircle size={13} style={{ color: 'var(--red)' }} />
+                      <AlertCircle size={13} style={{ color: "var(--red)" }} />
                       <span className={styles.reqName}>{req.nombre}</span>
                     </div>
-                    <span className={styles.reqStatusBadge} style={{ background: 'rgba(239, 68, 68, 0.15)', color: 'var(--red)' }}>
+                    <span
+                      className={styles.reqStatusBadge}
+                      style={{
+                        background: "rgba(239, 68, 68, 0.15)",
+                        color: "var(--red)",
+                      }}
+                    >
                       Final pendiente
                     </span>
                   </div>
@@ -223,25 +278,40 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
                 <span>Desbloquea a Futuro ({desbloqueaDirectas.length})</span>
               </span>
               {desbloqueaTotalCount > desbloqueaDirectas.length && (
-                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
                   Total en carrera: {desbloqueaTotalCount}
                 </span>
               )}
             </div>
 
             {desbloqueaDirectas.length === 0 ? (
-              <div className={styles.emptyPill}>No es requisito obligatorio de materias posteriores.</div>
+              <div className={styles.emptyPill}>
+                No es requisito obligatorio de materias posteriores.
+              </div>
             ) : (
               <div className={styles.unlockedList}>
-                {desbloqueaDirectas.map(dep => (
+                {desbloqueaDirectas.map((dep) => (
                   <div
                     key={dep.id}
                     className={styles.unlockedItem}
                     onClick={() => onSelectMateria(dep.id)}
                     title={`Ver ${dep.nombre}`}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-dim)', fontWeight: 600 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "10px",
+                          color: "var(--text-dim)",
+                          fontWeight: 600,
+                        }}
+                      >
                         {dep.codigo}
                       </span>
                       <span className={styles.reqName}>{dep.nombre}</span>
@@ -270,7 +340,7 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
             type="button"
             className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
             onClick={() => {
-              navigate('/materias');
+              navigate("/materias");
             }}
             title="Ver información académica completa en Materias"
           >

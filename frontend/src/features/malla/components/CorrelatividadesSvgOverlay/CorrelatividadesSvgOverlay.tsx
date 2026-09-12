@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import styles from './CorrelatividadesSvgOverlay.module.css';
-import type { ConnectionLink } from '../types';
+import React, { useState, useEffect, useCallback } from "react";
+import styles from "./CorrelatividadesSvgOverlay.module.css";
+import type { ConnectionLink } from "../../../../types/malla";
 
 interface CorrelatividadesSvgOverlayProps {
   connections: ConnectionLink[];
@@ -11,19 +11,17 @@ interface CorrelatividadesSvgOverlayProps {
 interface PathGeometry {
   id: string;
   d: string;
-  direction: 'UPSTREAM' | 'DOWNSTREAM';
-  tipo: 'CURSAR' | 'RENDIR';
+  direction: "UPSTREAM" | "DOWNSTREAM";
+  tipo: "CURSAR" | "RENDIR";
   x1: number;
   y1: number;
   x2: number;
   y2: number;
 }
 
-export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProps> = ({
-  connections,
-  innerRef,
-  scrollContainerRef
-}) => {
+export const CorrelatividadesSvgOverlay: React.FC<
+  CorrelatividadesSvgOverlayProps
+> = ({ connections, innerRef, scrollContainerRef }) => {
   const [paths, setPaths] = useState<PathGeometry[]>([]);
 
   const recalculatePaths = useCallback(() => {
@@ -38,7 +36,10 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
     // Helper to verify that an element is visible, not collapsed, and rendered with real dimensions
     const isElementVisible = (el: HTMLElement | null): boolean => {
       if (!el) return false;
-      if (el.offsetParent === null && window.getComputedStyle(el).position !== 'fixed') {
+      if (
+        el.offsetParent === null &&
+        window.getComputedStyle(el).position !== "fixed"
+      ) {
         return false;
       }
       const r = el.getBoundingClientRect();
@@ -49,13 +50,17 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
       if (collapsedParent) return false;
 
       const st = window.getComputedStyle(el);
-      if (st.display === 'none' || st.visibility === 'hidden' || parseFloat(st.opacity) < 0.1) {
+      if (
+        st.display === "none" ||
+        st.visibility === "hidden" ||
+        parseFloat(st.opacity) < 0.1
+      ) {
         return false;
       }
       return true;
     };
 
-    connections.forEach(conn => {
+    connections.forEach((conn) => {
       const sourceEl = document.getElementById(`materia-node-${conn.sourceId}`);
       const targetEl = document.getElementById(`materia-node-${conn.targetId}`);
 
@@ -75,7 +80,7 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
       const tCenterY = tRect.top + tRect.height / 2 - innerRect.top;
 
       let x1: number, y1: number, x2: number, y2: number;
-      let d = '';
+      let d = "";
 
       // Caso 1: Misma columna (mismo año lectivo, tarjetas apiladas verticalmente)
       if (Math.abs(sLeft - tLeft) < 50) {
@@ -116,7 +121,7 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
         x1,
         y1,
         x2,
-        y2
+        y2,
       });
     });
 
@@ -147,7 +152,7 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
 
     // ResizeObserver to detect layout and dimension changes on innerRef
     let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== 'undefined' && innerRef.current) {
+    if (typeof ResizeObserver !== "undefined" && innerRef.current) {
       ro = new ResizeObserver(() => {
         recalculatePaths();
       });
@@ -159,9 +164,11 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
       requestAnimationFrame(recalculatePaths);
     };
 
-    window.addEventListener('resize', recalculatePaths);
+    window.addEventListener("resize", recalculatePaths);
     if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener("scroll", handleScroll, {
+        passive: true,
+      });
     }
 
     return () => {
@@ -170,9 +177,9 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
       clearTimeout(t2);
       clearTimeout(t3);
       if (ro) ro.disconnect();
-      window.removeEventListener('resize', recalculatePaths);
+      window.removeEventListener("resize", recalculatePaths);
       if (scrollContainer) {
-        scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener("scroll", handleScroll);
       }
     };
   }, [recalculatePaths, scrollContainerRef, connections, innerRef]);
@@ -209,13 +216,15 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
         </marker>
       </defs>
 
-      {paths.map(path => (
+      {paths.map((path) => (
         <g key={path.id}>
           {/* Main animated dashed path */}
           <path
             d={path.d}
             className={`${styles.linkPath} ${
-              path.direction === 'UPSTREAM' ? styles.linkUpstream : styles.linkDownstream
+              path.direction === "UPSTREAM"
+                ? styles.linkUpstream
+                : styles.linkDownstream
             }`}
             markerEnd={`url(#malla-arrow-${path.direction.toLowerCase()})`}
           />
@@ -225,7 +234,9 @@ export const CorrelatividadesSvgOverlay: React.FC<CorrelatividadesSvgOverlayProp
             cy={path.y1}
             r={3.5}
             className={
-              path.direction === 'UPSTREAM' ? styles.originDotUpstream : styles.originDotDownstream
+              path.direction === "UPSTREAM"
+                ? styles.originDotUpstream
+                : styles.originDotDownstream
             }
           />
         </g>

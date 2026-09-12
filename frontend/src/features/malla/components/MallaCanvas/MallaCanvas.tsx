@@ -1,9 +1,13 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
-import styles from './MallaCanvas.module.css';
-import { MateriaNode } from './MateriaNode';
-import { CorrelatividadesSvgOverlay } from './CorrelatividadesSvgOverlay';
-import { MallaFocusBar } from './MallaFocusBar';
-import type { MateriaNodeData, ConnectionLink, StatusFilter } from '../types';
+import React, { useRef, useState, useMemo, useEffect } from "react";
+import styles from "./MallaCanvas.module.css";
+import { MateriaNode } from "../MateriaNode";
+import { CorrelatividadesSvgOverlay } from "../CorrelatividadesSvgOverlay";
+import { MallaFocusBar } from "../MallaFocusBar";
+import type {
+  MateriaNodeData,
+  ConnectionLink,
+  StatusFilter,
+} from "../../../../types/malla";
 
 interface MallaCanvasProps {
   yearsList: number[];
@@ -30,7 +34,7 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
   onSelectMateria,
   onHoverMateria,
   onToggleSimulate,
-  onOpenDrawer
+  onOpenDrawer,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -42,7 +46,9 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
   const selectedNodeData = useMemo(() => {
     if (!selectedMateriaId) return null;
     for (const year of yearsList) {
-      const found = (materiasByYear[year] || []).find(n => n.materia.id === selectedMateriaId);
+      const found = (materiasByYear[year] || []).find(
+        (n) => n.materia.id === selectedMateriaId,
+      );
       if (found) return found;
     }
     return null;
@@ -50,26 +56,32 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
 
   // Counts of connected prerequisites and unlocked subjects
   const upstreamCount = useMemo(() => {
-    return activeConnections.filter(c => c.direction === 'UPSTREAM').length;
+    return activeConnections.filter((c) => c.direction === "UPSTREAM").length;
   }, [activeConnections]);
 
   const downstreamCount = useMemo(() => {
-    return activeConnections.filter(c => c.direction === 'DOWNSTREAM').length;
+    return activeConnections.filter((c) => c.direction === "DOWNSTREAM").length;
   }, [activeConnections]);
 
   // Determinar si una materia está conectada al nodo enfocado
   const isNodeUpstream = (id: string) => {
-    return activeConnections.some(c => c.sourceId === id && c.direction === 'UPSTREAM');
+    return activeConnections.some(
+      (c) => c.sourceId === id && c.direction === "UPSTREAM",
+    );
   };
 
   const isNodeDownstream = (id: string) => {
-    return activeConnections.some(c => c.targetId === id && c.direction === 'DOWNSTREAM');
+    return activeConnections.some(
+      (c) => c.targetId === id && c.direction === "DOWNSTREAM",
+    );
   };
 
   // Determinar si una materia es relevante en modo enfoque
   const isNodeRelevant = (id: string) => {
     if (!selectedMateriaId) return true;
-    return id === selectedMateriaId || isNodeUpstream(id) || isNodeDownstream(id);
+    return (
+      id === selectedMateriaId || isNodeUpstream(id) || isNodeDownstream(id)
+    );
   };
 
   // Determinar si un nodo debe atenuarse (cuando hay un nodo enfocado y no tiene relación directa)
@@ -86,14 +98,19 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
       return isNodeRelevant(node.materia.id);
     }
 
-    if (statusFilter === 'TODOS') return true;
-    if (statusFilter === 'HABILITADAS') return node.computedStatus === 'HABILITADA';
-    if (statusFilter === 'CURSANDO') return node.computedStatus === 'CURSANDO';
-    if (statusFilter === 'REGULARES') return node.computedStatus === 'REGULAR';
-    if (statusFilter === 'APROBADAS') {
-      return node.computedStatus === 'APROBADA' || node.computedStatus === 'PROMOCIONADA';
+    if (statusFilter === "TODOS") return true;
+    if (statusFilter === "HABILITADAS")
+      return node.computedStatus === "HABILITADA";
+    if (statusFilter === "CURSANDO") return node.computedStatus === "CURSANDO";
+    if (statusFilter === "REGULARES") return node.computedStatus === "REGULAR";
+    if (statusFilter === "APROBADAS") {
+      return (
+        node.computedStatus === "APROBADA" ||
+        node.computedStatus === "PROMOCIONADA"
+      );
     }
-    if (statusFilter === 'BLOQUEADAS') return node.computedStatus === 'BLOQUEADA';
+    if (statusFilter === "BLOQUEADAS")
+      return node.computedStatus === "BLOQUEADA";
 
     return true;
   };
@@ -102,7 +119,9 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
   useEffect(() => {
     if (selectedMateriaId && containerRef.current) {
       const timer = setTimeout(() => {
-        const selectedEl = document.getElementById(`materia-node-${selectedMateriaId}`);
+        const selectedEl = document.getElementById(
+          `materia-node-${selectedMateriaId}`,
+        );
         const container = containerRef.current;
         if (selectedEl && container) {
           const elRect = selectedEl.getBoundingClientRect();
@@ -116,7 +135,7 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
 
           container.scrollTo({
             left: Math.max(0, targetScroll),
-            behavior: 'smooth'
+            behavior: "smooth",
           });
         }
       }, 100);
@@ -133,9 +152,9 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
           isFocusMode={isFocusMode}
           upstreamCount={upstreamCount}
           downstreamCount={downstreamCount}
-          onToggleFocusMode={() => setIsFocusMode(prev => !prev)}
+          onToggleFocusMode={() => setIsFocusMode((prev) => !prev)}
           onOpenDrawer={onOpenDrawer}
-          onClearSelection={() => onSelectMateria('')}
+          onClearSelection={() => onSelectMateria("")}
         />
       )}
 
@@ -144,8 +163,11 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
         ref={containerRef}
         onClick={(e) => {
           // Deseleccionar si se hace clic en el fondo vacío del lienzo
-          if (e.target === containerRef.current || e.target === innerRef.current) {
-            if (selectedMateriaId) onSelectMateria('');
+          if (
+            e.target === containerRef.current ||
+            e.target === innerRef.current
+          ) {
+            if (selectedMateriaId) onSelectMateria("");
           }
         }}
       >
@@ -158,40 +180,53 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
           />
 
           {/* Columns by Year */}
-          {yearsList.map(year => {
+          {yearsList.map((year) => {
             const yearNodes = materiasByYear[year] || [];
             const aprobadas = yearNodes.filter(
-              n => n.computedStatus === 'APROBADA' || n.computedStatus === 'PROMOCIONADA'
+              (n) =>
+                n.computedStatus === "APROBADA" ||
+                n.computedStatus === "PROMOCIONADA",
             ).length;
             const total = yearNodes.length;
             const pct = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
 
             // En modo enfoque, determinar si la columna tiene alguna materia relevante
-            const hasRelevantInYear = yearNodes.some(n => isNodeRelevant(n.materia.id));
-            const isColumnCollapsed = isFocusMode && Boolean(selectedMateriaId) && !hasRelevantInYear;
+            const hasRelevantInYear = yearNodes.some((n) =>
+              isNodeRelevant(n.materia.id),
+            );
+            const isColumnCollapsed =
+              isFocusMode && Boolean(selectedMateriaId) && !hasRelevantInYear;
 
             // Sub-agrupar por cuatrimestre
-            const cuatri1 = yearNodes.filter(n => {
-              const c = (n.materia.cuatrimestre || '').trim().toLowerCase();
-              return c === '1c' || c === '1' || c.startsWith('1');
+            const cuatri1 = yearNodes.filter((n) => {
+              const c = (n.materia.cuatrimestre || "").trim().toLowerCase();
+              return c === "1c" || c === "1" || c.startsWith("1");
             });
-            const cuatri2 = yearNodes.filter(n => {
-              const c = (n.materia.cuatrimestre || '').trim().toLowerCase();
-              return c === '2c' || c === '2' || c.startsWith('2');
+            const cuatri2 = yearNodes.filter((n) => {
+              const c = (n.materia.cuatrimestre || "").trim().toLowerCase();
+              return c === "2c" || c === "2" || c.startsWith("2");
             });
-            const anuales = yearNodes.filter(n => {
-              const c = (n.materia.cuatrimestre || '').trim().toLowerCase();
-              return c === 'anual' || (!c.startsWith('1') && !c.startsWith('2'));
+            const anuales = yearNodes.filter((n) => {
+              const c = (n.materia.cuatrimestre || "").trim().toLowerCase();
+              return (
+                c === "anual" || (!c.startsWith("1") && !c.startsWith("2"))
+              );
             });
 
-            const cuatri1HasRelevant = cuatri1.some(n => isNodeRelevant(n.materia.id));
-            const anualesHasRelevant = anuales.some(n => isNodeRelevant(n.materia.id));
-            const cuatri2HasRelevant = cuatri2.some(n => isNodeRelevant(n.materia.id));
+            const cuatri1HasRelevant = cuatri1.some((n) =>
+              isNodeRelevant(n.materia.id),
+            );
+            const anualesHasRelevant = anuales.some((n) =>
+              isNodeRelevant(n.materia.id),
+            );
+            const cuatri2HasRelevant = cuatri2.some((n) =>
+              isNodeRelevant(n.materia.id),
+            );
 
             return (
               <div
                 key={year}
-                className={`${styles.yearColumn} ${isColumnCollapsed ? styles.yearColumnCollapsed : ''}`}
+                className={`${styles.yearColumn} ${isColumnCollapsed ? styles.yearColumnCollapsed : ""}`}
               >
                 {/* Year Header Card */}
                 <div className={styles.yearHeader}>
@@ -213,27 +248,34 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                 {cuatri1.length > 0 && (
                   <div
                     className={`${styles.periodGroup} ${
-                      isFocusMode && Boolean(selectedMateriaId) && !cuatri1HasRelevant
+                      isFocusMode &&
+                      Boolean(selectedMateriaId) &&
+                      !cuatri1HasRelevant
                         ? styles.periodGroupCollapsed
-                        : ''
+                        : ""
                     }`}
                   >
                     <div className={styles.periodDivider}>
-                      <span className={styles.periodDividerLabel}>1° Cuatrimestre</span>
+                      <span className={styles.periodDividerLabel}>
+                        1° Cuatrimestre
+                      </span>
                       <span className={styles.periodDividerLine} />
                     </div>
                     <div className={styles.nodesList}>
-                      {cuatri1.map(node => {
+                      {cuatri1.map((node) => {
                         const isRel = isNodeRelevant(node.materia.id);
-                        const isCollapsed = isFocusMode && Boolean(selectedMateriaId) && !isRel;
+                        const isCollapsed =
+                          isFocusMode && Boolean(selectedMateriaId) && !isRel;
 
                         return (
                           <div
                             key={node.materia.id}
                             className={`${styles.nodeWrapper} ${
-                              isCollapsed ? styles.nodeWrapperCollapsed : ''
+                              isCollapsed ? styles.nodeWrapperCollapsed : ""
                             }`}
-                            style={{ display: isNodeVisible(node) ? undefined : 'none' }}
+                            style={{
+                              display: isNodeVisible(node) ? undefined : "none",
+                            }}
                           >
                             <MateriaNode
                               nodeData={node}
@@ -244,7 +286,9 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                               isDimmed={isNodeDimmed(node.materia.id)}
                               isSimulationActive={isSimulationActive}
                               onSelect={onSelectMateria}
-                              onHover={selectedMateriaId ? () => {} : onHoverMateria}
+                              onHover={
+                                selectedMateriaId ? () => {} : onHoverMateria
+                              }
                               onToggleSimulate={onToggleSimulate}
                             />
                           </div>
@@ -258,9 +302,11 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                 {anuales.length > 0 && (
                   <div
                     className={`${styles.periodGroup} ${
-                      isFocusMode && Boolean(selectedMateriaId) && !anualesHasRelevant
+                      isFocusMode &&
+                      Boolean(selectedMateriaId) &&
+                      !anualesHasRelevant
                         ? styles.periodGroupCollapsed
-                        : ''
+                        : ""
                     }`}
                   >
                     <div className={styles.periodDivider}>
@@ -268,17 +314,20 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                       <span className={styles.periodDividerLine} />
                     </div>
                     <div className={styles.nodesList}>
-                      {anuales.map(node => {
+                      {anuales.map((node) => {
                         const isRel = isNodeRelevant(node.materia.id);
-                        const isCollapsed = isFocusMode && Boolean(selectedMateriaId) && !isRel;
+                        const isCollapsed =
+                          isFocusMode && Boolean(selectedMateriaId) && !isRel;
 
                         return (
                           <div
                             key={node.materia.id}
                             className={`${styles.nodeWrapper} ${
-                              isCollapsed ? styles.nodeWrapperCollapsed : ''
+                              isCollapsed ? styles.nodeWrapperCollapsed : ""
                             }`}
-                            style={{ display: isNodeVisible(node) ? undefined : 'none' }}
+                            style={{
+                              display: isNodeVisible(node) ? undefined : "none",
+                            }}
                           >
                             <MateriaNode
                               nodeData={node}
@@ -289,7 +338,9 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                               isDimmed={isNodeDimmed(node.materia.id)}
                               isSimulationActive={isSimulationActive}
                               onSelect={onSelectMateria}
-                              onHover={selectedMateriaId ? () => {} : onHoverMateria}
+                              onHover={
+                                selectedMateriaId ? () => {} : onHoverMateria
+                              }
                               onToggleSimulate={onToggleSimulate}
                             />
                           </div>
@@ -303,27 +354,34 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                 {cuatri2.length > 0 && (
                   <div
                     className={`${styles.periodGroup} ${
-                      isFocusMode && Boolean(selectedMateriaId) && !cuatri2HasRelevant
+                      isFocusMode &&
+                      Boolean(selectedMateriaId) &&
+                      !cuatri2HasRelevant
                         ? styles.periodGroupCollapsed
-                        : ''
+                        : ""
                     }`}
                   >
                     <div className={styles.periodDivider}>
-                      <span className={styles.periodDividerLabel}>2° Cuatrimestre</span>
+                      <span className={styles.periodDividerLabel}>
+                        2° Cuatrimestre
+                      </span>
                       <span className={styles.periodDividerLine} />
                     </div>
                     <div className={styles.nodesList}>
-                      {cuatri2.map(node => {
+                      {cuatri2.map((node) => {
                         const isRel = isNodeRelevant(node.materia.id);
-                        const isCollapsed = isFocusMode && Boolean(selectedMateriaId) && !isRel;
+                        const isCollapsed =
+                          isFocusMode && Boolean(selectedMateriaId) && !isRel;
 
                         return (
                           <div
                             key={node.materia.id}
                             className={`${styles.nodeWrapper} ${
-                              isCollapsed ? styles.nodeWrapperCollapsed : ''
+                              isCollapsed ? styles.nodeWrapperCollapsed : ""
                             }`}
-                            style={{ display: isNodeVisible(node) ? undefined : 'none' }}
+                            style={{
+                              display: isNodeVisible(node) ? undefined : "none",
+                            }}
                           >
                             <MateriaNode
                               nodeData={node}
@@ -334,7 +392,9 @@ export const MallaCanvas: React.FC<MallaCanvasProps> = ({
                               isDimmed={isNodeDimmed(node.materia.id)}
                               isSimulationActive={isSimulationActive}
                               onSelect={onSelectMateria}
-                              onHover={selectedMateriaId ? () => {} : onHoverMateria}
+                              onHover={
+                                selectedMateriaId ? () => {} : onHoverMateria
+                              }
                               onToggleSimulate={onToggleSimulate}
                             />
                           </div>

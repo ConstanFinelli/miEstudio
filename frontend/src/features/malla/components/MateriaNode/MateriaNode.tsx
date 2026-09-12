@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./MateriaNode.module.css";
-import type { MateriaNodeData } from "../types";
+import type { MateriaNodeData } from "../../../../types/malla";
 import {
   CheckCircle2,
   Lock,
@@ -90,7 +90,10 @@ export const MateriaNode: React.FC<MateriaNodeProps> = ({
         );
       case "REGULAR":
         return (
-          <span title="Regularizada (Pendiente de Final)" className={styles.iconWrap}>
+          <span
+            title="Regularizada (Pendiente de Final)"
+            className={styles.iconWrap}
+          >
             <Sparkles size={12} className={styles.iconRegular} />
           </span>
         );

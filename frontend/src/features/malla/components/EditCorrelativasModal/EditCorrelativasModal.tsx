@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styles from './EditCorrelativasModal.module.css';
-import type { Materia } from '../../../types/academic';
+import type { Materia } from '../../../../types/academic';
 import { X, Check } from 'lucide-react';
 
 interface EditCorrelativasModalProps {

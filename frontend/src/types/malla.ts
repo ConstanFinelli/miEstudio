@@ -1,15 +1,21 @@
-import type { Materia } from '../../types/academic';
+import type { Materia } from "./academic";
 
 export type MallaStatus =
-  | 'APROBADA'
-  | 'PROMOCIONADA'
-  | 'CURSANDO'
-  | 'REGULAR'
-  | 'HABILITADA'
-  | 'BLOQUEADA';
+  | "APROBADA"
+  | "PROMOCIONADA"
+  | "CURSANDO"
+  | "REGULAR"
+  | "HABILITADA"
+  | "BLOQUEADA";
 
-export type FilterMode = 'TODAS' | 'SOLO_CURSAR' | 'SOLO_RENDIR';
-export type StatusFilter = 'TODOS' | 'HABILITADAS' | 'CURSANDO' | 'REGULARES' | 'APROBADAS' | 'BLOQUEADAS';
+export type FilterMode = "TODAS" | "SOLO_CURSAR" | "SOLO_RENDIR";
+export type StatusFilter =
+  | "TODOS"
+  | "HABILITADAS"
+  | "CURSANDO"
+  | "REGULARES"
+  | "APROBADAS"
+  | "BLOQUEADAS";
 
 export interface MateriaNodeData {
   materia: Materia;
@@ -29,7 +35,7 @@ export interface ConnectionLink {
   id: string;
   sourceId: string;
   targetId: string;
-  tipo: 'CURSAR' | 'RENDIR';
+  tipo: "CURSAR" | "RENDIR";
   isHighlighted: boolean;
-  direction: 'UPSTREAM' | 'DOWNSTREAM'; // UPSTREAM = prerequisite of active; DOWNSTREAM = unlocked by active
+  direction: "UPSTREAM" | "DOWNSTREAM"; // UPSTREAM = prerequisite of active; DOWNSTREAM = unlocked by active
 }

@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import styles from "./MallaCurricularView.module.css";
 import { useMaterias } from "../../hooks";
 import { useAuth } from "../../context";
-import { useMallaCurricular } from "./hooks/useMallaCurricular";
-import { MallaCanvas } from "./components/MallaCanvas";
-import { MateriaDrawer } from "./components/MateriaDrawer";
-import { EditCorrelativasModal } from "./components/EditCorrelativasModal";
-import { MallaReferencias } from "./components/MallaReferencias";
+import { useMallaCurricular } from "../../hooks/useMallaCurricular";
+import {
+  MallaCanvas,
+  MateriaDrawer,
+  EditCorrelativasModal,
+  MallaReferencias,
+} from "./components";
 
 import {
   Network,
@@ -107,7 +109,10 @@ export const MallaCurricularView: React.FC = () => {
               </div>
               <div className={styles.statChip}>
                 <span>Habilitadas:</span>
-                <span className={styles.statChipVal} style={{ color: "#22d3ee" }}>
+                <span
+                  className={styles.statChipVal}
+                  style={{ color: "#22d3ee" }}
+                >
                   {stats.habilitadasCount}
                 </span>
               </div>
