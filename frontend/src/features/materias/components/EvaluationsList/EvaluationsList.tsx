@@ -70,11 +70,15 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
                 </span>
                 <span>
                   Fecha:{" "}
-                  {new Date(evalItem.fecha).toLocaleDateString("es-AR", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {evalItem.fecha ? (
+                    new Date(evalItem.fecha).toLocaleDateString("es-AR", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  ) : (
+                    <span style={{ fontStyle: "italic", opacity: 0.85 }}>Sin fecha (instancia previa)</span>
+                  )}
                 </span>
                 <span>Peso: {evalItem.peso}%</span>
               </div>

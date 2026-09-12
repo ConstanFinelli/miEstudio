@@ -29,7 +29,7 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materiaID string) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
-	q := r.db.WithContext(ctx).Preload("Materia").Order("fecha asc")
+	q := r.db.WithContext(ctx).Preload("Materia").Order("(fecha IS NULL) ASC, fecha ASC, created_at ASC")
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
 	}
@@ -44,7 +44,7 @@ func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materia
 
 func (r *repository) GetProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
-	q := r.db.WithContext(ctx).Preload("Materia").Where("nota IS NULL").Order("fecha asc")
+	q := r.db.WithContext(ctx).Preload("Materia").Where("nota IS NULL AND fecha IS NOT NULL").Order("fecha asc")
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
 	}

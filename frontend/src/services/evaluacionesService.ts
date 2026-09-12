@@ -73,7 +73,7 @@ export const evaluacionesService = {
         materiaNombre: evaluacion.materiaNombre || 'Materia',
         titulo: evaluacion.titulo || 'Nueva Evaluación',
         tipo: evaluacion.tipo || 'PARCIAL',
-        fecha: evaluacion.fecha || new Date().toISOString(),
+        fecha: evaluacion.fecha ?? null,
         horario: evaluacion.horario || '09:00',
         peso: evaluacion.peso ?? 100,
         nota: evaluacion.nota ?? null,
@@ -94,7 +94,8 @@ export const evaluacionesService = {
       const dtoBody = evaluacionMapper.toDTO(updates);
       const payload = {
         ...dtoBody,
-        clear_nota: updates.nota === null
+        clear_nota: updates.nota === null,
+        clear_fecha: updates.fecha === null || updates.fecha === ''
       };
       const updatedDTO = await apiClient.put<EvaluacionDTO>(`/evaluaciones/${id}`, payload);
       const updated = evaluacionMapper.toEvaluacion(

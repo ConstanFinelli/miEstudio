@@ -54,7 +54,7 @@ export interface EvaluacionDTO {
   materia_codigo?: string;
   titulo: string;
   tipo: "PARCIAL" | "RECUPERATORIO" | "FINAL" | "TP" | "LABORATORIO" | "QUIZ";
-  fecha: string;
+  fecha: string | null;
   horario?: string;
   nota: number | null;
   peso: number;

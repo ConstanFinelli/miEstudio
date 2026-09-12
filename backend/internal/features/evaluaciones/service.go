@@ -58,11 +58,13 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 		return nil, errors.New("el título de la evaluación es requerido")
 	}
 
-	parsedDate, err := time.ParseInLocation("2006-01-02", dto.Fecha, time.Local)
-	if err != nil {
-		parsedDate, err = time.Parse(time.RFC3339, dto.Fecha)
-		if err != nil {
-			parsedDate = time.Now().AddDate(0, 0, 7)
+	var fechaPtr *time.Time
+	if dto.Fecha != nil && strings.TrimSpace(*dto.Fecha) != "" {
+		fStr := strings.TrimSpace(*dto.Fecha)
+		if parsedDate, err := time.ParseInLocation("2006-01-02", fStr, time.Local); err == nil {
+			fechaPtr = &parsedDate
+		} else if parsedDate, err := time.Parse(time.RFC3339, fStr); err == nil {
+			fechaPtr = &parsedDate
 		}
 	}
 
@@ -114,7 +116,7 @@ func (s *service) CreateEvaluacion(ctx context.Context, dto CreateEvaluacionDTO)
 		MateriaID:     dto.MateriaID,
 		Titulo:        dto.Titulo,
 		Tipo:          tipo,
-		Fecha:         parsedDate,
+		Fecha:         fechaPtr,
 		Horario:       horario,
 		Nota:          dto.Nota,
 		Peso:          peso,
@@ -154,11 +156,16 @@ func (s *service) UpdateEvaluacion(ctx context.Context, id string, dto UpdateEva
 	if dto.Tipo != nil && *dto.Tipo != "" {
 		ev.Tipo = *dto.Tipo
 	}
-	if dto.Fecha != nil && *dto.Fecha != "" {
-		if parsedDate, err := time.ParseInLocation("2006-01-02", *dto.Fecha, time.Local); err == nil {
-			ev.Fecha = parsedDate
-		} else if parsedDate, err := time.Parse(time.RFC3339, *dto.Fecha); err == nil {
-			ev.Fecha = parsedDate
+	if dto.ClearFecha {
+		ev.Fecha = nil
+	} else if dto.Fecha != nil {
+		fStr := strings.TrimSpace(*dto.Fecha)
+		if fStr == "" {
+			ev.Fecha = nil
+		} else if parsedDate, err := time.ParseInLocation("2006-01-02", fStr, time.Local); err == nil {
+			ev.Fecha = &parsedDate
+		} else if parsedDate, err := time.Parse(time.RFC3339, fStr); err == nil {
+			ev.Fecha = &parsedDate
 		}
 	}
 	if dto.Horario != nil {

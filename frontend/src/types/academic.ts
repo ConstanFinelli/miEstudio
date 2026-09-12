@@ -69,7 +69,7 @@ export interface InstanciaEvaluacion {
   materiaNombre: string;
   titulo: string;
   tipo: TipoEvaluacion;
-  fecha: string; // ISO String
+  fecha: string | null; // ISO String or null for past/undated
   horario: string;
   peso: number; // Porcentaje ej: 40
   nota: number | null;

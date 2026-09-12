@@ -70,8 +70,10 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
 
   // Merge calendar events with actual academic evaluations
   const combinedEvents = useMemo(() => {
-    const evalAsEvents: EventoCalendario[] = evaluaciones.map((ev) => {
-      const evDate = ev.fecha.includes("T") ? ev.fecha.split("T")[0] : ev.fecha;
+    const evalAsEvents: EventoCalendario[] = evaluaciones
+      .filter((ev): ev is typeof ev & { fecha: string } => Boolean(ev.fecha))
+      .map((ev) => {
+        const evDate = ev.fecha.includes("T") ? ev.fecha.split("T")[0] : ev.fecha;
       let tipoEvento: TipoEvento = "EXAMEN";
       if (ev.tipo === "TP") tipoEvento = "ENTREGA";
       else if (ev.tipo === "LABORATORIO") tipoEvento = "LABORATORIO";

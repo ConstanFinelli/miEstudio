@@ -50,6 +50,9 @@ func Init(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("error durante migraciones: %w", err)
 	}
 
+	// Permitir fecha nula en evaluaciones (para evaluaciones pasadas o sin fecha exacta)
+	_ = db.Exec("ALTER TABLE evaluacions MODIFY COLUMN fecha datetime(3) NULL")
+
 	log.Println("[DB] Migraciones ejecutadas con éxito.")
 	return db, nil
 }

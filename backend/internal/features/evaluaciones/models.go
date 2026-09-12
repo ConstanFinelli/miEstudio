@@ -15,7 +15,7 @@ type Evaluacion struct {
 	Materia       *subjects.Materia `gorm:"foreignKey:MateriaID;references:ID;constraint:false" json:"materia,omitempty"`
 	Titulo        string            `gorm:"type:varchar(255);not null" json:"titulo"`
 	Tipo          string            `gorm:"type:varchar(30);not null;default:'PARCIAL'" json:"tipo"`
-	Fecha         time.Time         `gorm:"not null" json:"fecha"`
+	Fecha         *time.Time        `gorm:"type:datetime(3)" json:"fecha"`
 	Horario       string            `gorm:"type:varchar(20);default:'09:00'" json:"horario"`
 	Nota          *float64          `json:"nota"`
 	Peso          int               `gorm:"default:100" json:"peso"`
@@ -29,15 +29,15 @@ type Evaluacion struct {
 }
 
 type EvaluacionResponseDTO struct {
-	ID            string    `json:"id"`
-	UsuarioID     string    `json:"usuario_id"`
-	MateriaID     string    `json:"materia_id"`
-	MateriaNombre string    `json:"materia_nombre,omitempty"`
-	MateriaCodigo string    `json:"materia_codigo,omitempty"`
-	Titulo        string    `json:"titulo"`
-	Tipo          string    `json:"tipo"`
-	Fecha         time.Time `json:"fecha"`
-	Horario       string    `json:"horario"`
+	ID            string     `json:"id"`
+	UsuarioID     string     `json:"usuario_id"`
+	MateriaID     string     `json:"materia_id"`
+	MateriaNombre string     `json:"materia_nombre,omitempty"`
+	MateriaCodigo string     `json:"materia_codigo,omitempty"`
+	Titulo        string     `json:"titulo"`
+	Tipo          string     `json:"tipo"`
+	Fecha         *time.Time `json:"fecha"`
+	Horario       string     `json:"horario"`
 	Nota          *float64  `json:"nota"`
 	Peso          int       `json:"peso"`
 	EsAprobatorio bool      `json:"es_aprobatorio"`
@@ -96,7 +96,7 @@ type CreateEvaluacionDTO struct {
 	MateriaID     string   `json:"materia_id"`
 	Titulo        string   `json:"titulo"`
 	Tipo          string   `json:"tipo"`
-	Fecha         string   `json:"fecha"` // ISO or YYYY-MM-DD
+	Fecha         *string  `json:"fecha"` // ISO or YYYY-MM-DD (opcional)
 	Horario       string   `json:"horario"`
 	Nota          *float64 `json:"nota"`
 	Peso          int      `json:"peso"`
@@ -116,6 +116,7 @@ type UpdateEvaluacionDTO struct {
 	Titulo        *string   `json:"titulo"`
 	Tipo          *string   `json:"tipo"`
 	Fecha         *string   `json:"fecha"`
+	ClearFecha    bool      `json:"clear_fecha"`
 	Horario       *string   `json:"horario"`
 	Nota          *float64  `json:"nota"`
 	ClearNota     bool      `json:"clear_nota"`

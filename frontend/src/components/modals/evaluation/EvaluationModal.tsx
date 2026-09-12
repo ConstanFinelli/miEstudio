@@ -42,6 +42,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const [customMateria, setCustomMateria] = useState('');
   const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState<TipoEvaluacion>('PARCIAL');
+  const [sinFecha, setSinFecha] = useState(false);
   const [fecha, setFecha] = useState(getTodayLocal);
   const [horario, setHorario] = useState('19:00');
   const [aula, setAula] = useState('');
@@ -66,8 +67,10 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
       setMateriaId(evaluationToEdit.materiaId || '');
       setTitulo(evaluationToEdit.titulo || '');
       setTipo(evaluationToEdit.tipo || 'PARCIAL');
-      const d = evaluationToEdit.fecha ? evaluationToEdit.fecha.split('T')[0] : getTodayLocal();
-      setFecha(d);
+      const hasDate = Boolean(evaluationToEdit.fecha);
+      setSinFecha(!hasDate);
+      const d = evaluationToEdit.fecha ? evaluationToEdit.fecha.split('T')[0] : '';
+      setFecha(d || getTodayLocal());
       setHorario(evaluationToEdit.horario ? evaluationToEdit.horario.replace(' hs', '').replace('hs', '') : '19:00');
       setAula(evaluationToEdit.aula || '');
       setModalidad(evaluationToEdit.modalidad || 'Presencial');
@@ -91,6 +94,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
       }
       setTitulo('');
       setTipo('PARCIAL');
+      setSinFecha(false);
       setFecha(getTodayLocal());
       setHorario('19:00');
       setAula('');
@@ -139,6 +143,8 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
         ? temarioText.split(',').map(t => t.trim()).filter(Boolean)
         : [];
 
+      const finalFecha = sinFecha ? null : (fecha.trim() || null);
+
       if (evaluationToEdit) {
         const updated = await evaluacionesService.updateEvaluacion(evaluationToEdit.id, {
           materiaId: selectedMat?.id || evaluationToEdit.materiaId,
@@ -146,8 +152,8 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           materiaCodigo,
           titulo: titulo.trim(),
           tipo,
-          fecha,
-          horario: horario.trim() || '19:00',
+          fecha: finalFecha,
+          horario: sinFecha ? '' : (horario.trim() || '19:00'),
           aula: aula.trim() || 'A confirmar',
           modalidad,
           peso: Number(peso) > 0 ? Number(peso) : 100,
@@ -166,8 +172,8 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           materiaCodigo,
           titulo: titulo.trim(),
           tipo,
-          fecha,
-          horario: horario.trim() || '19:00',
+          fecha: finalFecha,
+          horario: sinFecha ? '' : (horario.trim() || '19:00'),
           aula: aula.trim() || 'A confirmar',
           modalidad,
           peso: Number(peso) > 0 ? Number(peso) : 100,
@@ -365,51 +371,93 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           </div>
 
           {/* 4. Fecha y Horario / Modalidad */}
-          <div className={styles.grid2}>
-            <div className={styles.fieldGroup}>
-              <div className={styles.fieldLabelRow}>
-                <span>Fecha de Mesa / Examen</span>
+          <div className={styles.fieldGroup}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+              <div className={styles.fieldLabelRow} style={{ margin: 0 }}>
+                <span>4. Fecha y Horario de la Instancia</span>
               </div>
-              <input
-                type="date"
-                className={styles.fieldInput}
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-                required
-              />
+              <label className={styles.checkboxRow} style={{ margin: 0, fontSize: '12px' }}>
+                <input
+                  type="checkbox"
+                  className={styles.checkboxInput}
+                  checked={sinFecha}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSinFecha(checked);
+                    if (!checked && !fecha) {
+                      setFecha(getTodayLocal());
+                    }
+                  }}
+                />
+                <span style={{ color: sinFecha ? 'var(--primary)' : 'var(--text-secondary)', fontWeight: sinFecha ? 600 : 400 }}>
+                  Sin fecha exacta (evaluación ya rendida)
+                </span>
+              </label>
             </div>
 
-            <div className={styles.fieldGroup}>
-              <div className={styles.fieldLabelRow}>
-                <span>Horario, Aula y Modalidad</span>
+            {sinFecha ? (
+              <div style={{
+                padding: '10px 14px',
+                backgroundColor: 'var(--surface-2)',
+                borderRadius: 'var(--radius-xs)',
+                border: '1px dashed var(--border-subtle)',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '15px' }}>ℹ️</span>
+                <span>Esta evaluación se registrará como instancia previa sin fecha asignada (no ocupará lugar en el calendario ni en próximas evaluaciones).</span>
               </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <input
-                  type="time"
-                  className={styles.fieldInput}
-                  value={horario}
-                  onChange={(e) => setHorario(e.target.value)}
-                  required
-                  style={{ flex: 1 }}
-                />
-                <input
-                  type="text"
-                  className={styles.fieldInput}
-                  value={aula}
-                  onChange={(e) => setAula(e.target.value)}
-                  placeholder="Aula"
-                  style={{ width: '90px' }}
-                />
-                <button
-                  type="button"
-                  className={`${styles.modalidadToggle} ${modalidad === 'Presencial' ? styles.modalidadToggleActive : ''}`}
-                  onClick={() => setModalidad(modalidad === 'Presencial' ? 'Virtual' : 'Presencial')}
-                  title="Alternar modalidad presencial / virtual"
-                >
-                  {modalidad}
-                </button>
+            ) : (
+              <div className={styles.grid2}>
+                <div className={styles.fieldGroup}>
+                  <div className={styles.fieldLabelRow}>
+                    <span>Fecha de Mesa / Examen</span>
+                    <span style={{ color: 'var(--text-dim)' }}>OBLIGATORIO</span>
+                  </div>
+                  <input
+                    type="date"
+                    className={styles.fieldInput}
+                    value={fecha}
+                    onChange={(e) => setFecha(e.target.value)}
+                    required={!sinFecha}
+                  />
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <div className={styles.fieldLabelRow}>
+                    <span>Horario, Aula y Modalidad</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <input
+                      type="time"
+                      className={styles.fieldInput}
+                      value={horario}
+                      onChange={(e) => setHorario(e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    <input
+                      type="text"
+                      className={styles.fieldInput}
+                      value={aula}
+                      onChange={(e) => setAula(e.target.value)}
+                      placeholder="Aula"
+                      style={{ width: '90px' }}
+                    />
+                    <button
+                      type="button"
+                      className={`${styles.modalidadToggle} ${modalidad === 'Presencial' ? styles.modalidadToggleActive : ''}`}
+                      onClick={() => setModalidad(modalidad === 'Presencial' ? 'Virtual' : 'Presencial')}
+                      title="Alternar modalidad presencial / virtual"
+                    >
+                      {modalidad}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* 5. Ponderación & Condición Aprobatoria */}

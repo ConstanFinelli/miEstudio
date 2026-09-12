@@ -14,7 +14,10 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
 }) => {
   const { proximas } = useEvaluaciones();
   const { materias } = useMaterias();
-  const pendingProximas = proximas.filter(ev => ev.nota === null || ev.nota === undefined);
+  const pendingProximas = proximas.filter(
+    (ev): ev is typeof ev & { fecha: string } =>
+      (ev.nota === null || ev.nota === undefined) && Boolean(ev.fecha)
+  );
 
   const formatDate = (dateStr: string, horario?: string) => {
     try {
