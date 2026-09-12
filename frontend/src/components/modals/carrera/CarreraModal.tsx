@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, GraduationCap, Building2, Hash, Calendar, BookOpen, Clock, Save, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { carrerasService } from '../../../services/carrerasService';
@@ -9,14 +9,17 @@ interface CarreraModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (carrera: Carrera) => void;
+  carreraToEdit?: Carrera | null;
 }
 
 export const CarreraModal: React.FC<CarreraModalProps> = ({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
+  carreraToEdit,
 }) => {
   const { reloadCarreras, selectCarrera } = useAuth();
+  const isEditing = Boolean(carreraToEdit);
 
   const [nombre, setNombre] = useState('');
   const [facultadSede, setFacultadSede] = useState('');
@@ -28,6 +31,30 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (carreraToEdit) {
+      setNombre(carreraToEdit.nombre || '');
+      setFacultadSede(carreraToEdit.facultad_sede || '');
+      setLegajo(carreraToEdit.legajo || '');
+      setSemestreActual(carreraToEdit.semestre_actual || '1º Semestre');
+      setCicloActivo(carreraToEdit.ciclo_activo || '1C 2026');
+      setDuracionAnios(carreraToEdit.duracion_anios || 5);
+      setTotalMateriasPlan(
+        carreraToEdit.total_materias_plan && carreraToEdit.total_materias_plan > 0
+          ? carreraToEdit.total_materias_plan
+          : ''
+      );
+    } else {
+      setNombre('');
+      setFacultadSede('');
+      setLegajo('');
+      setSemestreActual('1º Semestre');
+      setCicloActivo('1C 2026');
+      setDuracionAnios(5);
+      setTotalMateriasPlan('');
+    }
+  }, [isOpen, carreraToEdit]);
 
   if (!isOpen) return null;
 
@@ -42,23 +69,40 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
     setErrorMessage(null);
 
     try {
-      const created = await carrerasService.createCarrera({
-        nombre: nombre.trim(),
-        facultad_sede: facultadSede.trim() || 'Facultad / Universidad',
-        legajo: legajo.trim() || 'S/N',
-        semestre_actual: semestreActual.trim(),
-        ciclo_activo: cicloActivo.trim(),
-        duracion_anios: Number(duracionAnios) || 5,
-        total_materias_plan: Number(totalMateriasPlan) || 0
-      });
+      if (isEditing && carreraToEdit) {
+        const updated = await carrerasService.updateCarrera(carreraToEdit.id, {
+          nombre: nombre.trim(),
+          facultad_sede: facultadSede.trim() || 'Facultad / Universidad',
+          legajo: legajo.trim() || 'S/N',
+          semestre_actual: semestreActual.trim(),
+          ciclo_activo: cicloActivo.trim(),
+          duracion_anios: Number(duracionAnios) || 5,
+          total_materias_plan: Number(totalMateriasPlan) || 0,
+        });
 
-      await reloadCarreras();
-      await selectCarrera(created.id);
-      onSuccess?.(created);
-      onClose();
+        window.dispatchEvent(new CustomEvent('carreras:updated', { detail: updated }));
+        await reloadCarreras();
+        onSuccess?.(updated);
+        onClose();
+      } else {
+        const created = await carrerasService.createCarrera({
+          nombre: nombre.trim(),
+          facultad_sede: facultadSede.trim() || 'Facultad / Universidad',
+          legajo: legajo.trim() || 'S/N',
+          semestre_actual: semestreActual.trim(),
+          ciclo_activo: cicloActivo.trim(),
+          duracion_anios: Number(duracionAnios) || 5,
+          total_materias_plan: Number(totalMateriasPlan) || 0,
+        });
+
+        await reloadCarreras();
+        await selectCarrera(created.id);
+        onSuccess?.(created);
+        onClose();
+      }
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Error al crear la carrera'
+        err instanceof Error ? err.message : 'Error al guardar la carrera'
       );
     } finally {
       setIsLoading(false);
@@ -75,9 +119,13 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
               <GraduationCap size={20} />
             </div>
             <div>
-              <h2 className={styles.title}>Nueva Carrera Universitaria</h2>
+              <h2 className={styles.title}>
+                {isEditing ? 'Configurar Carrera' : 'Nueva Carrera Universitaria'}
+              </h2>
               <p className={styles.subtitle}>
-                Registrá una nueva carrera o programa de grado para tu seguimiento
+                {isEditing
+                  ? 'Modificá la configuración de la carrera y el plan de estudios'
+                  : 'Registrá una nueva carrera o programa de grado para tu seguimiento'}
               </p>
             </div>
           </div>
@@ -186,12 +234,15 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
                     min="0"
                     max="100"
                     className={styles.input}
-                    placeholder="Opcional (ej: 38)"
+                    placeholder="Dinámico (según materias cargadas)"
                     value={totalMateriasPlan}
                     onChange={(e) => setTotalMateriasPlan(e.target.value === '' ? '' : Number(e.target.value))}
                     disabled={isLoading}
                   />
                 </div>
+                <span style={{ fontSize: "11px", color: "var(--text-dim)", marginTop: "4px", display: "block", lineHeight: 1.3 }}>
+                  Dejá vacío si querés que coincida con las materias que cargás en la app.
+                </span>
               </div>
             </div>
 
@@ -254,7 +305,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
               ) : (
                 <>
                   <Save size={16} />
-                  <span>Crear y Activar Carrera</span>
+                  <span>{isEditing ? 'Guardar Cambios' : 'Crear y Activar Carrera'}</span>
                 </>
               )}
             </button>

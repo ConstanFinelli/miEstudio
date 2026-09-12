@@ -26,6 +26,7 @@ import { useTheme, useAuth, useLayout } from "../../context";
 import { usePerfil } from "../../hooks";
 import { CarreraModal, EditUserModal } from "../modals";
 import type { EstadoMateria } from "../../types/academic";
+import type { Carrera } from "../../types/auth";
 import getInitials from "../../utils/getInitials";
 
 const defaultEmptyPerfil = {
@@ -46,26 +47,31 @@ const defaultEmptyPerfil = {
 };
 
 interface AppLayoutProps {
-  onOpenEvaluationModal: () => void;
-  onOpenNoteModal: () => void;
-  onOpenMateriaModal?: (initialEstado?: EstadoMateria) => void;
+  onOpenEvaluationModal?: () => void;
+  onOpenNoteModal?: () => void;
+  onOpenMateriaModal?: (
+    materiaToEdit?: any,
+    initialEstado?: EstadoMateria
+  ) => void;
   children?: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
   onOpenEvaluationModal,
   onOpenNoteModal,
+  onOpenMateriaModal: _onOpenMateriaModal,
   children,
 }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { isSidebarCollapsed, toggleSidebar } = useLayout();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { perfil } = usePerfil();
   const { user, activeCarrera, carreras, selectCarrera, logout } = useAuth();
 
   const [isCareerMenuOpen, setIsCareerMenuOpen] = useState(false);
   const [isCarreraModalOpen, setIsCarreraModalOpen] = useState(false);
+  const [carreraToEdit, setCarreraToEdit] = useState<Carrera | null>(null);
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
 
   const currentPerfil =
@@ -197,11 +203,27 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                         )}
                       </div>
                       <div className={styles.dropdownActions}>
+                        {activeCarrera && (
+                          <button
+                            type="button"
+                            className={styles.dropdownActionBtn}
+                            onClick={() => {
+                              setIsCareerMenuOpen(false);
+                              setCarreraToEdit(activeCarrera);
+                              setIsCarreraModalOpen(true);
+                            }}
+                            title="Editar datos y plan de la carrera activa"
+                          >
+                            <Settings size={13} />
+                            <span>Configurar Carrera</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           className={styles.dropdownActionBtn}
                           onClick={() => {
                             setIsCareerMenuOpen(false);
+                            setCarreraToEdit(null);
                             setIsCarreraModalOpen(true);
                           }}
                         >
@@ -463,7 +485,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       {/* Carrera Modal */}
       <CarreraModal
         isOpen={isCarreraModalOpen}
-        onClose={() => setIsCarreraModalOpen(false)}
+        onClose={() => {
+          setIsCarreraModalOpen(false);
+          setCarreraToEdit(null);
+        }}
+        carreraToEdit={carreraToEdit}
       />
 
       {/* Edit User Modal */}
