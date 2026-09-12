@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./NoteEditorHeader.module.css";
 import {
-  Cloud,
   Eye,
   Code,
   Columns,
@@ -11,10 +10,17 @@ import {
   Download,
   ChevronDown,
   FileText,
+  FileCode,
+  Printer,
   Archive,
 } from "lucide-react";
 import type { ApunteNota } from "../../../../types/academic";
-import { exportSingleNote, exportMateriaNotesZip } from "../../../../utils";
+import {
+  exportSingleNote,
+  exportSingleNoteAsPdf,
+  exportSingleNoteDirectPdf,
+  exportMateriaNotesZip,
+} from "../../../../utils";
 
 interface NoteEditorHeaderProps {
   activeNote: ApunteNota | null;
@@ -82,18 +88,6 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
             <span>{activeNote.carpeta}</span>
           </>
         )}
-        <span>·</span>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            color: "var(--emerald)",
-          }}
-        >
-          <Cloud size={12} />
-          <span>Sincronizado</span>
-        </div>
       </div>
 
       <div className={styles.editorActionsRight}>
@@ -155,6 +149,55 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
 
           {isExportMenuOpen && (
             <div className={styles.exportMenu}>
+              {/* Opción 1: Descargar en PDF */}
+              <button
+                type="button"
+                className={styles.exportMenuItem}
+                onClick={async () => {
+                  if (activeNote) {
+                    setIsExportMenuOpen(false);
+                    await exportSingleNoteDirectPdf(activeNote);
+                  }
+                }}
+              >
+                <div className={styles.exportMenuIcon}>
+                  <FileText size={14} color="var(--primary)" />
+                </div>
+                <div className={styles.exportMenuText}>
+                  <span className={styles.exportMenuTitle}>
+                    Descargar apunte en PDF
+                  </span>
+                  <span className={styles.exportMenuDesc}>
+                    Documento PDF (.pdf) listo para estudiar
+                  </span>
+                </div>
+              </button>
+
+              {/* Opción 2: Imprimir o Guardar como PDF Vectorial */}
+              <button
+                type="button"
+                className={styles.exportMenuItem}
+                onClick={async () => {
+                  if (activeNote) {
+                    setIsExportMenuOpen(false);
+                    await exportSingleNoteAsPdf(activeNote);
+                  }
+                }}
+              >
+                <div className={styles.exportMenuIcon}>
+                  <Printer size={14} color="#8b5cf6" />
+                </div>
+                <div className={styles.exportMenuText}>
+                  <span className={styles.exportMenuTitle}>
+                    Imprimir / Vector PDF
+                  </span>
+                  <span className={styles.exportMenuDesc}>
+                    Abre diálogo nativo de impresión
+                  </span>
+                </div>
+              </button>
+
+              {/* Opción 3: Descargar en Markdown */}
               <button
                 type="button"
                 className={styles.exportMenuItem}
@@ -166,11 +209,15 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
                 }}
               >
                 <div className={styles.exportMenuIcon}>
-                  <FileText size={14} color="var(--primary)" />
+                  <FileCode size={14} color="var(--text-secondary)" />
                 </div>
                 <div className={styles.exportMenuText}>
-                  <span className={styles.exportMenuTitle}>Descargar apunte</span>
-                  <span className={styles.exportMenuDesc}>Archivo Markdown (.md)</span>
+                  <span className={styles.exportMenuTitle}>
+                    Descargar Markdown
+                  </span>
+                  <span className={styles.exportMenuDesc}>
+                    Archivo fuente (.md) para Obsidian
+                  </span>
                 </div>
               </button>
 
@@ -178,14 +225,14 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
                 <button
                   type="button"
                   className={styles.exportMenuItem}
-                  onClick={() => {
+                  onClick={async () => {
                     if (activeNote) {
-                      exportMateriaNotesZip(
+                      setIsExportMenuOpen(false);
+                      await exportMateriaNotesZip(
                         activeNote.materiaNombre || "Materia",
-                        materiaNotes
+                        materiaNotes,
                       );
                     }
-                    setIsExportMenuOpen(false);
                   }}
                 >
                   <div className={styles.exportMenuIcon}>
@@ -195,7 +242,9 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
                     <span className={styles.exportMenuTitle}>
                       Descargar materia ({materiaNotes.length} notas)
                     </span>
-                    <span className={styles.exportMenuDesc}>Paquete comprimido (.zip)</span>
+                    <span className={styles.exportMenuDesc}>
+                      Paquete comprimido (.zip con PDFs y .md)
+                    </span>
                   </div>
                 </button>
               )}
