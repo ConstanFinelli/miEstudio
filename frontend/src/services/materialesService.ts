@@ -45,21 +45,24 @@ export const materialesService = {
       const created = materialMapper.toMaterial(createdDTO);
       localMateriales.unshift(created);
       return created;
-    } catch {
-      const newMaterial: MaterialEstudio = {
-        id: `mat-file-${Date.now()}`,
-        materiaId,
-        titulo,
-        categoria,
-        unidad: unidad || '',
-        archivoNombre: file.name,
-        archivoUrl: URL.createObjectURL(file),
-        tamanioBytes: file.size,
-        cantPaginas: 12,
-        fechaSubida: new Date().toISOString()
-      };
-      localMateriales.unshift(newMaterial);
-      return newMaterial;
+    } catch (err) {
+      if (isMocksEnabled()) {
+        const newMaterial: MaterialEstudio = {
+          id: `mat-file-${Date.now()}`,
+          materiaId,
+          titulo,
+          categoria,
+          unidad: unidad || '',
+          archivoNombre: file.name,
+          archivoUrl: URL.createObjectURL(file),
+          tamanioBytes: file.size,
+          cantPaginas: 12,
+          fechaSubida: new Date().toISOString()
+        };
+        localMateriales.unshift(newMaterial);
+        return newMaterial;
+      }
+      throw err;
     }
   },
 

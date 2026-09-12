@@ -100,10 +100,15 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
     const addedItems: QueuedMaterialItem[] = [];
     const filesArray = Array.from(fileList);
     let hasNonPdf = false;
+    let hasOversized = false;
 
     filesArray.forEach(file => {
       if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
         hasNonPdf = true;
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        hasOversized = true;
         return;
       }
       const cleanName = file.name
@@ -120,7 +125,11 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
       });
     });
 
-    if (hasNonPdf) {
+    if (hasOversized && hasNonPdf) {
+      setErrorMessage('Algunos archivos no eran PDF o superaban el límite de 50 MB.');
+    } else if (hasOversized) {
+      setErrorMessage('Algunos archivos superan el límite de 50 MB por archivo.');
+    } else if (hasNonPdf) {
       setErrorMessage('Algunos archivos no eran formato PDF y fueron omitidos.');
     } else {
       setErrorMessage(null);
