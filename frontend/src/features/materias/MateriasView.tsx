@@ -22,10 +22,11 @@ import {
 import {
   AccreditationRulesModal,
   UploadMaterialModal,
+  EditMaterialModal,
   MateriaModal,
 } from "../../components/modals";
 
-import type { InstanciaEvaluacion } from "../../types/academic";
+import type { InstanciaEvaluacion, MaterialEstudio } from "../../types/academic";
 
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
@@ -50,6 +51,8 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>("");
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isEditMaterialModalOpen, setIsEditMaterialModalOpen] = useState(false);
+  const [materialToEdit, setMaterialToEdit] = useState<MaterialEstudio | null>(null);
   const [isEditMateriaModalOpen, setIsEditMateriaModalOpen] = useState(false);
 
   const {
@@ -130,6 +133,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     materiales: materiaMaterials,
     uploadMaterial,
     uploadBatchMaterials,
+    updateMaterial,
     deleteMaterial,
   } = useMateriales(selectedMateria?.id);
 
@@ -288,6 +292,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
               materiaNombre={selectedMateria.nombre}
               onViewPdf={onViewPdf}
               onOpenUploadModal={() => setIsUploadModalOpen(true)}
+              onEditMaterial={(mat) => {
+                setMaterialToEdit(mat);
+                setIsEditMaterialModalOpen(true);
+              }}
               onDeleteMaterial={handleDeleteMaterial}
             />
           </div>
@@ -333,6 +341,23 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           onUploadBatch={(items) =>
             uploadBatchMaterials(items, selectedMateria.id)
           }
+        />
+      )}
+
+      {/* Modal para editar y recategorizar material de estudio */}
+      {selectedMateria && isEditMaterialModalOpen && materialToEdit && (
+        <EditMaterialModal
+          isOpen={isEditMaterialModalOpen}
+          onClose={() => {
+            setIsEditMaterialModalOpen(false);
+            setMaterialToEdit(null);
+          }}
+          material={materialToEdit}
+          materiaNombre={selectedMateria.nombre}
+          existingUnits={existingUnits}
+          onSave={async (id, updates) => {
+            await updateMaterial(id, updates);
+          }}
         />
       )}
 

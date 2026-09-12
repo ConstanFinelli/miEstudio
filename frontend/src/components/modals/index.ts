@@ -4,6 +4,7 @@ export { PdfViewerModal } from './pdf-viewer/PdfViewerModal';
 export { MateriaModal } from './materia/MateriaModal';
 export { AccreditationRulesModal } from './materia/AccreditationRulesModal';
 export { UploadMaterialModal } from './material/UploadMaterialModal';
+export { EditMaterialModal } from './material/EditMaterialModal';
 export { CleanApprovedPdfsModal } from './material/CleanApprovedPdfsModal';
 export { DeleteConfirmModal } from './common/DeleteConfirmModal';
 export { HorarioModal } from './schedule/HorarioModal';

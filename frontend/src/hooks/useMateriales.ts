@@ -79,6 +79,16 @@ export const useMateriales = (materiaId?: string) => {
     return createdList;
   };
 
+  const updateMaterial = async (
+    id: string,
+    updates: { titulo?: string; categoria?: MaterialEstudio['categoria']; unidad?: string }
+  ) => {
+    const updated = await materialesService.updateMaterial(id, updates);
+    setMateriales(prev => prev.map(m => (m.id === id ? updated : m)));
+    window.dispatchEvent(new CustomEvent('materiales:updated', { detail: updated }));
+    return updated;
+  };
+
   const deleteMaterial = async (id: string) => {
     await materialesService.deleteMaterial(id);
     setMateriales(prev => prev.filter(m => m.id !== id));
@@ -92,6 +102,7 @@ export const useMateriales = (materiaId?: string) => {
     refresh: fetchMateriales,
     uploadMaterial,
     uploadBatchMaterials,
+    updateMaterial,
     deleteMaterial
   };
 };

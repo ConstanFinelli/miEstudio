@@ -66,6 +66,36 @@ export const materialesService = {
     }
   },
 
+  async updateMaterial(
+    id: string,
+    updates: { titulo?: string; categoria?: MaterialEstudio['categoria']; unidad?: string }
+  ): Promise<MaterialEstudio> {
+    try {
+      const updatedDTO = await apiClient.put<MaterialDTO>(`/materiales/${id}`, updates);
+      const updated = materialMapper.toMaterial(updatedDTO);
+      localMateriales = localMateriales.map(m => (m.id === id ? { ...m, ...updated } : m));
+      window.dispatchEvent(new CustomEvent('materiales:updated', { detail: updated }));
+      return updated;
+    } catch (err) {
+      if (isMocksEnabled()) {
+        localMateriales = localMateriales.map(m => {
+          if (m.id !== id) return m;
+          return {
+            ...m,
+            titulo: updates.titulo ?? m.titulo,
+            categoria: updates.categoria ?? m.categoria,
+            unidad: updates.unidad !== undefined ? updates.unidad : m.unidad
+          };
+        });
+        const found = localMateriales.find(m => m.id === id);
+        if (!found) throw new Error(`Material ${id} no encontrado`);
+        window.dispatchEvent(new CustomEvent('materiales:updated', { detail: found }));
+        return found;
+      }
+      throw err;
+    }
+  },
+
   async deleteMaterial(id: string): Promise<void> {
     try {
       await apiClient.delete(`/materiales/${id}`);

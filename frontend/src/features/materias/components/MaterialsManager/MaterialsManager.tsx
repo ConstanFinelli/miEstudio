@@ -3,6 +3,7 @@ import styles from './MaterialsManager.module.css';
 import {
   Eye,
   FileDown,
+  Edit2,
   Trash2,
   UploadCloud,
   FileText,
@@ -20,6 +21,7 @@ interface MaterialsManagerProps {
   materiaNombre: string;
   onViewPdf: (title: string, url: string) => void;
   onOpenUploadModal: () => void;
+  onEditMaterial?: (material: MaterialEstudio) => void;
   onDeleteMaterial?: (id: string, titulo: string) => void;
 }
 
@@ -40,6 +42,7 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
   materiaNombre,
   onViewPdf,
   onOpenUploadModal,
+  onEditMaterial,
   onDeleteMaterial
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('TODOS');
@@ -168,6 +171,16 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
         >
           <FileDown size={13} />
         </a>
+
+        {onEditMaterial && (
+          <button
+            className={styles.iconBtnSmall}
+            onClick={() => onEditMaterial(mat)}
+            title={`Editar y recategorizar "${mat.titulo}"`}
+          >
+            <Edit2 size={13} />
+          </button>
+        )}
 
         {onDeleteMaterial && (
           <button
