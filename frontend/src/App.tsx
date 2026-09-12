@@ -26,6 +26,9 @@ export const App: React.FC = () => {
   const [evaluationToEdit, setEvaluationToEdit] =
     useState<InstanciaEvaluacion | null>(null);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [noteInitialMateriaId, setNoteInitialMateriaId] = useState<
+    string | undefined
+  >(undefined);
   const [isMateriaModalOpen, setIsMateriaModalOpen] = useState(false);
   const [materiaInitialEstado, setMateriaInitialEstado] = useState<
     EstadoMateria | undefined
@@ -39,6 +42,11 @@ export const App: React.FC = () => {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleOpenNoteModal = (materiaId?: string) => {
+    setNoteInitialMateriaId(materiaId);
+    setIsNoteModalOpen(true);
   };
 
   return (
@@ -57,7 +65,7 @@ export const App: React.FC = () => {
                 setEvaluationToEdit(null);
                 setIsEvaluationModalOpen(true);
               }}
-              onOpenNoteModal={() => setIsNoteModalOpen(true)}
+              onOpenNoteModal={handleOpenNoteModal}
               onOpenMateriaModal={(estado) => {
                 setMateriaInitialEstado(estado);
                 setIsMateriaModalOpen(true);
@@ -89,7 +97,7 @@ export const App: React.FC = () => {
                         setMateriaInitialEstado(undefined);
                         setIsMateriaModalOpen(true);
                       }}
-                      onOpenNoteModal={() => setIsNoteModalOpen(true)}
+                      onOpenNoteModal={handleOpenNoteModal}
                       onViewPdf={(title, url) => setActivePdf({ title, url })}
                     />
                   }
@@ -115,7 +123,7 @@ export const App: React.FC = () => {
                   path="/apuntes"
                   element={
                     <ApuntesView
-                      onOpenNoteModal={() => setIsNoteModalOpen(true)}
+                      onOpenNoteModal={handleOpenNoteModal}
                     />
                   }
                 />
@@ -162,7 +170,11 @@ export const App: React.FC = () => {
               {/* Note Modal */}
               <NoteModal
                 isOpen={isNoteModalOpen}
-                onClose={() => setIsNoteModalOpen(false)}
+                initialMateriaId={noteInitialMateriaId}
+                onClose={() => {
+                  setIsNoteModalOpen(false);
+                  setNoteInitialMateriaId(undefined);
+                }}
                 onSuccess={(title) => {
                   showToast(`✓ Apunte "${title.slice(0, 25)}..." creado`);
                   navigate("/apuntes");

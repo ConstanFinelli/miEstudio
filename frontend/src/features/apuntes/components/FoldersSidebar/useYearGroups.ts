@@ -37,10 +37,16 @@ export const useYearGroups = (
       });
     });
 
-    // Also include any orphan materias from existing notes
+    // Also include any true orphan materias from existing notes not registered in carrera
     apuntes.forEach((a) => {
+      const matchesRegisteredMateria = materias.some(
+        (m) => m.id === a.materiaId || m.nombre === a.materiaNombre
+      );
       if (
+        !matchesRegisteredMateria &&
         a.materiaNombre &&
+        a.materiaNombre.trim() !== "" &&
+        a.materiaNombre !== "Materia" &&
         !list.some((item) => item.nombre === a.materiaNombre)
       ) {
         list.push({

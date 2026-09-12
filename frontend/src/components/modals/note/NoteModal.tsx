@@ -82,30 +82,28 @@ export const NoteModal: React.FC<NoteModalProps> = ({
     });
   }, [evaluaciones, materiaId, materias]);
 
-  // Seleccionar materia inicial
-  useEffect(() => {
-    if (sortedMaterias.length > 0) {
-      if (initialMateriaId && sortedMaterias.some(m => m.id === initialMateriaId)) {
-        setMateriaId(initialMateriaId);
-      } else if (!materiaId || !sortedMaterias.some(m => m.id === materiaId)) {
-        setMateriaId(sortedMaterias[0].id);
-      }
-    }
-  }, [sortedMaterias, materiaId, initialMateriaId, isOpen]);
-
-  // Resetear o inicializar campos al abrir modal
+  // Sincronizar materia seleccionada y resetear campos al abrir modal
   useEffect(() => {
     if (isOpen) {
       setTitulo('');
       setTags([]);
       setIsSubmitting(false);
+
+      if (initialMateriaId && sortedMaterias.some(m => m.id === initialMateriaId)) {
+        setMateriaId(initialMateriaId);
+      } else if (!materiaId || !sortedMaterias.some(m => m.id === materiaId)) {
+        if (sortedMaterias.length > 0) {
+          setMateriaId(sortedMaterias[0].id);
+        }
+      }
+
       if (initialEvaluacionId) {
         setEvalId(initialEvaluacionId);
       } else {
         setEvalId('');
       }
     }
-  }, [isOpen, initialEvaluacionId]);
+  }, [isOpen, initialMateriaId, initialEvaluacionId, sortedMaterias]);
 
   // Si cambia la materia y la evaluación elegida no pertenece a ella, resetearla
   useEffect(() => {

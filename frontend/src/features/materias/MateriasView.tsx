@@ -31,7 +31,7 @@ import type { InstanciaEvaluacion, MaterialEstudio } from "../../types/academic"
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
   onEditEvaluation?: (evaluation: InstanciaEvaluacion) => void;
-  onOpenNoteModal?: () => void;
+  onOpenNoteModal?: (materiaId?: string) => void;
   onOpenMateriaModal?: () => void;
   onViewPdf: (title: string, url: string) => void;
 }
@@ -39,6 +39,7 @@ interface MateriasViewProps {
 export const MateriasView: React.FC<MateriasViewProps> = ({
   onOpenEvaluationModal,
   onEditEvaluation,
+  onOpenNoteModal: _onOpenNoteModal,
   onOpenMateriaModal,
   onViewPdf,
 }) => {

@@ -191,7 +191,19 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
         <button
           type="button"
           className={styles.btnNewFolder}
-          onClick={onOpenNoteModal}
+          onClick={() => {
+            if (!onOpenNoteModal) return;
+            if (selectedFolder) {
+              const mat = materias.find(
+                (m) => m.nombre === selectedFolder || m.id === selectedFolder
+              );
+              if (mat) {
+                onOpenNoteModal(mat.id);
+                return;
+              }
+            }
+            onOpenNoteModal();
+          }}
         >
           <Plus size={12} />
           <span>Nuevo Apunte</span>

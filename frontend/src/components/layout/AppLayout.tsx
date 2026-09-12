@@ -48,7 +48,7 @@ const defaultEmptyPerfil = {
 
 interface AppLayoutProps {
   onOpenEvaluationModal?: () => void;
-  onOpenNoteModal?: () => void;
+  onOpenNoteModal?: (materiaId?: string) => void;
   onOpenMateriaModal?: (
     materiaToEdit?: any,
     initialEstado?: EstadoMateria
@@ -457,7 +457,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
             <button
               className={styles.btnActionPrimary}
-              onClick={onOpenNoteModal}
+              onClick={() => onOpenNoteModal?.()}
             >
               <PlusCircle size={14} />
               <span>Nuevo Apunte</span>

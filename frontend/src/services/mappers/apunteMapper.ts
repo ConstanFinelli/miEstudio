@@ -2,16 +2,22 @@ import type { ApunteDTO } from "../types";
 import type { ApunteNota } from "../../types/academic";
 
 export const apunteMapper = {
-  toApunte(dto: ApunteDTO, materiaNombre: string = "Materia"): ApunteNota {
+  toApunte(dto: ApunteDTO, fallbackMateriaNombre?: string): ApunteNota {
     const wordCount = dto.contenido
       ? dto.contenido.trim().split(/\s+/).length
       : 0;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
+    const resolvedMateriaNombre =
+      dto.materia_nombre ||
+      dto.materia?.nombre ||
+      fallbackMateriaNombre ||
+      "Materia";
+
     return {
       id: dto.id,
       materiaId: dto.materia_id,
-      materiaNombre,
+      materiaNombre: resolvedMateriaNombre,
       carpeta: dto.carpeta || "General",
       titulo: dto.titulo,
       resumen:

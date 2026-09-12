@@ -69,6 +69,15 @@ export interface EvaluacionDTO {
 export interface ApunteDTO {
   id: string;
   materia_id: string;
+  materia_nombre?: string;
+  materia?: {
+    id: string;
+    nombre: string;
+    codigo?: string;
+    anio?: number;
+    cuatrimestre?: string;
+    color?: string;
+  };
   titulo: string;
   contenido: string;
   carpeta?: string;

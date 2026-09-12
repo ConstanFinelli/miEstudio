@@ -11,7 +11,7 @@ interface NotesListSidebarProps {
   onSelectNote: (id: string) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
-  onOpenNoteModal: () => void;
+  onOpenNoteModal: (materiaId?: string) => void;
   onDeleteNote?: (id: string, titulo: string) => void;
   filterLabel?: string;
 }
@@ -153,7 +153,7 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
             </span>
             <button
               className={styles.btnNewFolder}
-              onClick={onOpenNoteModal}
+              onClick={() => onOpenNoteModal()}
               style={{ justifyContent: "center" }}
             >
               <Plus size={12} />
@@ -222,7 +222,7 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
       </div>
 
       <div className={styles.notesFooter}>
-        <button className={styles.btnNewFolder} onClick={onOpenNoteModal}>
+        <button className={styles.btnNewFolder} onClick={() => onOpenNoteModal()}>
           <Plus size={12} />
           <span>Nueva Nota en esta Materia</span>
         </button>

@@ -32,6 +32,6 @@ export interface FoldersSidebarProps {
   onSelectFolder: (folder: string | null) => void;
   selectedSubFolder: string | null;
   onSelectSubFolder: (sub: string | null) => void;
-  onOpenNoteModal?: () => void;
+  onOpenNoteModal?: (materiaId?: string) => void;
   notes?: ApunteNota[];
 }
