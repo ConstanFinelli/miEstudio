@@ -46,7 +46,7 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
   const [permiteRecupPromocion, setPermiteRecupPromocion] = useState<boolean>(
     currentReglas?.promocion?.permiteRecuperatorio ?? false
   );
-  const [minAsistenciaPromocion, setMinAsistenciaPromocion] = useState<number>(
+  const [minAsistenciaPromocion, setMinAsistenciaPromocion] = useState<number | string>(
     currentReglas?.promocion?.minAsistencia ?? 80
   );
 
@@ -56,7 +56,7 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
     currentReglas?.regularidad?.descripcion ||
     'Todas las evaluaciones ≥ 4.0 y requisitos de cátedra cumplidos'
   );
-  const [minAsistenciaRegularidad, setMinAsistenciaRegularidad] = useState<number>(
+  const [minAsistenciaRegularidad, setMinAsistenciaRegularidad] = useState<number | string>(
     currentReglas?.regularidad?.minAsistencia ?? 75
   );
   const [permiteRecupRegularidad, setPermiteRecupRegularidad] = useState<boolean>(
@@ -118,13 +118,13 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
         promocion: {
           permitePromocion,
           condicion: promoText,
-          minAsistencia: permitePromocion ? minAsistenciaPromocion : 0,
+          minAsistencia: permitePromocion ? (minAsistenciaPromocion === '' ? 80 : Number(minAsistenciaPromocion)) : 0,
           permiteRecuperatorio: permitePromocion ? permiteRecupPromocion : false,
           descripcion: promoText
         },
         regularidad: {
           condicion: reguText,
-          minAsistencia: minAsistenciaRegularidad,
+          minAsistencia: minAsistenciaRegularidad === '' ? 75 : Number(minAsistenciaRegularidad),
           permiteRecuperatorio: permiteRecupRegularidad,
           descripcion: reguText
         }
@@ -242,7 +242,7 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
                       max="100"
                       className={styles.input}
                       value={minAsistenciaPromocion}
-                      onChange={e => setMinAsistenciaPromocion(parseInt(e.target.value, 10) || 0)}
+                      onChange={e => setMinAsistenciaPromocion(e.target.value === '' ? '' : e.target.value)}
                       required
                     />
                   </div>
@@ -312,7 +312,7 @@ export const AccreditationRulesModal: React.FC<AccreditationRulesModalProps> = (
                   max="100"
                   className={styles.input}
                   value={minAsistenciaRegularidad}
-                  onChange={e => setMinAsistenciaRegularidad(parseInt(e.target.value, 10) || 0)}
+                  onChange={e => setMinAsistenciaRegularidad(e.target.value === '' ? '' : e.target.value)}
                   required
                 />
               </div>

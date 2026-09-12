@@ -23,7 +23,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
   const [legajo, setLegajo] = useState('');
   const [semestreActual, setSemestreActual] = useState('1º Semestre');
   const [cicloActivo, setCicloActivo] = useState('1C 2026');
-  const [duracionAnios, setDuracionAnios] = useState<number>(5);
+  const [duracionAnios, setDuracionAnios] = useState<number | ''>(5);
   const [totalMateriasPlan, setTotalMateriasPlan] = useState<number | ''>('');
 
   const [isLoading, setIsLoading] = useState(false);
@@ -168,7 +168,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
                     max="10"
                     className={styles.input}
                     value={duracionAnios}
-                    onChange={(e) => setDuracionAnios(Number(e.target.value))}
+                    onChange={(e) => setDuracionAnios(e.target.value === '' ? '' : Number(e.target.value))}
                     disabled={isLoading}
                   />
                 </div>

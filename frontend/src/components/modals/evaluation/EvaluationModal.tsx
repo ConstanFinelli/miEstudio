@@ -46,7 +46,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const [horario, setHorario] = useState('19:00');
   const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
-  const [peso, setPeso] = useState<number>(100);
+  const [peso, setPeso] = useState<number | string>(100);
   const [esAprobatorio, setEsAprobatorio] = useState(true);
   const [nota, setNota] = useState('');
   const [temarioText, setTemarioText] = useState('');
@@ -426,7 +426,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
                   max="100"
                   className={styles.fieldInput}
                   value={peso}
-                  onChange={(e) => setPeso(parseInt(e.target.value, 10) || 0)}
+                  onChange={(e) => setPeso(e.target.value === '' ? '' : e.target.value)}
                   required
                 />
                 <span className={styles.inputSuffix}>%</span>
