@@ -7,7 +7,7 @@ import type { ApunteNota } from '../../../../types/academic';
 interface NoteReaderContentProps {
   activeNote: ApunteNota | null;
   viewMode: 'render' | 'markdown' | 'split';
-  onOpenNoteModal?: () => void;
+  onOpenNoteModal?: (materiaId?: string) => void;
   onContentChange?: (newContent: string) => void;
   onRegisterInsert?: (
     inserter: (prefix: string, suffix?: string, defaultText?: string) => void
@@ -46,7 +46,9 @@ const renderInline = (text: string): React.ReactNode => {
             padding: '1px 5px',
             borderRadius: '3px',
             fontSize: '12px',
-            color: 'var(--text-primary)'
+            color: 'var(--text-primary)',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word'
           }}
         >
           {seg.slice(1, -1)}
@@ -291,7 +293,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
         </p>
         {onOpenNoteModal && (
           <button
-            onClick={onOpenNoteModal}
+            onClick={() => onOpenNoteModal()}
             className={styles.btnNewFolder}
             style={{ width: 'auto', padding: '8px 16px', fontSize: '13px' }}
           >
@@ -306,7 +308,20 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
   const blocks = parseMarkdownBlocks(activeNote.contenidoMarkdown || '');
 
   const renderBlocksList = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '8px' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '14px',
+        marginTop: '8px',
+        minWidth: 0,
+        maxWidth: '100%',
+        width: '100%',
+        boxSizing: 'border-box',
+        overflowWrap: 'break-word',
+        wordBreak: 'break-word'
+      }}
+    >
       {blocks.map((block, idx) => {
         switch (block.type) {
           case 'h1':
@@ -319,7 +334,9 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                   color: 'var(--text-primary)',
                   marginTop: '12px',
                   borderBottom: '1px solid var(--border-subtle)',
-                  paddingBottom: '6px'
+                  paddingBottom: '6px',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word'
                 }}
               >
                 {renderInline(block.content)}
@@ -333,7 +350,9 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                   fontSize: '16px',
                   fontWeight: 600,
                   color: 'var(--text-primary)',
-                  marginTop: '8px'
+                  marginTop: '8px',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word'
                 }}
               >
                 {renderInline(block.content)}
@@ -347,7 +366,9 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                   fontSize: '14px',
                   fontWeight: 600,
                   color: 'var(--text-primary)',
-                  marginTop: '6px'
+                  marginTop: '6px',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word'
                 }}
               >
                 {renderInline(block.content)}
@@ -462,11 +483,21 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '4px',
-                  color: 'var(--text-secondary)'
+                  color: 'var(--text-secondary)',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  boxSizing: 'border-box'
                 }}
               >
                 {block.extra?.items?.map((item: string, itemIdx: number) => (
-                  <li key={itemIdx} style={{ lineHeight: 1.5 }}>
+                  <li
+                    key={itemIdx}
+                    style={{
+                      lineHeight: 1.5,
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word'
+                    }}
+                  >
                     {renderInline(item)}
                   </li>
                 ))}
@@ -481,7 +512,10 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                   lineHeight: 1.6,
                   color: 'var(--text-secondary)',
                   fontSize: '13px',
-                  margin: 0
+                  margin: 0,
+                  minWidth: 0,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word'
                 }}
               >
                 {renderInline(block.content)}

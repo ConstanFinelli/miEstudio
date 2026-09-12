@@ -18,7 +18,7 @@ import {
 } from "../../components/modals";
 
 interface ApuntesViewProps {
-  onOpenNoteModal: () => void;
+  onOpenNoteModal: (materiaId?: string) => void;
 }
 
 export const ApuntesView: React.FC<ApuntesViewProps> = ({
@@ -59,8 +59,13 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const filteredNotes = useMemo(() => {
     return apuntes.filter((n) => {
       if (selectedFolder) {
+        const mat = materias.find(
+          (m) => m.nombre === selectedFolder || m.id === selectedFolder
+        );
         const matchesMateria =
-          n.materiaNombre === selectedFolder || n.materiaId === selectedFolder;
+          n.materiaNombre === selectedFolder ||
+          n.materiaId === selectedFolder ||
+          (mat && (n.materiaId === mat.id || n.materiaNombre === mat.nombre));
         if (!matchesMateria) return false;
       } else if (selectedYear !== null && selectedYear !== undefined) {
         const mat = materias.find(
@@ -125,6 +130,20 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
     materias.find((m) => m.nombre === selectedFolder || m.id === selectedFolder)
       ?.nombre ||
     undefined;
+
+  const selectedMateriaId = useMemo(() => {
+    if (selectedFolder) {
+      const mat = materias.find(
+        (m) => m.nombre === selectedFolder || m.id === selectedFolder
+      );
+      if (mat) return mat.id;
+    }
+    return activeNote?.materiaId;
+  }, [selectedFolder, materias, activeNote]);
+
+  const handleCreateNoteForCurrentFolder = () => {
+    onOpenNoteModal(selectedMateriaId);
+  };
 
   // Auto-collapse sidebars (including main navigation sidebar) when activating split mode for a spacious study layout
   const handleToggleSplit = () => {
@@ -302,7 +321,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         onSelectFolder={setSelectedFolder}
         selectedSubFolder={selectedSubFolder}
         onSelectSubFolder={setSelectedSubFolder}
-        onOpenNoteModal={onOpenNoteModal}
+        onOpenNoteModal={handleCreateNoteForCurrentFolder}
         notes={apuntes}
       />
 
@@ -319,7 +338,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onOpenNoteModal={onOpenNoteModal}
+        onOpenNoteModal={handleCreateNoteForCurrentFolder}
         onDeleteNote={handleDeleteRequest}
       />
 
@@ -348,13 +367,13 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
 
         {/* Main Document Body or Split View */}
         <div
-          style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}
+          style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0, minWidth: 0 }}
         >
           {/* Note Area */}
           <NoteReaderContent
             activeNote={activeNote}
             viewMode={viewMode}
-            onOpenNoteModal={onOpenNoteModal}
+            onOpenNoteModal={handleCreateNoteForCurrentFolder}
             onContentChange={handleContentChange}
             onRegisterInsert={(inserter) => {
               insertMarkdownRef.current = inserter;

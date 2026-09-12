@@ -1,11 +1,17 @@
 .editorScrollArea {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 24px 36px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   max-width: 900px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .noteDocTitle {
@@ -13,6 +19,9 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .docMetaGroup {
@@ -23,6 +32,8 @@
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 12px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Alert Callout */
@@ -37,6 +48,9 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .calloutHeader {
@@ -54,6 +68,8 @@
   font-size: 13px;
   color: var(--text-primary);
   line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* KaTeX Math Box */
@@ -66,6 +82,8 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .mathHeader {
@@ -82,6 +100,8 @@
   color: var(--emerald);
   letter-spacing: 0.05em;
   padding: 8px 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* Code Snippet Block */
@@ -90,6 +110,9 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .codeHeader {
@@ -131,11 +154,15 @@
   color: var(--text-primary);
   line-height: 1.5;
   overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: pre;
 }
 
 /* Markdown Table */
 .markdownTable {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 12px;
   background-color: var(--surface-1);
@@ -163,11 +190,12 @@
 /* Split Editor & Live Preview */
 .editorSplitContainer {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   height: 100%;
   width: 100%;
   overflow: hidden;
   flex: 1;
+  min-width: 0;
 }
 
 .splitEditorPane {
@@ -177,17 +205,22 @@
   border-right: 1px solid var(--border-subtle);
   background-color: var(--surface-1);
   min-width: 0;
+  overflow: hidden;
 }
 
 .splitPreviewPane {
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 24px 28px;
   background-color: var(--surface-1);
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdownTextarea {
@@ -203,6 +236,10 @@
   border: none;
   outline: none;
   resize: none;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .btnNewFolder {

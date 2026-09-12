@@ -12,4 +12,5 @@
   flex-direction: column;
   overflow: hidden;
   background-color: var(--bg-canvas);
+  min-width: 0;
 }
