@@ -127,10 +127,14 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                   <span className={styles.accreditedCardLabel}>
                     {materia.estado === "PROMOCIONADA"
                       ? "Calificación Final Acreditada"
-                      : "Acta Examen Final #1042"}
+                      : materia.estado === "APROBADA"
+                        ? "Examen Final Acreditado"
+                        : "Asignatura Regularizada"}
                   </span>
                   <span className={styles.accreditedCardScore}>
-                    {materia.promedio?.toFixed(1)} / 10
+                    {materia.promedio && materia.promedio > 0
+                      ? `${materia.promedio.toFixed(1)} / 10`
+                      : "Acreditada"}
                   </span>
                 </div>
               )}

@@ -82,8 +82,8 @@ func TestCreateCarreraDefaults(t *testing.T) {
 	if carrera.DuracionAnios != 5 {
 		t.Errorf("expected default duration 5, got %d", carrera.DuracionAnios)
 	}
-	if carrera.TotalMateriasPlan != 40 {
-		t.Errorf("expected default total materias 40, got %d", carrera.TotalMateriasPlan)
+	if carrera.TotalMateriasPlan != 0 {
+		t.Errorf("expected default total materias 0, got %d", carrera.TotalMateriasPlan)
 	}
 }
 

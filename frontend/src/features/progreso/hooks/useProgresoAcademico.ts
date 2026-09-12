@@ -115,7 +115,7 @@ export const useProgresoAcademico = () => {
         }
       }
 
-      const nota = hist?.nota_final || mat.promedio || 8;
+      const nota = hist?.nota_final ?? mat.promedio ?? 0;
       const tipo = hist?.tipo_aprobacion || (mat.estado === 'PROMOCIONADA' ? 'PROMOCION' : 'FINAL');
 
       return {
@@ -138,9 +138,7 @@ export const useProgresoAcademico = () => {
         ? 0
         : (activeCarrera?.total_materias_plan && activeCarrera.total_materias_plan > 0
             ? Math.max(activeCarrera.total_materias_plan, materias.length)
-            : (perfil?.materiasTotales && perfil.materiasTotales > 0
-                ? Math.max(perfil.materiasTotales, materias.length)
-                : materias.length));
+            : materias.length);
     const totalAprobadas = aprobadasConsolidadas.length;
     const progresoPercent = totalPlan > 0 ? Math.min(100, Math.round((totalAprobadas / totalPlan) * 100)) : 0;
     const materiasRestantes = Math.max(0, totalPlan - totalAprobadas);
@@ -163,15 +161,18 @@ export const useProgresoAcademico = () => {
 
   // 2. Evolución temporal por año lectivo (Curva Burnup y Promedio Anual)
   const evolucionPorAnio = useMemo(() => {
-    const mapAnios: Record<number, { count: number; sumNotas: number; materias: { nombre: string; nota: number; tipo: string }[] }> = {};
+    const mapAnios: Record<number, { count: number; sumNotas: number; countConNota: number; materias: { nombre: string; nota: number; tipo: string }[] }> = {};
 
     aprobadasConsolidadas.forEach((aprob) => {
       const yr = aprob.anioCalendario;
       if (!mapAnios[yr]) {
-        mapAnios[yr] = { count: 0, sumNotas: 0, materias: [] };
+        mapAnios[yr] = { count: 0, sumNotas: 0, countConNota: 0, materias: [] };
       }
       mapAnios[yr].count += 1;
-      mapAnios[yr].sumNotas += aprob.nota;
+      if (aprob.nota > 0) {
+        mapAnios[yr].sumNotas += aprob.nota;
+        mapAnios[yr].countConNota += 1;
+      }
       mapAnios[yr].materias.push({
         nombre: aprob.nombre,
         nota: aprob.nota,
@@ -187,7 +188,7 @@ export const useProgresoAcademico = () => {
     const result: AnioEstadistica[] = aniosOrdenados.map((yr) => {
       const data = mapAnios[yr];
       acumulador += data.count;
-      const promedio = Number((data.sumNotas / data.count).toFixed(2));
+      const promedio = data.countConNota > 0 ? Number((data.sumNotas / data.countConNota).toFixed(2)) : 0;
       return {
         anio: yr,
         count: data.count,
@@ -236,26 +237,28 @@ export const useProgresoAcademico = () => {
 
     aprobadasConsolidadas.forEach((a) => {
       const n = a.nota;
-      if (n > max) {
-        max = n;
-        maxMat = a.nombre;
+      if (n > 0) {
+        if (n > max) {
+          max = n;
+          maxMat = a.nombre;
+        }
+        if (n >= 9.5) sob += 1;
+        else if (n >= 8.0) dist += 1;
+        else if (n >= 6.0) bueno += 1;
+        else if (n >= 4.0) apr += 1;
       }
-      if (n >= 9.5) sob += 1;
-      else if (n >= 8.0) dist += 1;
-      else if (n >= 6.0) bueno += 1;
-      else if (n >= 4.0) apr += 1;
     });
 
-    const total = aprobadasConsolidadas.length;
+    const totalConNota = sob + dist + bueno + apr;
     const excelentes = sob + dist;
-    const tasaExcelencia = total > 0 ? Math.round((excelentes / total) * 100) : 0;
+    const tasaExcelencia = totalConNota > 0 ? Math.round((excelentes / totalConNota) * 100) : 0;
 
     return {
       sobresaliente: sob,
       distinguido: dist,
       bueno,
       aprobado: apr,
-      totalConNota: total,
+      totalConNota,
       tasaExcelencia,
       notaMaxima: max,
       materiaNotaMaxima: maxMat,

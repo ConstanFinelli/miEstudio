@@ -66,10 +66,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
   const approvedSubjects = materias.filter(
     (m) => m.estado === "APROBADA" || m.estado === "PROMOCIONADA",
   );
-  const totalApproved =
-    perfil?.materiasAprobadas && perfil.materiasAprobadas > 0
-      ? perfil.materiasAprobadas
-      : approvedSubjects.length;
+  const totalApproved = approvedSubjects.length;
 
   // Si no hay materias cargadas en la carrera, el total debe ser 0 para no mostrar números falsos/hardcodeados
   const totalPlan =
@@ -77,9 +74,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
       ? 0
       : (activeCarrera?.total_materias_plan && activeCarrera.total_materias_plan > 0
           ? Math.max(activeCarrera.total_materias_plan, materias.length)
-          : (perfil?.materiasTotales && perfil.materiasTotales > 0
-              ? Math.max(perfil.materiasTotales, materias.length)
-              : materias.length));
+          : materias.length);
 
   const progressPercent =
     totalPlan > 0
@@ -94,7 +89,9 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
         gradedSubjects.length
       : 0;
   const displayAverage =
-    perfil.promedioGeneral > 0 ? perfil.promedioGeneral : computedAverage;
+    computedAverage > 0
+      ? computedAverage
+      : (perfil.promedioGeneral > 0 ? perfil.promedioGeneral : 0);
   const hasPromedio = displayAverage > 0;
 
   return (

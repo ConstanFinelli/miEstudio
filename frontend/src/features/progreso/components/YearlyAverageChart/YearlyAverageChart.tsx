@@ -77,7 +77,7 @@ export const YearlyAverageChart: React.FC<YearlyAverageChartProps> = ({
   const minPassLineY = getY(4.0);
 
   // Best year
-  const bestYear = [...evolucionPorAnio].sort(
+  const bestYear = [...evolucionPorAnio].filter((a) => a.promedio > 0).sort(
     (a, b) => b.promedio - a.promedio,
   )[0];
 

@@ -49,7 +49,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
   const [profesorJtp, setProfesorJtp] = useState("");
 
   // Campos de Aprobación Previa / Calificación Final
-  const [notaFinal, setNotaFinal] = useState<number | string>(8);
+  const [notaFinal, setNotaFinal] = useState<number | string>("");
   const [fechaAprobacion, setFechaAprobacion] = useState<string>(
     new Date().toISOString().split("T")[0],
   );
@@ -117,7 +117,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setNotaFinal(
         materiaToEdit.promedio && materiaToEdit.promedio > 0
           ? materiaToEdit.promedio
-          : 8,
+          : "",
       );
       setTipoAprobacion(editEst === "PROMOCIONADA" ? "PROMOCION" : "FINAL");
       setLibroActa("");
@@ -177,7 +177,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
         "Todas las evaluaciones ≥ 4.0 y requisitos de cátedra",
       );
       setMinAsistencia(75);
-      setNotaFinal(8);
+      setNotaFinal("");
       const now = new Date();
       setFechaAprobacion(now.toISOString().split("T")[0]);
       setFechaExactaDesconocida(false);
@@ -531,7 +531,9 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
               <div className={styles.row2}>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>
-                    Calificación / Nota Final (1 al 10) *
+                    {tipoAprobacion === "EQUIVALENCIA"
+                      ? "Calificación / Nota (Opcional)"
+                      : "Calificación / Nota Final (1 al 10) *"}
                   </label>
                   <input
                     type="number"
@@ -544,7 +546,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                       setNotaFinal(e.target.value === "" ? "" : e.target.value)
                     }
                     placeholder="Ej: 8"
-                    required
+                    required={tipoAprobacion !== "EQUIVALENCIA"}
                   />
                 </div>
 
