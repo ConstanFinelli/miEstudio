@@ -13,6 +13,12 @@ interface ScheduleDayColumnProps {
   onOpenAddModal: (dia: DiaSemana) => void;
   onCardClick: (horario: HorarioCursada) => void;
   onCardDelete: (e: React.MouseEvent, id: string, name?: string) => void;
+  onCardColorClick?: (
+    materiaId: string,
+    materiaNombre: string,
+    currentColor?: string,
+    materiaCodigo?: string,
+  ) => void;
 }
 
 export const ScheduleDayColumn: React.FC<ScheduleDayColumnProps> = ({
@@ -24,7 +30,8 @@ export const ScheduleDayColumn: React.FC<ScheduleDayColumnProps> = ({
   maxHour,
   onOpenAddModal,
   onCardClick,
-  onCardDelete
+  onCardDelete,
+  onCardColorClick,
 }) => {
   return (
     <div
@@ -51,6 +58,7 @@ export const ScheduleDayColumn: React.FC<ScheduleDayColumnProps> = ({
           item={item}
           onClick={onCardClick}
           onDelete={onCardDelete}
+          onColorClick={onCardColorClick}
         />
       ))}
     </div>

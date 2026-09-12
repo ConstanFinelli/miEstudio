@@ -9,10 +9,12 @@ import {
   Save,
   Trash2,
   AlertCircle,
+  Pipette,
 } from "lucide-react";
 import type { HorarioCursada, DiaSemana } from "../../../types/academic";
 import { useMaterias } from "../../../hooks";
 import { horariosService } from "../../../services";
+import { PRESET_COLORS } from "../materia/MateriaColorModal";
 
 interface HorarioModalProps {
   isOpen: boolean;
@@ -53,7 +55,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
   defaultDiaSemana = "LUNES",
   defaultMateriaId,
 }) => {
-  const { materias } = useMaterias();
+  const { materias, updateMateria } = useMaterias();
 
   const [materiaId, setMateriaId] = useState("");
   const [diaSemana, setDiaSemana] = useState<DiaSemana>(defaultDiaSemana);
@@ -105,12 +107,17 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       setObservaciones("");
       setShowDeleteConfirm(false);
     }
-  }, [isOpen, horarioToEdit, defaultDiaSemana, defaultMateriaId, availableMaterias]);
+  }, [
+    isOpen,
+    horarioToEdit,
+    defaultDiaSemana,
+    defaultMateriaId,
+    availableMaterias,
+  ]);
 
   const selectedMateria = useMemo(() => {
     return materias.find((m) => m.id === materiaId);
   }, [materias, materiaId]);
-
 
   // Compute duration
   const { durationText, isValidTimeRange } = useMemo(() => {
@@ -165,7 +172,9 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
         result = await horariosService.createHorario(payload);
       }
 
-      window.dispatchEvent(new CustomEvent('horarios:updated', { detail: result }));
+      window.dispatchEvent(
+        new CustomEvent("horarios:updated", { detail: result }),
+      );
       onSuccess();
       onClose();
     } catch (err) {
@@ -180,7 +189,11 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
     try {
       setIsSubmitting(true);
       await horariosService.deleteHorario(horarioToEdit.id);
-      window.dispatchEvent(new CustomEvent('horarios:updated', { detail: { id: horarioToEdit.id } }));
+      window.dispatchEvent(
+        new CustomEvent("horarios:updated", {
+          detail: { id: horarioToEdit.id },
+        }),
+      );
       onSuccess();
       onClose();
     } catch (err) {
@@ -244,8 +257,110 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
                 </option>
               ))}
             </select>
-          </div>
 
+            {selectedMateria && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginTop: "6px",
+                  padding: "6px 10px",
+                  backgroundColor: "var(--surface-2)",
+                  borderRadius: "var(--radius-xs)",
+                  border: "1px solid var(--border-subtle)",
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      backgroundColor: selectedMateria.color || "#3b82f6",
+                      boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.2)",
+                    }}
+                  />
+                  <span
+                    style={{ fontSize: "11px", color: "var(--text-muted)" }}
+                  >
+                    Color de materia:
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  {PRESET_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      style={{
+                        width: 15,
+                        height: 15,
+                        borderRadius: "50%",
+                        backgroundColor: c,
+                        border:
+                          (selectedMateria.color || "#3b82f6").toLowerCase() ===
+                          c.toLowerCase()
+                            ? "2px solid #ffffff"
+                            : "1px solid rgba(255,255,255,0.15)",
+                        cursor: "pointer",
+                        padding: 0,
+                        transform:
+                          (selectedMateria.color || "#3b82f6").toLowerCase() ===
+                          c.toLowerCase()
+                            ? "scale(1.2)"
+                            : "scale(1)",
+                        transition: "all 0.12s ease",
+                      }}
+                      title={`Cambiar color a ${c}`}
+                      onClick={async () => {
+                        await updateMateria(selectedMateria.id, { color: c });
+                      }}
+                    />
+                  ))}
+                  <label
+                    title="Elegir color personalizado (RGB / selector)"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 17,
+                      height: 17,
+                      borderRadius: "50%",
+                      backgroundColor: "var(--surface-3)",
+                      border: "1px dashed var(--border-hover)",
+                      cursor: "pointer",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Pipette size={9} color="var(--text-secondary)" />
+                    <input
+                      type="color"
+                      style={{
+                        position: "absolute",
+                        top: -10,
+                        left: -10,
+                        width: 40,
+                        height: 40,
+                        opacity: 0,
+                        cursor: "pointer",
+                      }}
+                      value={selectedMateria.color || "#3b82f6"}
+                      onChange={async (e) => {
+                        await updateMateria(selectedMateria.id, {
+                          color: e.target.value,
+                        });
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Día de la semana */}
           <div className={styles.fieldGroup}>

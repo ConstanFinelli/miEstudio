@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import styles from './WeeklyScheduleGrid.module.css';
 import type { HorarioCursada, DiaSemana } from '../../../../types/academic';
 import { useHorarios, useMaterias } from '../../../../hooks';
-import { HorarioModal } from '../../../../components/modals';
+import { HorarioModal, MateriaColorModal } from '../../../../components/modals';
+import { Palette } from 'lucide-react';
 import type { ScheduleLayoutItem } from '../ScheduleCard';
 import { ScheduleDayColumn } from '../ScheduleDayColumn';
 import { ScheduleMetricsBar } from '../ScheduleMetricsBar';
@@ -42,6 +43,12 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingHorario, setEditingHorario] = useState<HorarioCursada | null>(null);
   const [defaultDia, setDefaultDia] = useState<DiaSemana>('LUNES');
+  const [colorModalMateria, setColorModalMateria] = useState<{
+    id: string;
+    nombre: string;
+    codigo?: string;
+    color?: string;
+  } | null>(null);
 
   // Check today's day of week (0=Sunday, 1=Monday ... 6=Saturday)
   const currentDayIndex = new Date().getDay();
@@ -116,6 +123,38 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
       distinctSedes: Array.from(sedesSet)
     };
   }, [filteredHorarios]);
+
+  // Distinct materias currently in the schedule (or in cursada) with their colors
+  const activeMateriasList = useMemo(() => {
+    const map = new Map<string, { id: string; nombre: string; codigo?: string; color: string }>();
+    filteredHorarios.forEach((h) => {
+      const mat = materias.find((m) => m.id === h.materiaId);
+      const matId = h.materiaId || mat?.id;
+      if (matId && !map.has(matId)) {
+        map.set(matId, {
+          id: matId,
+          nombre: mat?.nombre || h.materiaNombre || 'Materia',
+          codigo: mat?.codigo || h.materiaCodigo,
+          color: mat?.color || h.materiaColor || '#3b82f6',
+        });
+      }
+    });
+
+    if (map.size === 0) {
+      materias
+        .filter((m) => m.estado === 'CURSANDO')
+        .forEach((m) => {
+          map.set(m.id, {
+            id: m.id,
+            nombre: m.nombre,
+            codigo: m.codigo,
+            color: m.color || '#3b82f6',
+          });
+        });
+    }
+
+    return Array.from(map.values());
+  }, [filteredHorarios, materias]);
 
   // Enrich horarios with materia details (color, name, code)
   const enrichedHorarios = useMemo(() => {
@@ -204,9 +243,22 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
     }
   };
 
+  const handleCardColorClick = (
+    materiaId: string,
+    materiaNombre: string,
+    currentColor?: string,
+    materiaCodigo?: string,
+  ) => {
+    setColorModalMateria({
+      id: materiaId,
+      nombre: materiaNombre,
+      color: currentColor,
+      codigo: materiaCodigo,
+    });
+  };
+
   return (
     <div className={styles.container}>
-      {/* 1. Header Bar: Metrics & Actions */}
       <ScheduleMetricsBar
         totalHoursStr={stats.totalHoursStr}
         distinctMateriasCount={stats.distinctMateriasCount}
@@ -215,6 +267,34 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
         onToggleSaturday={setShowSaturday}
         onOpenAddModal={() => handleOpenAddModal()}
       />
+
+      {/* Materias Color Palette Legend Bar */}
+      {activeMateriasList.length > 0 && (
+        <div className={styles.materiaColorsBar}>
+          <div className={styles.materiaColorsLabel}>
+            <Palette size={12} color="var(--primary)" />
+            <span>Colores de Materias:</span>
+          </div>
+          <div className={styles.materiaPillsList}>
+            {activeMateriasList.map((mat) => (
+              <button
+                key={mat.id}
+                type="button"
+                className={styles.materiaColorChip}
+                onClick={() => setColorModalMateria(mat)}
+                title={`Cambiar color de ${mat.nombre}`}
+              >
+                <span
+                  className={styles.materiaChipDot}
+                  style={{ backgroundColor: mat.color }}
+                />
+                <span className={styles.materiaChipName}>{mat.nombre}</span>
+                <Palette size={10} className={styles.materiaChipIcon} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 2. Schedule Grid / Empty State */}
       {filteredHorarios.length === 0 ? (
@@ -257,6 +337,7 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
                 onOpenAddModal={handleOpenAddModal}
                 onCardClick={handleCardClick}
                 onCardDelete={handleDeleteCard}
+                onCardColorClick={handleCardColorClick}
               />
             ))}
           </div>
@@ -275,6 +356,16 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
         }}
         horarioToEdit={editingHorario}
         defaultDiaSemana={defaultDia}
+      />
+
+      {/* Modal para cambiar color de la materia */}
+      <MateriaColorModal
+        isOpen={Boolean(colorModalMateria)}
+        onClose={() => setColorModalMateria(null)}
+        materia={colorModalMateria}
+        onSuccess={() => {
+          refresh();
+        }}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   Edit2,
   Trash2,
   AlertTriangle,
+  Palette,
 } from "lucide-react";
 import type { HorarioCursada } from "../../../../types/academic";
 
@@ -23,6 +24,12 @@ interface ScheduleCardProps {
   item: ScheduleLayoutItem;
   onClick: (horario: HorarioCursada) => void;
   onDelete: (e: React.MouseEvent, id: string, name?: string) => void;
+  onColorClick?: (
+    materiaId: string,
+    materiaNombre: string,
+    currentColor?: string,
+    materiaCodigo?: string,
+  ) => void;
 }
 
 const parseTimeToMinutes = (timeStr?: string): number => {
@@ -35,6 +42,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
   item,
   onClick,
   onDelete,
+  onColorClick,
 }) => {
   const h = item.horario;
   const cardColor = h.materiaColor || "#6366f1";
@@ -94,7 +102,26 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
         </div>
 
         <div className={styles.cardActions}>
+          {onColorClick && (
+            <button
+              type="button"
+              className={styles.iconBtn}
+              title="Cambiar color de la materia"
+              onClick={(e) => {
+                e.stopPropagation();
+                onColorClick(
+                  h.materiaId || "",
+                  h.materiaNombre || "Materia",
+                  cardColor,
+                  h.materiaCodigo,
+                );
+              }}
+            >
+              <Palette size={10} />
+            </button>
+          )}
           <button
+            type="button"
             className={styles.iconBtn}
             title="Editar horario"
             onClick={(e) => {
@@ -105,6 +132,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
             <Edit2 size={10} />
           </button>
           <button
+            type="button"
             className={styles.iconBtn}
             title="Eliminar horario"
             onClick={(e) => onDelete(e, h.id, h.materiaNombre)}
