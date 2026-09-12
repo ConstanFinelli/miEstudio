@@ -14,7 +14,7 @@ type Service interface {
 	ListMateriales(ctx context.Context, usuarioID, materiaID, categoria string) ([]Material, error)
 	GetMaterial(ctx context.Context, id string) (*Material, error)
 	GetFilePath(ctx context.Context, id string) (string, *Material, error)
-	UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error)
+	UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria, unidad string, file io.Reader, filename string, mimeType string) (*Material, error)
 	UpdateMaterial(ctx context.Context, id string, dto UpdateMaterialDTO) (*Material, error)
 	DeleteMaterial(ctx context.Context, id string) error
 	DeleteMaterialesByMateria(ctx context.Context, usuarioID, materiaID string) (int, error)
@@ -53,7 +53,7 @@ func (s *service) GetFilePath(ctx context.Context, id string) (string, *Material
 	return filePath, mat, nil
 }
 
-func (s *service) UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria string, file io.Reader, filename string, mimeType string) (*Material, error) {
+func (s *service) UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria, unidad string, file io.Reader, filename string, mimeType string) (*Material, error) {
 	if materiaID == "" {
 		return nil, errors.New("materia_id es requerido")
 	}
@@ -78,6 +78,7 @@ func (s *service) UploadMaterial(ctx context.Context, usuarioID, materiaID, titu
 		MateriaID:             materiaID,
 		Titulo:                titulo,
 		Categoria:             categoria,
+		Unidad:                unidad,
 		ArchivoNombreOriginal: filename,
 		ArchivoKey:            key,
 		MimeType:              mimeType,
@@ -103,6 +104,9 @@ func (s *service) UpdateMaterial(ctx context.Context, id string, dto UpdateMater
 	}
 	if dto.Categoria != nil {
 		mat.Categoria = *dto.Categoria
+	}
+	if dto.Unidad != nil {
+		mat.Unidad = *dto.Unidad
 	}
 
 	if err := s.repo.Update(ctx, mat); err != nil {

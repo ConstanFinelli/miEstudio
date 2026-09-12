@@ -72,12 +72,13 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 	userID := common.GetUserID(c)
 	titulo := c.FormValue("titulo", fileHeader.Filename)
 	categoria := c.FormValue("categoria", "TEORIA")
+	unidad := c.FormValue("unidad", "")
 	mimeType := fileHeader.Header.Get("Content-Type")
 	if mimeType == "" {
 		mimeType = "application/pdf"
 	}
 
-	material, err := h.service.UploadMaterial(c.Context(), userID, materiaID, titulo, categoria, file, fileHeader.Filename, mimeType)
+	material, err := h.service.UploadMaterial(c.Context(), userID, materiaID, titulo, categoria, unidad, file, fileHeader.Filename, mimeType)
 	if err != nil {
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al guardar material", err.Error())
 	}

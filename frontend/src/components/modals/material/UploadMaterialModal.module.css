@@ -346,3 +346,264 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Global Unidad Box */
+.globalUnidadCard {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.globalUnidadHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.globalUnidadIcon {
+  color: var(--primary);
+}
+
+.globalUnidadRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnApplyGlobal {
+  background: var(--surface-3);
+  border: 1px solid var(--border-hover);
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btnApplyGlobal:hover:not(:disabled) {
+  background: var(--primary-alpha);
+  color: var(--primary);
+  border-color: var(--primary-border);
+}
+
+/* Queue List */
+.queueContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.queueHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queueTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.btnAddMoreFiles {
+  background: none;
+  border: 1px dashed var(--border-hover);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnAddMoreFiles:hover {
+  background: var(--primary-alpha);
+  border-color: var(--primary);
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.queueItemCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s;
+}
+
+.queueItemCard:hover {
+  border-color: var(--border-hover);
+}
+
+.queueItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.queueFileMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pdfIconBadge {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  padding: 5px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.queueFileNameGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.queueOriginalName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+.queueFileSize {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.removeQueueBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeQueueBtn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.queueFieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.queueField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.queueFieldFull {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+.queueInput {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.queueInput:focus {
+  border-color: var(--primary);
+}
+
+.categoryPillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.categoryPill {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.categoryPill:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.categoryPillActive {
+  background: var(--primary-alpha);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.progressBanner {
+  background: var(--primary-alpha);
+  border: 1px solid var(--primary-border);
+  color: var(--primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+

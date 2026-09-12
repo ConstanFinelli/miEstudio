@@ -25,7 +25,8 @@ export const materialesService = {
     materiaId: string,
     file: File,
     titulo: string,
-    categoria: MaterialEstudio['categoria']
+    categoria: MaterialEstudio['categoria'],
+    unidad?: string
   ): Promise<MaterialEstudio> {
     try {
       const formData = new FormData();
@@ -33,6 +34,9 @@ export const materialesService = {
       formData.append('archivo', file);
       formData.append('titulo', titulo);
       formData.append('categoria', categoria);
+      if (unidad) {
+        formData.append('unidad', unidad);
+      }
 
       const createdDTO = await apiClient.post<MaterialDTO>(
         `/materias/${materiaId}/materiales`,
@@ -47,6 +51,7 @@ export const materialesService = {
         materiaId,
         titulo,
         categoria,
+        unidad: unidad || '',
         archivoNombre: file.name,
         archivoUrl: URL.createObjectURL(file),
         tamanioBytes: file.size,

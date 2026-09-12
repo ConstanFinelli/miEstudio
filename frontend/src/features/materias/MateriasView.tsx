@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styles from "./MateriasView.module.css";
 import { BookOpen, Plus } from "lucide-react";
 import type { Materia } from "../../types/academic";
@@ -129,8 +129,19 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const {
     materiales: materiaMaterials,
     uploadMaterial,
+    uploadBatchMaterials,
     deleteMaterial,
   } = useMateriales(selectedMateria?.id);
+
+  const existingUnits = useMemo(() => {
+    return Array.from(
+      new Set(
+        materiaMaterials
+          .map((m) => m.unidad?.trim())
+          .filter((u): u is string => Boolean(u))
+      )
+    );
+  }, [materiaMaterials]);
 
   // Schedules for this materia
   const {
@@ -315,8 +326,12 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           materiaId={selectedMateria.id}
           materiaNombre={selectedMateria.nombre}
           materiaCodigo={selectedMateria.codigo}
-          onUpload={(file, titulo, categoria) =>
-            uploadMaterial(file, titulo, categoria)
+          existingUnits={existingUnits}
+          onUpload={(file, titulo, categoria, unidad) =>
+            uploadMaterial(file, titulo, categoria, selectedMateria.id, unidad)
+          }
+          onUploadBatch={(items) =>
+            uploadBatchMaterials(items, selectedMateria.id)
           }
         />
       )}

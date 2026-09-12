@@ -12,6 +12,7 @@ type Material struct {
 	MateriaID             string         `gorm:"type:varchar(36);not null;index" json:"materia_id"`
 	Titulo                string         `gorm:"type:varchar(255);not null" json:"titulo"`
 	Categoria             string         `gorm:"type:varchar(50);not null;default:'TEORIA'" json:"categoria"`
+	Unidad                string         `gorm:"type:varchar(100);default:''" json:"unidad"`
 	ArchivoNombreOriginal string         `gorm:"type:varchar(255);not null" json:"archivo_nombre_original"`
 	ArchivoKey            string         `gorm:"type:varchar(255);not null" json:"archivo_path"`
 	MimeType              string         `gorm:"type:varchar(100);default:'application/pdf'" json:"mime_type"`
@@ -25,4 +26,5 @@ type Material struct {
 type UpdateMaterialDTO struct {
 	Titulo    *string `json:"titulo"`
 	Categoria *string `json:"categoria"`
+	Unidad    *string `json:"unidad"`
 }

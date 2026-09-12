@@ -101,6 +101,7 @@ export interface MaterialDTO {
     | "EXAMEN_ANTERIOR"
     | "BIBLIOGRAFIA"
     | "OTRO";
+  unidad?: string;
   archivo_nombre_original: string;
   archivo_path: string;
   mime_type: string;

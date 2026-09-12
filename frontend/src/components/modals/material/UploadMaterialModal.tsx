@@ -1,6 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './UploadMaterialModal.module.css';
-import { X, UploadCloud, FileText, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  X,
+  UploadCloud,
+  FileText,
+  AlertCircle,
+  Loader2,
+  Trash2,
+  Plus,
+  FolderPlus,
+  CheckCircle2
+} from 'lucide-react';
 import type { CategoriaMaterial, MaterialEstudio } from '../../../types/academic';
 
 interface UploadMaterialModalProps {
@@ -9,12 +19,30 @@ interface UploadMaterialModalProps {
   materiaId: string;
   materiaNombre: string;
   materiaCodigo?: string;
+  existingUnits?: string[];
   onUpload: (
     file: File,
     titulo: string,
-    categoria: CategoriaMaterial
+    categoria: CategoriaMaterial,
+    unidad?: string
   ) => Promise<MaterialEstudio>;
-  onSuccess?: (material: MaterialEstudio) => void;
+  onUploadBatch?: (
+    items: Array<{
+      file: File;
+      titulo: string;
+      categoria: CategoriaMaterial;
+      unidad?: string;
+    }>
+  ) => Promise<MaterialEstudio[]>;
+  onSuccess?: (material: MaterialEstudio | MaterialEstudio[]) => void;
+}
+
+export interface QueuedMaterialItem {
+  id: string;
+  file: File;
+  titulo: string;
+  categoria: CategoriaMaterial;
+  unidad: string;
 }
 
 const CATEGORIAS: { id: CategoriaMaterial; label: string; icon: string }[] = [
@@ -30,25 +58,27 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
   onClose,
   materiaNombre,
   materiaCodigo,
+  existingUnits = [],
   onUpload,
+  onUploadBatch,
   onSuccess
 }) => {
-  const [file, setFile] = useState<File | null>(null);
-  const [titulo, setTitulo] = useState('');
-  const [categoria, setCategoria] = useState<CategoriaMaterial>('TEORIA');
+  const [queuedFiles, setQueuedFiles] = useState<QueuedMaterialItem[]>([]);
+  const [globalUnidad, setGlobalUnidad] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isOpen) {
-      setFile(null);
-      setTitulo('');
-      setCategoria('TEORIA');
+      setQueuedFiles([]);
+      setGlobalUnidad('');
       setIsDragging(false);
       setIsUploading(false);
+      setUploadProgress(null);
       setErrorMessage(null);
     }
   }, [isOpen]);
@@ -66,21 +96,38 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleFileSelect = (selectedFile: File) => {
-    if (selectedFile.type !== 'application/pdf' && !selectedFile.name.endsWith('.pdf')) {
-      setErrorMessage('Por favor seleccioná un archivo en formato PDF.');
-      return;
-    }
-    setErrorMessage(null);
-    setFile(selectedFile);
+  const handleFilesAdded = (fileList: FileList | File[]) => {
+    const addedItems: QueuedMaterialItem[] = [];
+    const filesArray = Array.from(fileList);
+    let hasNonPdf = false;
 
-    // Auto-generate a clean title if title is empty
-    if (!titulo.trim()) {
-      const cleanName = selectedFile.name
+    filesArray.forEach(file => {
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        hasNonPdf = true;
+        return;
+      }
+      const cleanName = file.name
         .replace(/\.pdf$/i, '')
         .replace(/[-_]/g, ' ')
         .trim();
-      setTitulo(cleanName);
+
+      addedItems.push({
+        id: `queue-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        file,
+        titulo: cleanName || 'Material de estudio',
+        categoria: 'TEORIA', // Default to TEORIA as requested
+        unidad: globalUnidad.trim()
+      });
+    });
+
+    if (hasNonPdf) {
+      setErrorMessage('Algunos archivos no eran formato PDF y fueron omitidos.');
+    } else {
+      setErrorMessage(null);
+    }
+
+    if (addedItems.length > 0) {
+      setQueuedFiles(prev => [...prev, ...addedItems]);
     }
   };
 
@@ -97,35 +144,80 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileSelect(e.dataTransfer.files[0]);
+      handleFilesAdded(e.dataTransfer.files);
     }
+  };
+
+  const handleUpdateItem = (id: string, updates: Partial<QueuedMaterialItem>) => {
+    setQueuedFiles(prev =>
+      prev.map(item => (item.id === id ? { ...item, ...updates } : item))
+    );
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setQueuedFiles(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleApplyGlobalUnidadToAll = () => {
+    const trimmed = globalUnidad.trim();
+    setQueuedFiles(prev =>
+      prev.map(item => ({ ...item, unidad: trimmed }))
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      setErrorMessage('Debes adjuntar un archivo PDF.');
+    if (queuedFiles.length === 0) {
+      setErrorMessage('Debes seleccionar al menos un archivo PDF.');
       return;
     }
-    if (!titulo.trim()) {
-      setErrorMessage('El título del material es obligatorio.');
+
+    // Validate titles
+    const emptyTitle = queuedFiles.find(item => !item.titulo.trim());
+    if (emptyTitle) {
+      setErrorMessage('Todos los archivos deben tener un título válido.');
       return;
     }
 
     try {
       setIsUploading(true);
       setErrorMessage(null);
-      const created = await onUpload(file, titulo.trim(), categoria);
-      if (onSuccess) {
-        onSuccess(created);
+
+      if (onUploadBatch) {
+        setUploadProgress({ current: 1, total: queuedFiles.length });
+        const createdBatch = await onUploadBatch(
+          queuedFiles.map(q => ({
+            file: q.file,
+            titulo: q.titulo.trim(),
+            categoria: q.categoria,
+            unidad: q.unidad.trim() || undefined
+          }))
+        );
+        if (onSuccess) onSuccess(createdBatch);
+      } else {
+        const results: MaterialEstudio[] = [];
+        for (let idx = 0; idx < queuedFiles.length; idx++) {
+          const item = queuedFiles[idx];
+          setUploadProgress({ current: idx + 1, total: queuedFiles.length });
+          const res = await onUpload(
+            item.file,
+            item.titulo.trim(),
+            item.categoria,
+            item.unidad.trim() || undefined
+          );
+          results.push(res);
+        }
+        if (onSuccess) onSuccess(results);
       }
+
       onClose();
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Error al subir el material. Intentalo de nuevo.'
+        err instanceof Error ? err.message : 'Error al subir los materiales. Intentalo de nuevo.'
       );
     } finally {
       setIsUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -158,110 +250,210 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
 
         {/* Header */}
         <div className={styles.header}>
-          <h2 className={styles.title}>Subir Material de Estudio</h2>
+          <h2 className={styles.title}>Subir Materiales de Estudio</h2>
           <p className={styles.subtitle}>
-            Adjuntá diapositivas, guías, resúmenes o exámenes para consultarlos y visualizarlos en pantalla.
+            Adjuntá múltiples PDFs de una unidad temática o generales, asignándoles categoría (Teoría por defecto).
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Drop Zone / Selected File */}
-          {!file ? (
-            <div
-              className={`${styles.dropZone} ${isDragging ? styles.dropZoneActive : ''}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-            >
+          {/* Global Unidad / Grupo selector */}
+          <div className={styles.globalUnidadCard}>
+            <div className={styles.globalUnidadHeader}>
+              <FolderPlus size={15} className={styles.globalUnidadIcon} />
+              <label className={styles.label} style={{ margin: 0 }}>
+                Unidad o Grupo Temático (Opcional)
+              </label>
+            </div>
+            <div className={styles.globalUnidadRow}>
               <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,application/pdf"
-                className={styles.fileInputHidden}
+                type="text"
+                list="existing-units-list"
+                className={styles.textInput}
+                placeholder="Ej: Unidad 1: Cinemática (o dejar vacío para General)"
+                value={globalUnidad}
                 onChange={e => {
-                  if (e.target.files && e.target.files[0]) {
-                    handleFileSelect(e.target.files[0]);
-                  }
+                  setGlobalUnidad(e.target.value);
                 }}
+                disabled={isUploading}
               />
-              <div className={styles.dropZoneIcon}>
-                <UploadCloud size={24} />
-              </div>
-              <div>
-                <span className={styles.dropZoneText}>
-                  Hacé click para seleccionar o arrastrá tu PDF acá
-                </span>
-                <div className={styles.dropZoneHint}>Archivos .pdf hasta 50 MB</div>
+              <datalist id="existing-units-list">
+                {existingUnits.map((u, i) => (
+                  <option key={i} value={u} />
+                ))}
+              </datalist>
+
+              {queuedFiles.length > 0 && (
+                <button
+                  type="button"
+                  className={styles.btnApplyGlobal}
+                  onClick={handleApplyGlobalUnidadToAll}
+                  disabled={isUploading}
+                  title="Aplica este nombre de unidad a todos los archivos de la lista"
+                >
+                  <span>Asignar a todos</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Drop Zone */}
+          <div
+            className={`${styles.dropZone} ${isDragging ? styles.dropZoneActive : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              multiple
+              className={styles.fileInputHidden}
+              onChange={e => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleFilesAdded(e.target.files);
+                  e.target.value = ''; // Reset input so same file can be re-selected if needed
+                }
+              }}
+            />
+            <div className={styles.dropZoneIcon}>
+              <UploadCloud size={24} />
+            </div>
+            <div>
+              <span className={styles.dropZoneText}>
+                {queuedFiles.length > 0
+                  ? 'Hacé click o arrastrá más archivos PDF aquí'
+                  : 'Hacé click para seleccionar o arrastrá tus PDFs acá'}
+              </span>
+              <div className={styles.dropZoneHint}>
+                Podés seleccionar varios PDFs simultáneamente · Hasta 50 MB c/u
               </div>
             </div>
-          ) : (
-            <div className={styles.selectedFileCard}>
-              <div className={styles.selectedFileInfo}>
-                <div className={styles.pdfIconBox}>
-                  <FileText size={20} />
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div className={styles.selectedFileName} title={file.name}>
-                    {file.name}
-                  </div>
-                  <div className={styles.selectedFileSize}>
-                    {formatFileSize(file.size)} · PDF
-                  </div>
-                </div>
+          </div>
+
+          {/* Queued Files List */}
+          {queuedFiles.length > 0 && (
+            <div className={styles.queueContainer}>
+              <div className={styles.queueHeaderRow}>
+                <span className={styles.queueTitle}>
+                  Archivos preparados ({queuedFiles.length})
+                </span>
+                <button
+                  type="button"
+                  className={styles.btnAddMoreFiles}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  <Plus size={12} />
+                  <span>Agregar más</span>
+                </button>
               </div>
-              <button
-                type="button"
-                className={styles.removeFileBtn}
-                onClick={() => setFile(null)}
-                disabled={isUploading}
-                title="Quitar archivo"
-              >
-                <X size={16} />
-              </button>
+
+              <div className={styles.queueList}>
+                {queuedFiles.map((item, idx) => (
+                  <div key={item.id} className={styles.queueItemCard}>
+                    <div className={styles.queueItemHeader}>
+                      <div className={styles.queueFileMeta}>
+                        <div className={styles.pdfIconBadge}>
+                          <FileText size={15} />
+                        </div>
+                        <div className={styles.queueFileNameGroup}>
+                          <span className={styles.queueOriginalName} title={item.file.name}>
+                            {idx + 1}. {item.file.name}
+                          </span>
+                          <span className={styles.queueFileSize}>
+                            {formatFileSize(item.file.size)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className={styles.removeQueueBtn}
+                        onClick={() => handleRemoveItem(item.id)}
+                        disabled={isUploading}
+                        title="Quitar este archivo"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+
+                    <div className={styles.queueFieldsGrid}>
+                      {/* Title input */}
+                      <div className={styles.queueField}>
+                        <label className={styles.fieldLabel}>Título visible</label>
+                        <input
+                          type="text"
+                          className={styles.queueInput}
+                          value={item.titulo}
+                          onChange={e => handleUpdateItem(item.id, { titulo: e.target.value })}
+                          placeholder="Título del apunte o guía"
+                          disabled={isUploading}
+                        />
+                      </div>
+
+                      {/* Unidad input */}
+                      <div className={styles.queueField}>
+                        <label className={styles.fieldLabel}>Unidad / Grupo</label>
+                        <input
+                          type="text"
+                          list="existing-units-list"
+                          className={styles.queueInput}
+                          value={item.unidad}
+                          onChange={e => handleUpdateItem(item.id, { unidad: e.target.value })}
+                          placeholder="General / Sin unidad"
+                          disabled={isUploading}
+                        />
+                      </div>
+
+                      {/* Category selector */}
+                      <div className={styles.queueFieldFull}>
+                        <label className={styles.fieldLabel}>Categoría</label>
+                        <div className={styles.categoryPillsList}>
+                          {CATEGORIAS.map(cat => {
+                            const isSelected = item.categoria === cat.id;
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                className={`${styles.categoryPill} ${
+                                  isSelected ? styles.categoryPillActive : ''
+                                }`}
+                                onClick={() => handleUpdateItem(item.id, { categoria: cat.id })}
+                                disabled={isUploading}
+                              >
+                                <span>{cat.icon}</span>
+                                <span>{cat.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-
-          {/* Title Input */}
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Título del Material</label>
-            <input
-              type="text"
-              className={styles.textInput}
-              placeholder="Ej: Guía Práctica 2 - Enrutamiento BGP"
-              value={titulo}
-              onChange={e => setTitulo(e.target.value)}
-              disabled={isUploading}
-              required
-            />
-          </div>
-
-          {/* Category Selector */}
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Categoría</label>
-            <div className={styles.categoryGrid}>
-              {CATEGORIAS.map(cat => {
-                const isActive = categoria === cat.id;
-                return (
-                  <div
-                    key={cat.id}
-                    className={`${styles.categoryCard} ${isActive ? styles.categoryCardActive : ''}`}
-                    onClick={() => !isUploading && setCategoria(cat.id)}
-                  >
-                    <span className={styles.categoryIcon}>{cat.icon}</span>
-                    <span className={styles.categoryLabel}>{cat.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Error message */}
           {errorMessage && (
             <div className={styles.errorMessage}>
               <AlertCircle size={15} style={{ flexShrink: 0 }} />
               <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* Progress message */}
+          {uploadProgress && (
+            <div className={styles.progressBanner}>
+              <Loader2 size={14} className="animate-spin" />
+              <span>
+                Subiendo material {uploadProgress.current} de {uploadProgress.total}...
+              </span>
             </div>
           )}
 
@@ -278,17 +470,23 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
             <button
               type="submit"
               className={styles.btnSubmit}
-              disabled={isUploading || !file}
+              disabled={isUploading || queuedFiles.length === 0}
             >
               {isUploading ? (
                 <>
                   <Loader2 size={14} className="animate-spin" />
-                  <span>Subiendo PDF...</span>
+                  <span>Subiendo ({uploadProgress?.current || 1}/{queuedFiles.length})...</span>
                 </>
               ) : (
                 <>
-                  <UploadCloud size={14} />
-                  <span>Subir Material</span>
+                  <CheckCircle2 size={14} />
+                  <span>
+                    {queuedFiles.length === 0
+                      ? 'Seleccionar archivos'
+                      : queuedFiles.length === 1
+                      ? 'Subir 1 Material'
+                      : `Subir ${queuedFiles.length} Materiales`}
+                  </span>
                 </>
               )}
             </button>

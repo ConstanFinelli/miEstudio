@@ -284,3 +284,155 @@
   background-color: var(--red-alpha);
   border-color: var(--red-border);
 }
+
+/* Header Left Group & View Switch */
+.headerLeftGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.viewModeSwitch {
+  display: flex;
+  align-items: center;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 2px;
+  gap: 2px;
+}
+
+.viewSwitchBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+  font-family: var(--font-mono);
+}
+
+.viewSwitchBtn:hover {
+  color: var(--text-primary);
+}
+
+.viewSwitchBtnActive {
+  background-color: var(--surface-1);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Unit Groups Accordion */
+.unitsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.unitGroupCard {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-1);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.unitGroupCard:hover {
+  border-color: var(--border-hover);
+}
+
+.unitGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: var(--surface-2);
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.15s;
+}
+
+.unitGroupHeader:hover {
+  background-color: var(--surface-3);
+}
+
+.unitHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.chevronIcon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.unitFolderIcon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.unitGroupTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.unitCountBadge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  background-color: var(--primary-alpha);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+}
+
+.unitSizeText {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.unitCollapseHint {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.unitCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background-color: var(--surface-1);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.flatCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.unitTagBadge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  background-color: var(--surface-3);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+}
+

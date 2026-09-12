@@ -120,6 +120,7 @@ export interface MaterialEstudio {
   materiaId: string;
   titulo: string;
   categoria: CategoriaMaterial;
+  unidad?: string;
   archivoNombre: string;
   archivoUrl: string;
   tamanioBytes: number;

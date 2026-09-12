@@ -41,14 +41,42 @@ export const useMateriales = (materiaId?: string) => {
     file: File,
     titulo: string,
     categoria: MaterialEstudio['categoria'],
+    targetMateriaId?: string,
+    unidad?: string
+  ) => {
+    const idToUse = targetMateriaId || materiaId;
+    if (!idToUse) throw new Error('No hay materia seleccionada');
+    const created = await materialesService.uploadMaterial(idToUse, file, titulo, categoria, unidad);
+    setMateriales(prev => [created, ...prev]);
+    window.dispatchEvent(new CustomEvent('materiales:updated', { detail: created }));
+    return created;
+  };
+
+  const uploadBatchMaterials = async (
+    items: Array<{
+      file: File;
+      titulo: string;
+      categoria: MaterialEstudio['categoria'];
+      unidad?: string;
+    }>,
     targetMateriaId?: string
   ) => {
     const idToUse = targetMateriaId || materiaId;
     if (!idToUse) throw new Error('No hay materia seleccionada');
-    const created = await materialesService.uploadMaterial(idToUse, file, titulo, categoria);
-    setMateriales(prev => [created, ...prev]);
-    window.dispatchEvent(new CustomEvent('materiales:updated', { detail: created }));
-    return created;
+    const createdList: MaterialEstudio[] = [];
+    for (const item of items) {
+      const created = await materialesService.uploadMaterial(
+        idToUse,
+        item.file,
+        item.titulo,
+        item.categoria,
+        item.unidad
+      );
+      createdList.push(created);
+    }
+    setMateriales(prev => [...createdList, ...prev]);
+    window.dispatchEvent(new CustomEvent('materiales:updated'));
+    return createdList;
   };
 
   const deleteMaterial = async (id: string) => {
@@ -63,6 +91,7 @@ export const useMateriales = (materiaId?: string) => {
     error,
     refresh: fetchMateriales,
     uploadMaterial,
+    uploadBatchMaterials,
     deleteMaterial
   };
 };
