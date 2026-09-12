@@ -32,6 +32,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
     updateApunte,
     deleteApunte,
   } = useApuntes();
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [selectedSubFolder, setSelectedSubFolder] = useState<string | null>(
     null,
@@ -61,6 +62,15 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         const matchesMateria =
           n.materiaNombre === selectedFolder || n.materiaId === selectedFolder;
         if (!matchesMateria) return false;
+      } else if (selectedYear !== null && selectedYear !== undefined) {
+        const mat = materias.find(
+          (m) => m.id === n.materiaId || m.nombre === n.materiaNombre,
+        );
+        if (selectedYear === 0) {
+          if (mat && mat.anio && mat.anio > 0) return false;
+        } else {
+          if (!mat || mat.anio !== selectedYear) return false;
+        }
       }
       if (selectedSubFolder) {
         const matchesSub =
@@ -77,7 +87,19 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
       }
       return true;
     });
-  }, [apuntes, selectedFolder, selectedSubFolder, searchQuery]);
+  }, [apuntes, selectedFolder, selectedYear, selectedSubFolder, searchQuery, materias]);
+
+  const filterLabel = useMemo(() => {
+    if (selectedFolder) {
+      return selectedSubFolder
+        ? `${selectedFolder} / ${selectedSubFolder}`
+        : selectedFolder;
+    }
+    if (selectedYear !== null && selectedYear !== undefined) {
+      return selectedYear > 0 ? `${selectedYear}° Año` : "Otras Materias";
+    }
+    return undefined;
+  }, [selectedFolder, selectedSubFolder, selectedYear]);
 
   const activeNote: ApunteNota | null =
     selectedApunte || filteredNotes[0] || apuntes[0] || null;
@@ -167,7 +189,21 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   }, [setIsSidebarCollapsed]);
 
   // Materials hook for uploading PDFs from the split pane
-  const { uploadMaterial } = useMateriales(activeNote?.materiaId);
+  const {
+    materiales,
+    uploadMaterial,
+    uploadBatchMaterials,
+  } = useMateriales(activeNote?.materiaId);
+
+  const existingUnits = useMemo(() => {
+    return Array.from(
+      new Set(
+        materiales
+          .map((m) => m.unidad?.trim())
+          .filter((u): u is string => Boolean(u))
+      )
+    );
+  }, [materiales]);
 
   // Formatting inserter callback ref
   const insertMarkdownRef = useRef<
@@ -260,6 +296,8 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
       <FoldersSidebar
         isCollapsed={isFoldersCollapsed}
         onToggleCollapse={setIsFoldersCollapsed}
+        selectedYear={selectedYear}
+        onSelectYear={setSelectedYear}
         selectedFolder={selectedFolder}
         onSelectFolder={setSelectedFolder}
         selectedSubFolder={selectedSubFolder}
@@ -273,6 +311,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         isCollapsed={isNotesListCollapsed}
         onToggleCollapse={setIsNotesListCollapsed}
         notes={filteredNotes}
+        filterLabel={filterLabel}
         activeNoteId={activeNote?.id || ""}
         onSelectNote={(id) => {
           const found = apuntes.find((a) => a.id === id);
@@ -359,15 +398,25 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
           materiaNombre={
             currentMateriaNombre || materias[0]?.nombre || "Materia"
           }
-          onUpload={async (file, titulo, categoria) => {
+          existingUnits={existingUnits}
+          onUpload={async (file, titulo, categoria, unidad) => {
             const targetId = currentMateriaId || materias[0]?.id || "";
-            const created = await uploadMaterial(file, titulo, categoria, targetId);
+            const created = await uploadMaterial(file, titulo, categoria, targetId, unidad);
             setSelectedMaterialId(created.id);
             return created;
           }}
+          onUploadBatch={async (items) => {
+            const targetId = currentMateriaId || materias[0]?.id || "";
+            const createdList = await uploadBatchMaterials(items, targetId);
+            if (createdList[0]?.id) {
+              setSelectedMaterialId(createdList[0].id);
+            }
+            return createdList;
+          }}
           onSuccess={(created) => {
-            if (created && created.id) {
-              setSelectedMaterialId(created.id);
+            const item = Array.isArray(created) ? created[0] : created;
+            if (item && item.id) {
+              setSelectedMaterialId(item.id);
             }
           }}
         />

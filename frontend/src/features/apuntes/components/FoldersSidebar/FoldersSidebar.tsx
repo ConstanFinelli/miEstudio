@@ -1,129 +1,117 @@
 import React from "react";
 import styles from "./FoldersSidebar.module.css";
-import { Folder, ChevronLeft, Plus, Files, Download } from "lucide-react";
-import type { ApunteNota } from "../../../../types/academic";
-import { useMaterias, useApuntes } from "../../../../hooks";
+import {
+  Folder,
+  Files,
+  Plus,
+  Download,
+  ChevronLeft,
+  ChevronsUpDown,
+} from "lucide-react";
+import { useMaterias } from "../../../../hooks/useMaterias";
+import { useApuntes } from "../../../../hooks/useApuntes";
 import { exportMateriaNotesZip } from "../../../../utils";
-
-interface FoldersSidebarProps {
-  isCollapsed: boolean;
-  onToggleCollapse: (collapsed: boolean) => void;
-  selectedFolder: string | null;
-  onSelectFolder: (folder: string | null) => void;
-  selectedSubFolder: string | null;
-  onSelectSubFolder: (sub: string | null) => void;
-  onOpenNoteModal?: () => void;
-  notes?: ApunteNota[];
-}
+import type { FoldersSidebarProps } from "./types";
+import { useYearGroups } from "./useYearGroups";
+import { FoldersSidebarCollapsed } from "./components/FoldersSidebarCollapsed";
+import { YearFolderGroup } from "./components/YearFolderGroup";
 
 export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
   isCollapsed,
   onToggleCollapse,
+  selectedYear,
+  onSelectYear,
   selectedFolder,
   onSelectFolder,
   selectedSubFolder,
   onSelectSubFolder,
   onOpenNoteModal,
-  notes,
+  notes: propNotes,
 }) => {
   const { materias } = useMaterias();
-  const { apuntes: hookApuntes } = useApuntes();
-  const apuntes = notes || hookApuntes;
+  const { apuntes: hookNotes } = useApuntes();
+  const apuntes = propNotes || hookNotes;
 
-  // Distinct materias that have notes or are enrolled
-  const folderMaterias = React.useMemo(() => {
-    const list: {
-      id: string;
-      nombre: string;
-      count: number;
-      subfolders: { name: string; count: number }[];
-    }[] = [];
+  const {
+    folderMaterias,
+    yearGroups,
+    collapsedYears,
+    toggleYearCollapse,
+    toggleAllYears,
+  } = useYearGroups(materias, apuntes, selectedFolder);
 
-    // Add all registered materias
-    materias.forEach((m) => {
-      const matNotes = apuntes.filter(
-        (a) => a.materiaId === m.id || a.materiaNombre === m.nombre,
-      );
-      const subMap = new Map<string, number>();
-      matNotes.forEach((a) => {
-        const sub = a.carpeta || a.evaluacionNombre || "General";
-        subMap.set(sub, (subMap.get(sub) || 0) + 1);
-      });
-      list.push({
-        id: m.id,
-        nombre: m.nombre,
-        count: matNotes.length,
-        subfolders: Array.from(subMap.entries()).map(([name, count]) => ({
-          name,
-          count,
-        })),
-      });
-    });
-
-    // Also include any orphan materias from existing notes
-    apuntes.forEach((a) => {
-      if (
-        a.materiaNombre &&
-        !list.some((item) => item.nombre === a.materiaNombre)
-      ) {
-        list.push({
-          id: a.materiaId || a.materiaNombre,
-          nombre: a.materiaNombre,
-          count: apuntes.filter((x) => x.materiaNombre === a.materiaNombre)
-            .length,
-          subfolders: [],
-        });
-      }
-    });
-
-    return list;
-  }, [materias, apuntes]);
+  const handleSelectYear = (anio: number) => {
+    if (collapsedYears[String(anio)]) {
+      toggleYearCollapse(anio);
+    }
+    if (selectedYear === anio && selectedFolder === null) {
+      onSelectYear?.(null);
+    } else {
+      onSelectYear?.(anio);
+      onSelectFolder(null);
+      onSelectSubFolder(null);
+    }
+  };
 
   if (isCollapsed) {
     return (
-      <aside className={styles.foldersColumnCollapsed}>
-        <button
-          className={styles.railToggleBtn}
-          onClick={() => onToggleCollapse(false)}
-          title="Expandir Carpetas"
-        >
-          <Folder size={14} color="var(--primary)" />
-        </button>
-        <span className={styles.railVerticalLabel}>Carpetas</span>
-      </aside>
+      <FoldersSidebarCollapsed onExpand={() => onToggleCollapse(false)} />
     );
   }
 
+  const allNotesActive =
+    selectedFolder === null &&
+    (selectedYear === null || selectedYear === undefined);
+
   return (
     <aside className={styles.foldersColumn}>
+      {/* Sidebar Header */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "12px 12px 4px 12px",
+          padding: "12px 12px 6px 12px",
         }}
       >
         <span className={styles.folderSectionTitle} style={{ padding: 0 }}>
-          Carpetas ({folderMaterias.length})
+          Carpetas por Año ({folderMaterias.length})
         </span>
-        <button
-          className={styles.toolBtn}
-          style={{ padding: "2px 5px" }}
-          onClick={() => onToggleCollapse(true)}
-          title="Colapsar panel de carpetas"
-        >
-          <ChevronLeft size={12} />
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          {yearGroups.length > 0 && (
+            <button
+              type="button"
+              className={styles.toolBtn}
+              style={{ padding: "2px 5px" }}
+              onClick={toggleAllYears}
+              title="Colapsar / Expandir todos los años"
+            >
+              <ChevronsUpDown size={12} />
+            </button>
+          )}
+          <button
+            type="button"
+            className={styles.toolBtn}
+            style={{ padding: "2px 5px" }}
+            onClick={() => onToggleCollapse(true)}
+            title="Colapsar panel de carpetas"
+          >
+            <ChevronLeft size={12} />
+          </button>
+        </div>
       </div>
 
+      {/* Folders List */}
       <div className={styles.foldersList}>
         {/* Item: Todos los apuntes */}
         <div
-          className={`${styles.folderItem} ${selectedFolder === null ? styles.folderItemActive : ""}`}
+          className={`${styles.folderItem} ${
+            allNotesActive ? styles.folderItemActive : ""
+          }`}
           onClick={() => {
             onSelectFolder(null);
             onSelectSubFolder(null);
+            onSelectYear?.(null);
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -148,7 +136,8 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
           </div>
         </div>
 
-        {folderMaterias.length === 0 ? (
+        {/* Empty State */}
+        {yearGroups.length === 0 ? (
           <div
             style={{
               padding: "24px 12px",
@@ -177,106 +166,33 @@ export const FoldersSidebar: React.FC<FoldersSidebarProps> = ({
             </p>
           </div>
         ) : (
-          folderMaterias.map((folder) => {
-            const isSelected = selectedFolder === folder.nombre;
-            return (
-              <div key={folder.id}>
-                <div
-                  className={`${styles.folderItem} ${isSelected ? styles.folderItemActive : ""}`}
-                  onClick={() => {
-                    onSelectFolder(isSelected ? null : folder.nombre);
-                    onSelectSubFolder(null);
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <Folder
-                      size={13}
-                      color={
-                        isSelected ? "var(--primary)" : "var(--text-muted)"
-                      }
-                    />
-                    <span
-                      style={{
-                        maxWidth: "140px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {folder.nombre}
-                    </span>
-                  </div>
-                  <div className={styles.folderRightActions}>
-                    {folder.count > 0 && (
-                      <button
-                        type="button"
-                        className={styles.zipDownloadBtn}
-                        title={`Descargar notas de ${folder.nombre} (.zip)`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const folderNotes = apuntes.filter(
-                            (a) => a.materiaId === folder.id || a.materiaNombre === folder.nombre
-                          );
-                          exportMateriaNotesZip(folder.nombre, folderNotes);
-                        }}
-                      >
-                        <Download size={11} />
-                      </button>
-                    )}
-                    <span className={styles.countBadge}>{folder.count}</span>
-                  </div>
-                </div>
-
-                {isSelected && folder.subfolders.length > 0 && (
-                  <div>
-                    {folder.subfolders.map((sub) => (
-                      <div
-                        key={sub.name}
-                        className={styles.folderSubItem}
-                        style={{
-                          color:
-                            selectedSubFolder === sub.name
-                              ? "var(--text-primary)"
-                              : undefined,
-                          fontWeight:
-                            selectedSubFolder === sub.name ? 600 : undefined,
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectSubFolder(
-                            selectedSubFolder === sub.name ? null : sub.name,
-                          );
-                        }}
-                      >
-                        <span
-                          style={{
-                            maxWidth: "130px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          ↳ {sub.name}
-                        </span>
-                        <span className={styles.countBadge}>{sub.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })
+          yearGroups.map((year) => (
+            <YearFolderGroup
+              key={`year-${year.anio}`}
+              year={year}
+              isCollapsed={Boolean(collapsedYears[String(year.anio)])}
+              isSelected={selectedYear === year.anio && selectedFolder === null}
+              selectedFolder={selectedFolder}
+              selectedSubFolder={selectedSubFolder}
+              onToggleCollapse={toggleYearCollapse}
+              onSelectYear={handleSelectYear}
+              onSelectFolder={onSelectFolder}
+              onSelectSubFolder={onSelectSubFolder}
+              onSetSelectedYear={onSelectYear}
+              apuntes={apuntes}
+              materias={materias}
+            />
+          ))
         )}
       </div>
 
+      {/* Footer / Create Note */}
       <div className={styles.foldersFooter}>
-        <button className={styles.btnNewFolder} onClick={onOpenNoteModal}>
+        <button
+          type="button"
+          className={styles.btnNewFolder}
+          onClick={onOpenNoteModal}
+        >
           <Plus size={12} />
           <span>Nuevo Apunte</span>
         </button>

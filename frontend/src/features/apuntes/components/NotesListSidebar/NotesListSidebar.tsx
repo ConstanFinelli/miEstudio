@@ -13,6 +13,7 @@ interface NotesListSidebarProps {
   onSearchChange: (q: string) => void;
   onOpenNoteModal: () => void;
   onDeleteNote?: (id: string, titulo: string) => void;
+  filterLabel?: string;
 }
 
 export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
@@ -25,6 +26,7 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
   onSearchChange,
   onOpenNoteModal,
   onDeleteNote,
+  filterLabel,
 }) => {
   if (isCollapsed) {
     return (
@@ -84,8 +86,25 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
         </div>
 
         <div className={styles.notesListStats}>
-          <span>{notes.length} apuntes</span>
-          <span style={{ cursor: "pointer" }}>Cronológico ▾</span>
+          <span
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "155px",
+            }}
+            title={filterLabel}
+          >
+            {filterLabel ? (
+              <strong style={{ color: "var(--text-primary)" }}>
+                {filterLabel}:{" "}
+              </strong>
+            ) : null}
+            {notes.length} {notes.length === 1 ? "apunte" : "apuntes"}
+          </span>
+          <span style={{ cursor: "pointer", flexShrink: 0 }}>
+            Cronológico ▾
+          </span>
         </div>
       </div>
 
@@ -128,7 +147,9 @@ export const NotesListSidebar: React.FC<NotesListSidebarProps> = ({
             >
               {searchQuery
                 ? "No hay notas con ese término"
-                : "No hay notas registradas en esta carpeta"}
+                : filterLabel
+                  ? `No hay notas registradas en ${filterLabel}`
+                  : "No hay notas registradas en esta carpeta"}
             </span>
             <button
               className={styles.btnNewFolder}
