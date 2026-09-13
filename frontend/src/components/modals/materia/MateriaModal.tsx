@@ -199,9 +199,15 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
       setIsSubmitting(true);
       const isAprobada = estado === "APROBADA" || estado === "PROMOCIONADA";
       const parsedNota = notaFinal === "" ? 0 : Number(notaFinal);
+      const wasAprobada =
+        materiaToEdit &&
+        (materiaToEdit.estado === "APROBADA" ||
+          materiaToEdit.estado === "PROMOCIONADA");
       const promedioFinal = isAprobada
         ? parsedNota
-        : materiaToEdit?.promedio || 0;
+        : wasAprobada
+          ? 0
+          : materiaToEdit?.promedio || 0;
 
       const payload: Partial<Materia> = {
         nombre: nombre.trim(),

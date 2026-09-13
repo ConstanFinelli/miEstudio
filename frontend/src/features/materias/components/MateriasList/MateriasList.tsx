@@ -81,8 +81,14 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                   <div className={styles.cardMetricsRow}>
                     <div className={styles.cardMetricBlock}>
                       <span className={styles.cardMetricLabel}>Promedio</span>
-                      <span className={`${styles.cardMetricVal} ${styles.metricEmerald}`}>
-                        {materia.promedio.toFixed(2)}
+                      <span
+                        className={`${styles.cardMetricVal} ${
+                          materia.promedio > 0 ? styles.metricEmerald : ""
+                        }`}
+                      >
+                        {materia.promedio > 0
+                          ? materia.promedio.toFixed(2)
+                          : "—"}
                       </span>
                     </div>
                     <div className={styles.cardMetricBlock}>
@@ -114,11 +120,13 @@ export const MateriasList: React.FC<MateriasListProps> = ({
                       {materia.reglasAcreditacion?.promocion
                         ?.permitePromocion === false
                         ? "Examen Final Obligatorio"
-                        : materia.promedio >=
-                            (materia.reglasAcreditacion?.promocion
-                              ?.minPromedio ?? 7.0)
-                          ? "☍ En camino a Promoción"
-                          : "Regular (Final Pendiente)"}
+                        : materia.promedio === 0
+                          ? "Sin calificaciones"
+                          : materia.promedio >=
+                              (materia.reglasAcreditacion?.promocion
+                                ?.minPromedio ?? 7.0)
+                            ? "☍ En camino a Promoción"
+                            : "Regular (Final Pendiente)"}
                     </span>
                   </div>
                 </>

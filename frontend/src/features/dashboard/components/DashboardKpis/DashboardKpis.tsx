@@ -81,8 +81,13 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
       ? Math.min(100, Math.round((totalApproved / totalPlan) * 100))
       : 0;
 
-  // Promedio calculation from real grades
-  const gradedSubjects = materias.filter((m) => m.promedio && m.promedio > 0);
+  // Promedio calculation from real grades (only approved/promoted subjects count towards official career GPA)
+  const gradedSubjects = materias.filter(
+    (m) =>
+      (m.estado === "APROBADA" || m.estado === "PROMOCIONADA") &&
+      m.promedio &&
+      m.promedio > 0
+  );
   const computedAverage =
     gradedSubjects.length > 0
       ? gradedSubjects.reduce((acc, m) => acc + (m.promedio || 0), 0) /
