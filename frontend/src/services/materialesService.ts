@@ -7,6 +7,28 @@ import { isMocksEnabled } from '../config/mockConfig';
 
 let localMateriales: MaterialEstudio[] = isMocksEnabled() ? [...mockMateriales] : [];
 
+async function countClientPdfPages(file: File): Promise<number | undefined> {
+  try {
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const text = new TextDecoder('latin1').decode(bytes);
+
+    const countMatches = [...text.matchAll(/\/Count\s+(\d+)/g)];
+    let maxCount = 0;
+    for (const match of countMatches) {
+      const val = parseInt(match[1], 10);
+      if (val > maxCount) maxCount = val;
+    }
+    if (maxCount > 0) return maxCount;
+
+    const pageMatches = [...text.matchAll(/\/Type\s*\/Page\b/g)];
+    if (pageMatches.length > 0) return pageMatches.length;
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
+
 export const materialesService = {
   async getMateriales(materiaId?: string): Promise<MaterialEstudio[]> {
     try {
@@ -43,10 +65,15 @@ export const materialesService = {
         formData
       );
       const created = materialMapper.toMaterial(createdDTO);
+      if (created.cantPaginas == null && file.type === 'application/pdf') {
+        const clientPages = await countClientPdfPages(file);
+        if (clientPages) created.cantPaginas = clientPages;
+      }
       localMateriales.unshift(created);
       return created;
     } catch (err) {
       if (isMocksEnabled()) {
+        const clientPages = await countClientPdfPages(file);
         const newMaterial: MaterialEstudio = {
           id: `mat-file-${Date.now()}`,
           materiaId,
@@ -56,7 +83,7 @@ export const materialesService = {
           archivoNombre: file.name,
           archivoUrl: URL.createObjectURL(file),
           tamanioBytes: file.size,
-          cantPaginas: 12,
+          cantPaginas: clientPages,
           fechaSubida: new Date().toISOString()
         };
         localMateriales.unshift(newMaterial);

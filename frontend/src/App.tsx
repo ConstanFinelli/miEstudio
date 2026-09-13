@@ -36,6 +36,7 @@ export const App: React.FC = () => {
   const [activePdf, setActivePdf] = useState<{
     title: string;
     url: string;
+    cantPaginas?: number;
   } | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -98,7 +99,7 @@ export const App: React.FC = () => {
                         setIsMateriaModalOpen(true);
                       }}
                       onOpenNoteModal={handleOpenNoteModal}
-                      onViewPdf={(title, url) => setActivePdf({ title, url })}
+                      onViewPdf={(title, url, cantPaginas) => setActivePdf({ title, url, cantPaginas })}
                     />
                   }
                 />
@@ -187,6 +188,7 @@ export const App: React.FC = () => {
                 onClose={() => setActivePdf(null)}
                 pdfTitle={activePdf?.title || ""}
                 pdfUrl={activePdf?.url}
+                cantPaginas={activePdf?.cantPaginas}
                 onOpenSplitNote={() => {
                   setActivePdf(null);
                   navigate("/apuntes");

@@ -19,7 +19,7 @@ import type { MaterialEstudio, CategoriaMaterial } from '../../../../types/acade
 interface MaterialsManagerProps {
   materials: MaterialEstudio[];
   materiaNombre: string;
-  onViewPdf: (title: string, url: string) => void;
+  onViewPdf: (title: string, url: string, cantPaginas?: number) => void;
   onOpenUploadModal: () => void;
   onEditMaterial?: (material: MaterialEstudio) => void;
   onDeleteMaterial?: (id: string, titulo: string) => void;
@@ -145,7 +145,7 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
           <div className={styles.materialMeta}>
             <span>{mat.archivoNombre}</span> ·{' '}
             <span>{formatFileSize(mat.tamanioBytes)}</span>
-            {mat.cantPaginas ? <span> · {mat.cantPaginas} págs</span> : null} ·{' '}
+            {mat.cantPaginas ? <span> · {mat.cantPaginas} {mat.cantPaginas === 1 ? 'pág' : 'págs'}</span> : null} ·{' '}
             <span>Subido el {mat.fechaSubida}</span>
           </div>
         </div>
@@ -154,7 +154,7 @@ export const MaterialsManager: React.FC<MaterialsManagerProps> = ({
       <div className={styles.materialActions}>
         <button
           className={`${styles.btnActionLight} ${styles.btnActionWithIcon}`}
-          onClick={() => onViewPdf(mat.titulo, mat.archivoUrl)}
+          onClick={() => onViewPdf(mat.titulo, mat.archivoUrl, mat.cantPaginas)}
           title="Abrir visor de lectura"
         >
           <Eye size={13} />

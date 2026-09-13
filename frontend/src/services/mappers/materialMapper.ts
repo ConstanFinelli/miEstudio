@@ -31,7 +31,7 @@ export const materialMapper = {
       archivoNombre: dto.archivo_nombre_original,
       archivoUrl: fileUrl,
       tamanioBytes: dto.tamanio_bytes,
-      cantPaginas: dto.cant_paginas ?? 1,
+      cantPaginas: dto.cant_paginas != null ? dto.cant_paginas : undefined,
       fechaSubida: dto.created_at
         ? new Date(dto.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
         : new Date().toLocaleDateString('es-AR')

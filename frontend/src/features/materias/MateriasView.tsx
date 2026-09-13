@@ -33,7 +33,7 @@ interface MateriasViewProps {
   onEditEvaluation?: (evaluation: InstanciaEvaluacion) => void;
   onOpenNoteModal?: (materiaId?: string) => void;
   onOpenMateriaModal?: () => void;
-  onViewPdf: (title: string, url: string) => void;
+  onViewPdf: (title: string, url: string, cantPaginas?: number) => void;
 }
 
 export const MateriasView: React.FC<MateriasViewProps> = ({

@@ -132,7 +132,7 @@ export const EditMaterialModal: React.FC<EditMaterialModalProps> = ({
               </span>
               <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
                 {formatFileSize(material.tamanioBytes)}
-                {material.cantPaginas ? ` · ${material.cantPaginas} págs` : ''} · Subido el{' '}
+                {material.cantPaginas ? ` · ${material.cantPaginas} ${material.cantPaginas === 1 ? 'pág' : 'págs'}` : ''} · Subido el{' '}
                 {material.fechaSubida}
               </span>
             </div>

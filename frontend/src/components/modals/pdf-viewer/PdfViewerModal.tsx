@@ -16,6 +16,7 @@ interface PdfViewerModalProps {
   onClose: () => void;
   pdfTitle: string;
   pdfUrl?: string;
+  cantPaginas?: number;
   onOpenSplitNote?: () => void;
 }
 
@@ -24,10 +25,11 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
   onClose,
   pdfTitle,
   pdfUrl,
+  cantPaginas,
   onOpenSplitNote
 }) => {
   const [page, setPage] = useState(1);
-  const totalPages = 18;
+  const totalPages = cantPaginas || 18;
   const [zoom, setZoom] = useState(100);
 
   if (!isOpen) return null;
@@ -43,7 +45,9 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
         {/* Top bar */}
         <div className={styles.topBar}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
-            <span className={styles.pdfBadge}>PDF</span>
+            <span className={styles.pdfBadge}>
+              {cantPaginas ? `${cantPaginas} ${cantPaginas === 1 ? 'PÁG' : 'PÁGS'}` : 'PDF'}
+            </span>
             <span
               className={styles.titleText}
               style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
