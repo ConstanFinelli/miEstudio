@@ -132,17 +132,13 @@ func (r *repository) RecalcularPromedioMateria(ctx context.Context, materiaID st
 }
 
 func (r *repository) SincronizarPromedios(ctx context.Context) error {
-	var materiaIDs []string
-	err := r.db.WithContext(ctx).Model(&Evaluacion{}).
-		Where("nota IS NOT NULL AND materia_id != ''").
-		Distinct("materia_id").
-		Pluck("materia_id", &materiaIDs).Error
-	if err != nil {
+	var materias []subjects.Materia
+	if err := r.db.WithContext(ctx).Where("estado IN ('CURSANDO', 'REGULAR')").Find(&materias).Error; err != nil {
 		return err
 	}
 
-	for _, mID := range materiaIDs {
-		_ = r.RecalcularPromedioMateria(ctx, mID)
+	for _, m := range materias {
+		_ = r.RecalcularPromedioMateria(ctx, m.ID)
 	}
 	return nil
 }

@@ -119,7 +119,11 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 		materia.Cuatrimestre = *dto.Cuatrimestre
 	}
 	if dto.Estado != nil {
+		oldEstado := materia.Estado
 		materia.Estado = *dto.Estado
+		if (oldEstado == "APROBADA" || oldEstado == "PROMOCIONADA") && (*dto.Estado == "CURSANDO" || *dto.Estado == "REGULAR") {
+			materia.Promedio = 0
+		}
 	}
 	if dto.Color != nil {
 		materia.Color = *dto.Color
@@ -131,7 +135,11 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 		materia.Modalidad = *dto.Modalidad
 	}
 	if dto.Promedio != nil {
-		materia.Promedio = *dto.Promedio
+		if materia.Estado == "APROBADA" || materia.Estado == "PROMOCIONADA" {
+			materia.Promedio = *dto.Promedio
+		} else if dto.Estado == nil {
+			materia.Promedio = *dto.Promedio
+		}
 	}
 	if dto.ProfesorTitular != nil {
 		materia.ProfesorTitular = *dto.ProfesorTitular
