@@ -110,6 +110,11 @@ func main() {
 	// Feature: Materiales & PDFs (Protegido con authMiddleware)
 	materialsRepo := materials.NewRepository(database)
 	materialsService := materials.NewService(materialsRepo, storageService)
+	if err := materialsService.SincronizarPaginasMateriales(context.Background()); err != nil {
+		log.Printf("⚠️  Error al sincronizar páginas de materiales: %v", err)
+	} else {
+		log.Println("📄 Sincronización de páginas de materiales PDF completada.")
+	}
 	materialsHandler := materials.NewHandler(materialsService)
 	materialsHandler.RegisterRoutes(api, authMiddleware)
 

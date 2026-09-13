@@ -13,6 +13,7 @@ type Repository interface {
 	Update(ctx context.Context, material *Material) error
 	Delete(ctx context.Context, id string) error
 	DeleteByMateria(ctx context.Context, usuarioID, materiaID string) ([]Material, error)
+	GetPendingPageCount(ctx context.Context) ([]Material, error)
 }
 
 type repository struct {
@@ -82,5 +83,13 @@ func (r *repository) DeleteByMateria(ctx context.Context, usuarioID, materiaID s
 		return nil, err
 	}
 
+	return materials, nil
+}
+
+func (r *repository) GetPendingPageCount(ctx context.Context) ([]Material, error) {
+	var materials []Material
+	if err := r.db.WithContext(ctx).Where("cant_paginas IS NULL").Find(&materials).Error; err != nil {
+		return nil, err
+	}
 	return materials, nil
 }
