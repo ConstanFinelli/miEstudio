@@ -4,13 +4,13 @@ import { CalendarClock, ArrowRight } from 'lucide-react';
 import { useEvaluaciones, useMaterias } from '../../../../hooks';
 
 interface UpcomingEvaluationsProps {
-  onGoToMaterias: () => void;
+  onGoToMaterias: (materiaId?: string) => void;
   onGoToApuntes: () => void;
 }
 
 export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
   onGoToMaterias,
-  onGoToApuntes
+  onGoToApuntes: _onGoToApuntes
 }) => {
   const { proximas } = useEvaluaciones();
   const { materias } = useMaterias();
@@ -121,7 +121,11 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
 
               <div className={styles.evalFooter}>
                 <div className={styles.evalMetrics}>
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  <span
+                    style={{ color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer' }}
+                    onClick={() => onGoToMaterias(ev.materiaId)}
+                    title={`Ver materia ${nombre}`}
+                  >
                     {nombre}
                   </span>
                   {ev.esAprobatorio && (
@@ -134,10 +138,12 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
                   )}
                 </div>
                 <button
+                  type="button"
                   className={styles.evalActionLink}
-                  onClick={index === 1 ? onGoToApuntes : onGoToMaterias}
+                  onClick={() => onGoToMaterias(ev.materiaId)}
+                  title={`Ver materia ${nombre}`}
                 >
-                  <span>{index === 1 ? 'Abrir guía de estudio' : 'Ver materia'}</span>
+                  <span>Ver materia</span>
                   <ArrowRight size={13} />
                 </button>
               </div>

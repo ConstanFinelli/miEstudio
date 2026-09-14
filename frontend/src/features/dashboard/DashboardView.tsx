@@ -17,9 +17,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigate
 }) => {
   const navigate = useNavigate();
-  const goTo = (view: string) => {
+  const goTo = (view: string, query?: string) => {
     if (onNavigate) onNavigate(view as any);
-    navigate('/' + view);
+    navigate('/' + view + (query ? `?${query}` : ''));
   };
 
   return (
@@ -29,7 +29,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* 2. Academic KPIs Grid */}
       <DashboardKpis
-        onGoToMaterias={() => goTo('materias')}
+        onGoToMaterias={(materiaId) =>
+          goTo('materias', materiaId ? `materiaId=${encodeURIComponent(materiaId)}` : undefined)
+        }
         onGoToCalendario={() => goTo('calendario')}
         onGoToHorarios={() => goTo('horarios')}
       />
@@ -39,7 +41,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Left Column: Próximas Evaluaciones + Calendario Banner */}
         <div className={styles.leftColumn}>
           <UpcomingEvaluations
-            onGoToMaterias={() => goTo('materias')}
+            onGoToMaterias={(materiaId) =>
+              goTo('materias', materiaId ? `materiaId=${encodeURIComponent(materiaId)}` : undefined)
+            }
             onGoToApuntes={() => goTo('apuntes')}
           />
 

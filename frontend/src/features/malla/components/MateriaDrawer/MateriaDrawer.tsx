@@ -340,7 +340,7 @@ export const MateriaDrawer: React.FC<MateriaDrawerProps> = ({
             type="button"
             className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
             onClick={() => {
-              navigate("/materias");
+              navigate(`/materias?materiaId=${encodeURIComponent(materia.id)}`);
             }}
             title="Ver información académica completa en Materias"
           >

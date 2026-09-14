@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../../../../context/AuthContext";
 
 interface DashboardKpisProps {
-  onGoToMaterias: () => void;
+  onGoToMaterias: (materiaId?: string) => void;
   onGoToCalendario?: () => void;
   onGoToHorarios?: () => void;
 }
@@ -196,7 +196,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
               <span>Sin materias cargadas aún</span>
               <span
                 style={{ cursor: "pointer", color: "var(--primary-glow)" }}
-                onClick={onGoToMaterias}
+                onClick={() => onGoToMaterias()}
               >
                 Cargar materias →
               </span>
@@ -233,7 +233,9 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
               <span
                 key={subj.id}
                 className={styles.subjectMiniPill}
-                title={subj.nombre}
+                title={`Ver materia: ${subj.nombre}`}
+                style={{ cursor: 'pointer' }}
+                onClick={() => onGoToMaterias(subj.id)}
               >
                 {subj.codigo || subj.nombre.slice(0, 4)}
               </span>
@@ -246,7 +248,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
               <span>Sin cursadas activas</span>
               <span
                 style={{ cursor: "pointer", color: "var(--primary-glow)" }}
-                onClick={onGoToMaterias}
+                onClick={() => onGoToMaterias()}
               >
                 Ver materias →
               </span>
@@ -271,7 +273,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
               </span>
               <span
                 style={{ cursor: "pointer", color: "var(--primary-glow)" }}
-                onClick={onGoToHorarios || onGoToMaterias}
+                onClick={() => (onGoToHorarios ? onGoToHorarios() : onGoToMaterias())}
                 title={
                   hasRealSchedule
                     ? "Ver grilla semanal de horarios"

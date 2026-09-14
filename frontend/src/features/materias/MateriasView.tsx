@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useLocation } from "react-router-dom";
 import styles from "./MateriasView.module.css";
 import { BookOpen, Plus } from "lucide-react";
 import type { Materia } from "../../types/academic";
@@ -43,13 +44,26 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   onOpenMateriaModal,
   onViewPdf,
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+
+  const queryMateriaId = useMemo(() => {
+    return (
+      searchParams.get("materiaId") ||
+      searchParams.get("id") ||
+      searchParams.get("materia") ||
+      (location.state as { selectedMateriaId?: string } | null)?.selectedMateriaId ||
+      ""
+    );
+  }, [searchParams, location.state]);
+
   const [selectedYear, setSelectedYear] = useState<number | "TODOS">("TODOS");
   const [selectedCuatri, setSelectedCuatri] = useState<
     "TODOS" | "1C" | "2C" | "Anual"
   >("TODOS");
   const [selectedEstado, setSelectedEstado] = useState<string>("TODOS");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMateriaId, setSelectedMateriaId] = useState<string>("");
+  const [selectedMateriaId, setSelectedMateriaId] = useState<string>(queryMateriaId);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditMaterialModalOpen, setIsEditMaterialModalOpen] = useState(false);
@@ -84,6 +98,29 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     return () =>
       window.removeEventListener("materias:updated", handleMateriaCreatedOrUpdated);
   }, [refreshMaterias, selectedEstado, selectedYear]);
+
+  // Sincronizar materia seleccionada si viene por URL query param (?materiaId=...) o router state
+  useEffect(() => {
+    if (!queryMateriaId || materias.length === 0) return;
+
+    const target = materias.find((m) => m.id === queryMateriaId);
+    if (target) {
+      setSelectedMateriaId(target.id);
+      // Asegurar que ningún filtro activo oculte la materia requerida
+      if (selectedEstado !== "TODOS" && target.estado !== selectedEstado) {
+        setSelectedEstado("TODOS");
+      }
+      if (selectedYear !== "TODOS" && target.anio !== selectedYear) {
+        setSelectedYear("TODOS");
+      }
+      if (selectedCuatri !== "TODOS" && target.cuatrimestre !== selectedCuatri) {
+        setSelectedCuatri("TODOS");
+      }
+      if (searchQuery.trim() !== "") {
+        setSearchQuery("");
+      }
+    }
+  }, [queryMateriaId, materias]);
 
   const handleDeleteMateria = async (id: string, nombre: string) => {
     const confirmDelete = window.confirm(
@@ -120,9 +157,12 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     return true;
   });
 
-  // Selected materia prioritizes matching selected ID within filtered list
+  // Selected materia prioritizes matching selected ID within filtered list,
+  // then across all materias (in case filter adjustment is rendering),
+  // and falls back to the first filtered item.
   const selectedMateria: Materia | undefined =
     filteredMaterias.find((m) => m.id === selectedMateriaId) ||
+    materias.find((m) => m.id === selectedMateriaId) ||
     filteredMaterias[0];
 
   // Evaluations for this materia
@@ -254,7 +294,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
         <MateriasList
           materias={filteredMaterias}
           selectedMateriaId={selectedMateria?.id || ""}
-          onSelectMateria={setSelectedMateriaId}
+          onSelectMateria={(id) => {
+            setSelectedMateriaId(id);
+            setSearchParams({ materiaId: id }, { replace: true });
+          }}
           onOpenMateriaModal={onOpenMateriaModal}
           onDeleteMateria={handleDeleteMateria}
         />
