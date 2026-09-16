@@ -1,198 +1,215 @@
-# Especificación de CRUDs y Modelo de Datos
+# Especificación de CRUDs y Modelo de Datos (V2.0)
 
-A continuación, se detalla la estructura relacional y las operaciones para los módulos principales del sistema.
+A continuación, se detalla la estructura relacional, modelos de datos y endpoints de los módulos que componen el sistema **miEstudio**.
+
+---
 
 ## 1. Materias (Subjects)
-Es la entidad raíz. Todo lo demás orbita alrededor de una materia.
+Entidad fundamental del seguimiento académico y de la malla curricular.
 
 **Modelo de Datos:**
-* `id` (UUID, PK)
-* `carrera_id` (UUID, FK -> Carreras)
-* `nombre` (String, ej: "Sistemas de Información")
-* `codigo` (String, ej: "ASI-204")
-* `anio` (Int, ej: 3)
-* `cuatrimestre` (Enum: 1C, 2C, Anual)
-* `estado` (Enum: CURSANDO, REGULAR, APROBADA, PROMOCIONADA, LIBRE)
-* `color` (String - Hex para el frontend, ej: "#3b82f6")
-* `comision` (String, ej: "3K1")
-* `modalidad` (Enum: Presencial, Virtual, Híbrida)
-* `profesor_titular` (String)
-* `profesor_jtp` (String)
-* `promedio` (Float, Nullable)
-* `reglas_acreditacion` (JSONB)
-  * `promocion`: `{ permite_promocion: bool, condicion: string, min_asistencia: int, descripcion: string }` (donde `condicion` es un string libre para reflejar los requisitos particulares de la cátedra)
-  * `regularidad`: `{ condicion: string, min_asistencia: int, descripcion: string }`
+* `id` (UUID/String 36, PK)
+* `usuario_id` (UUID/String 36, FK -> Users, Index)
+* `carrera_id` (UUID/String 36, FK -> Carreras, Index)
+* `codigo` (String 50, ej: "ASI-204")
+* `nombre` (String 255, ej: "Sistemas Operativos")
+* `anio` (Int, ej: 2)
+* `cuatrimestre` (String 20: "1C", "2C", "Anual")
+* `estado` (Enum: "CURSANDO", "REGULAR", "APROBADA", "PROMOCIONADA", "LIBRE", "PENDIENTE")
+* `color` (String 30: Hex o RGB para frontend, ej: "#3b82f6")
+* `comision` (String 50, ej: "2K1")
+* `modalidad` (Enum: "Presencial", "Virtual", "Híbrida")
+* `promedio` (Float)
+* `profesor_titular` (String 255)
+* `profesor_jtp` (String 255)
+* `reglas_acreditacion` (JSON String / Struct)
+  * `promocion`: `{ permite_promocion: bool, condicion: string, min_promedio: float, min_parcial: float, permite_recuperatorio: bool, min_asistencia: int, descripcion: string }`
+  * `regularidad`: `{ condicion: string, min_nota: float, min_asistencia: int, permite_recuperatorio: bool, descripcion: string }`
+* `correlativas_cursar` (JSON Array de Strings / IDs de materias correlativas para cursar)
+* `correlativas_rendir` (JSON Array de Strings / IDs de materias correlativas para rendir examen final)
 * `created_at`, `updated_at`
 
-**Endpoints (Go):**
-* `POST /api/materias` - Crea una nueva materia.
-* `GET /api/materias` - Lista todas las materias de la carrera activa.
-* `GET /api/materias/:id` - Detalle de la materia (incluye evaluaciones, horarios y materiales).
-* `PUT /api/materias/:id` - Actualiza datos básicos, estado o notas finales.
-* `PUT /api/materias/:id/reglas` - Actualiza las reglas de acreditación de la materia.
-* `DELETE /api/materias/:id` - Elimina materia.
+**Endpoints (Go / Fiber):**
+* `POST /api/materias` - Crea una nueva materia en la carrera activa.
+* `GET /api/materias` - Lista todas las materias (admite query params: `carrera_id`, `estado`, `anio`).
+* `GET /api/materias/:id` - Detalle completo de una materia (incluye evaluaciones, horarios y materiales).
+* `PUT /api/materias/:id` - Actualiza datos básicos, estado, color o notas de la materia.
+* `DELETE /api/materias/:id` - Elimina la materia y sus dependencias.
+* `POST /api/materias/batch-import` - Importación masiva con *Smart Upsert*: actualiza materias existentes o inserta nuevas asignaturas y correlatividades (usado por el importador de plan de estudio con IA).
 
 ---
 
 ## 2. Instancias de Evaluación (Evaluations)
-Evolución del concepto de "Exámenes". Permite trackear parciales, recuperatorios, laboratorios y TPs.
+Gestión y seguimiento de exámenes, parciales y entregas prácticas.
 
 **Modelo de Datos:**
-* `id` (UUID, PK)
-* `materia_id` (UUID, FK -> Materias)
-* `titulo` (String, ej: "Primer Parcial", "TP de Laboratorio 1 - AnyLogic")
-* `tipo` (Enum: PARCIAL, RECUPERATORIO, FINAL, TP, LABORATORIO)
-* `fecha` (Timestamp)
+* `id` (UUID/String 36, PK)
+* `materia_id` (UUID/String 36, FK -> Materias, Index)
+* `titulo` (String 255, ej: "Primer Parcial Teórico")
+* `tipo` (Enum: "PARCIAL", "FINAL", "RECUPERATORIO", "TP", "LABORATORIO", "QUIZ")
+* `fecha` (Timestamp/Date, Nullable: permite registrar evaluaciones sin fecha fija o pasadas)
+* `horario` (String 50, ej: "19:00 hs")
+* `aula` (String 100, ej: "Aula 304")
+* `modalidad` (Enum: "Presencial", "Virtual")
+* `peso` (Float, ponderación porcentual del examen, ej: 100 o 50)
+* `es_aprobatorio` (Boolean)
 * `nota` (Float, Nullable)
-* `es_aprobatorio` (Boolean) - Si es obligatorio aprobarlo para regularizar.
+* `temario` (JSON Array de Strings)
 * `created_at`, `updated_at`
 
-**Endpoints (Go):**
-* `POST /api/evaluaciones` - (Requiere `materia_id` en el body).
-* `GET /api/evaluaciones?materia_id=XXX` - Trae todas las instancias de una materia.
-* `GET /api/evaluaciones/proximas` - Trae todas las evaluaciones pendientes de todas las materias (Para el calendario).
-* `PATCH /api/evaluaciones/:id/nota` - Endpoint rápido solo para cargar la calificación una vez rendido.
+**Endpoints (Go / Fiber):**
+* `POST /api/evaluaciones` - Registra una nueva instancia evaluativa vinculada a una materia.
+* `GET /api/evaluaciones?materia_id=...` - Lista las evaluaciones de una materia específica.
+* `GET /api/evaluaciones/proximas` - Lista todas las evaluaciones con fecha pendiente para el Dashboard y Calendario.
+* `PUT /api/evaluaciones/:id` - Actualiza la información completa de la evaluación.
+* `PATCH /api/evaluaciones/:id/nota` - Carga o modificación rápida de la calificación obtenida.
+* `DELETE /api/evaluaciones/:id` - Elimina la instancia de evaluación.
 
 ---
 
 ## 3. Apuntes / Notas (Notes)
-CRUD de documentos relacionales.
+Editor Markdown enriquecido con soporte para fórmulas KaTeX y exportación multi-formato.
 
 **Modelo de Datos:**
-* `id` (UUID, PK)
-* `materia_id` (UUID, FK -> Materias)
-* `titulo` (String, ej: "Clase 4: Algoritmos Genéticos")
-* `contenido` (Text/JSON - dependiendo si usas Markdown raw o un editor como BlockNote/TipTap)
-* `etiquetas` (Array de Strings, ej: ["teoría", "resumen"])
+* `id` (UUID/String 36, PK)
+* `usuario_id` (UUID/String 36, FK -> Users, Index)
+* `materia_id` (UUID/String 36, FK -> Materias, Index)
+* `evaluacion_id` (UUID/String 36, Nullable, vinculación opcional a una evaluación)
+* `titulo` (String 255, ej: "Unidad 2: Concurrencia y Semáforos")
+* `contenido` (Text, Markdown con soporte LaTeX `$...$` y `$$...$$`)
+* `etiquetas` (JSON Array de Strings, ej: ["teoría", "resumen"])
+* `carpeta` (String 100, para estructura jerárquica)
 * `created_at`, `updated_at`
 
-**Endpoints (Go):**
-* `POST /api/apuntes` - Crea un nuevo documento vacío o con contenido inicial.
-* `GET /api/apuntes?materia_id=XXX` - Lista de apuntes de una materia (solo trae metadatos y título, no el contenido pesado).
-* `GET /api/apuntes/:id` - Trae el apunte completo para edición.
-* `PUT /api/apuntes/:id` - Actualiza el contenido (Auto-save desde el frontend).
+**Endpoints (Go / Fiber):**
+* `POST /api/apuntes` - Crea un nuevo apunte.
+* `GET /api/apuntes?materia_id=...` - Lista metadatos y títulos de los apuntes de una materia.
+* `GET /api/apuntes/:id` - Obtiene el apunte completo con su contenido para edición y lectura.
+* `PUT /api/apuntes/:id` - Guarda y sincroniza cambios de contenido.
+* `DELETE /api/apuntes/:id` - Elimina el apunte.
 
 ---
 
-## 4. Eventos de Calendario (Calendar Events)
-**Nota de diseño:** Las "Instancias de Evaluación" ya tienen fecha y se muestran en el calendario. Este CRUD es para eventos *adicionales* (clases de consulta, grupos de estudio, entrega de papeleo).
+## 4. Materiales de Estudio y Archivos (Materials & PDFs)
+Gestión bibliográfica con streaming parcial y extracción de metadatos.
 
 **Modelo de Datos:**
-* `id` (UUID, PK)
-* `materia_id` (UUID, FK -> Materias, Nullable por si es un evento general)
-* `titulo` (String)
-* `fecha_inicio` (Timestamp)
-* `fecha_fin` (Timestamp)
-* `tipo` (Enum: ESTUDIO, CONSULTA, OTRO)
-
----
-
-## 5. Materiales de Estudio / Documentos (Materials & PDFs)
-CRUD para la gestión de archivos bibliográficos y recursos asociados a cada materia.
-
-**Modelo de Datos:**
-* `id` (UUID, PK)
-* `materia_id` (UUID, FK -> Materias)
-* `titulo` (String, ej: "Guía 2 - Espacios Vectoriales", "Libro Stallings 9na Edición")
-* `categoria` (Enum: TEORIA, GUIA_PRACTICA, EXAMEN_ANTERIOR, BIBLIOGRAFIA, OTRO)
-* `archivo_nombre_original` (String, ej: "guia2_algebra.pdf")
-* `archivo_path` / `archivo_key` (String, ruta interna o key S3)
-* `mime_type` (String, ej: "application/pdf")
-* `tamanio_bytes` (BigInt, ej: 14285900)
-* `cant_paginas` (Int, Nullable - metadato extraído opcionalmente al procesar el PDF)
+* `id` (UUID/String 36, PK)
+* `materia_id` (UUID/String 36, FK -> Materias, Index)
+* `titulo` (String 255, ej: "Sistemas Operativos Modernos - Tanenbaum")
+* `categoria` (Enum: "TEORIA", "GUIA_PRACTICA", "EXAMEN_ANTERIOR", "BIBLIOGRAFIA", "OTRO")
+* `archivo_nombre_original` (String 255)
+* `archivo_path` (String 500, ruta física en disco o clave de bucket)
+* `mime_type` (String 100, ej: "application/pdf")
+* `tamanio_bytes` (BigInt)
+* `cant_paginas` (Int, Nullable: calculado automáticamente en el backend vía `pdfcpu`)
 * `created_at`, `updated_at`
 
-**Endpoints (Go):**
-* `POST /api/materias/:materia_id/materiales` - Carga de archivo multipart (`multipart/form-data`) con metadatos asociados.
-* `GET /api/materias/:materia_id/materiales` - Lista de materiales de la materia, con filtro opcional por `categoria`.
-* `GET /api/materiales/:id` - Metadatos de un material específico.
-* `GET /api/materiales/:id/archivo` - Streaming de archivo PDF optimizado para navegadores e iframes. Soporta headers de `Content-Disposition: inline` y `Accept-Ranges: bytes`, y acepta autenticación tanto por header `Authorization: Bearer` como por parámetro de consulta `?token=...`.
-* `PUT /api/materiales/:id` - Actualización de metadatos (título, categoría).
-* `DELETE /api/materiales/:id` - Elimina el registro en la base de datos y borra el archivo físico correspondiente del storage.
-* `DELETE /api/materias/:materia_id/materiales` - Depuración por materia: elimina todos los archivos físicos y registros de materiales de una materia (usado opcionalmente al aprobar/promocionar la materia).
+**Endpoints (Go / Fiber):**
+* `POST /api/materias/:materia_id/materiales` - Carga multipart (`multipart/form-data`) de archivos PDF.
+* `GET /api/materias/:materia_id/materiales` - Lista materiales bibliográficos de la asignatura.
+* `GET /api/materiales/:id` - Consulta de metadatos de un material.
+* `GET /api/materiales/:id/archivo` - Streaming optimizado inline con soporte de `Accept-Ranges: bytes` y autenticación vía header o query token (`?token=...`).
+* `PUT /api/materiales/:id` - Actualización de metadatos (título y categoría).
+* `DELETE /api/materiales/:id` - Elimina el registro y el archivo físico del almacenamiento.
+* `DELETE /api/materias/:materia_id/materiales` - Depuración por materia: elimina todos los archivos PDF al aprobar o promocionar la materia.
 
 ---
 
-## 6. Usuarios y Perfil (Auth & User Profile)
-Gestión de identidad, sesiones y datos personales del estudiante.
-
-**Modelo de Datos:**
-* `id` (UUID, PK)
-* `email` (String, Unique)
-* `password_hash` (String)
-* `nombre` (String, ej: "Estudiante")
-* `created_at`, `updated_at`
-
-**Endpoints (Go):**
-* `POST /api/auth/register` - Registro de usuario e inicialización de su primera carrera.
-* `POST /api/auth/login` - Autenticación con email/password y retorno de token JWT.
-* `GET /api/auth/me` - Perfil del usuario autenticado y su carrera activa seleccionada.
-* `PUT /api/auth/me` - Actualización de datos del usuario (`nombre`, `email`, `password` opcional).
-
----
-
-## 7. Carreras Universitarias y Aprobaciones Históricas (Careers & Approvals)
-Soporte multi-carrera para estudiantes cursando o graduados de múltiples planes de estudio, con tracking histórico de notas finales y modalidades de aprobación.
+## 5. Carreras Universitarias y Acreditaciones (Careers & Approvals)
+Soporte multi-carrera, configuración de planes y registro de aprobaciones históricas.
 
 **Modelo de Datos (Carreras):**
-* `id` (UUID, PK)
-* `usuario_id` (UUID, FK -> Users)
-* `nombre` (String, ej: "Ingeniería en Informática")
-* `facultad_sede` (String, ej: "Facultad de Ingeniería")
-* `legajo` (String, ej: "INFO-2026")
-* `plan_estudio` (String, ej: "Plan 2023")
+* `id` (UUID/String 36, PK)
+* `usuario_id` (UUID/String 36, FK -> Users, Index)
+* `nombre` (String 255, ej: "Licenciatura en Ciencias de la Computación")
+* `facultad_sede` (String 255, ej: "FCEN - UBA")
+* `legajo` (String 50, ej: "98765/4")
+* `semestre_actual` (String 50, ej: "3° Año - 1C")
+* `ciclo_activo` (String 50, ej: "1C 2026")
+* `duracion_anios` (Int, ej: 5)
+* `total_materias_plan` (Int, total de materias estimadas de la carrera para cálculo de avance)
+* `is_activa` (Boolean, indica cuál es la carrera seleccionada por el usuario)
 * `promedio_general` (Float)
-* `is_activa` (Boolean) - Identifica qué carrera está activa en la sesión.
+* `materias_aprobadas` (Int)
+* `fecha_ingreso` (Timestamp/Date, Nullable)
 * `created_at`, `updated_at`
 
-**Modelo de Datos (Aprobaciones):**
-* `id` (UUID, PK)
-* `carrera_id` (UUID, FK -> Carreras)
-* `materia_id` (UUID, FK -> Materias, Nullable)
-* `materia_nombre` (String)
-* `nota_final` (Float, ej: 8.5)
-* `modalidad` (Enum: PROMOCION, FINAL, EQUIVALENCIA, RESOLUCION)
-* `libro`, `folio` (String, opcionales para actas universitarias)
+**Modelo de Datos (Aprobaciones Históricas):**
+* `id` (UUID/String 36, PK)
+* `usuario_id` (UUID/String 36, FK -> Users, Index)
+* `carrera_id` (UUID/String 36, FK -> Carreras, Index)
+* `materia_id` (UUID/String 36, FK -> Materias)
+* `nota_final` (Float, ej: 9.0)
 * `fecha_aprobacion` (Date)
-* `anio_cursada` (Int)
+* `tipo_aprobacion` (Enum: "FINAL", "PROMOCION", "EQUIVALENCIA")
+* `libro_acta`, `folio_acta` (Strings)
+* `observaciones` (Text)
+* `created_at`, `updated_at`
 
-**Endpoints (Go):**
+**Endpoints (Go / Fiber):**
 * `GET /api/carreras` - Lista de carreras pertenecientes al usuario autenticado.
 * `POST /api/carreras` - Registra una nueva carrera para el estudiante.
-* `POST /api/carreras/:id/seleccionar` - Establece la carrera como activa para la sesión.
-* `GET /api/carreras/:id/aprobaciones` - Obtiene las acreditaciones históricas para el módulo de Progreso Académico y analíticas de promedio.
-* `POST /api/carreras/aprobaciones/crear` - Registra una aprobación formal de materia.
+* `GET /api/carreras/activa` - Obtiene la carrera activa en la sesión.
+* `GET /api/carreras/:id` - Detalle de una carrera específica.
+* `PATCH /api/carreras/:id` - Actualiza la configuración de la carrera (`nombre`, `facultad_sede`, `legajo`, `total_materias_plan`, etc.).
+* `POST /api/carreras/:id/activar` - Establece la carrera seleccionada como activa.
+* `DELETE /api/carreras/:id` - Elimina la carrera y reasigna automáticamente la carrera activa.
+* `POST /api/carreras/aprobaciones/crear` - Registra una acreditación formal de materia.
+* `GET /api/carreras/:id/aprobaciones` - Lista las acreditaciones históricas para analíticas.
+* `DELETE /api/carreras/aprobaciones/:id` - Elimina una acreditación histórica.
 
 ---
 
-## 8. Horarios de Cursada (Schedules)
-Organización semanal de cursado por materia.
+## 6. Autenticación y Perfil de Usuario (Auth & User Profile)
+Gestión de credenciales, seguridad y API Key personal de Gemini.
 
 **Modelo de Datos:**
-* `id` (UUID, PK)
-* `materia_id` (UUID, FK -> Materias)
-* `dia_semana` (Enum: LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO)
+* `id` (UUID/String 36, PK)
+* `email` (String 255, Unique)
+* `password_hash` (String)
+* `nombre` (String 255)
+* `gemini_api_key` (String 255, clave opcional provista por el usuario para su propio uso de IA)
+* `created_at`, `updated_at`
+
+**Endpoints (Go / Fiber):**
+* `POST /api/auth/register` - Registro de usuario e inicialización de su primera carrera académica.
+* `POST /api/auth/login` - Autenticación y emisión de token JWT.
+* `GET /api/auth/me` - Perfil autenticado, carrera activa e indicador `has_gemini_key: bool`.
+* `PUT /api/auth/me` - Actualización de perfil (`nombre`, `email`, `password` y `gemini_api_key`).
+* `GET /api/perfil` - Perfil académico con métricas agregadas (percentil, puesto de cohorte, créditos).
+* `PUT /api/perfil` - Actualización de métricas de perfil académico.
+
+---
+
+## 7. Horarios de Cursada (Schedules)
+Grilla semanal interactiva de cursado por materia.
+
+**Modelo de Datos:**
+* `id` (UUID/String 36, PK)
+* `materia_id` (UUID/String 36, FK -> Materias)
+* `dia_semana` (Enum: "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO")
 * `hora_inicio` (String, ej: "08:00")
 * `hora_fin` (String, ej: "12:00")
-* `aula` (String, ej: "Aula Magna / Lab 3")
-* `modalidad` (Enum: Presencial, Virtual, Híbrida)
+* `aula` (String 100, ej: "Aula 212 / Lab Virtual")
+* `modalidad` (Enum: "Presencial", "Virtual", "Híbrida")
 
-**Endpoints (Go):**
-* `GET /api/horarios` - Trae la grilla semanal completa de horarios de la carrera activa.
-* `POST /api/materias/:id/horarios` - Añade una franja horaria de cursado a una materia.
+**Endpoints (Go / Fiber):**
+* `GET /api/horarios` - Grilla horaria completa de la carrera activa.
+* `POST /api/materias/:id/horarios` - Agrega un bloque horario a una materia.
 * `DELETE /api/horarios/:id` - Elimina una franja horaria.
 
 ---
 
-## 9. Inteligencia Asistida & Copiloto de Estudio (Gemini AI)
-Módulo asistido por IA fundamentado en los materiales oficiales de cátedra (PDFs).
+## 8. Copiloto de Inteligencia Artificial (Google Gemini)
+Endpoints para asistencia pedagógica, Active Recall y análisis de planes de estudio.
 
-**Endpoints (Go):**
-* `POST /api/ai/chat` - Consulta puntual al copiloto con contexto de un material PDF.
-* `GET /api/ai/chat/stream` - Chat conversacional en tiempo real con Server-Sent Events (SSE).
-* `POST /api/ai/resumir` - Generación de resúmenes estructurados en formato JSON (conceptos clave, fórmulas en LaTeX y tips de examen).
-* `POST /api/ai/flashcards` - Creación automática de barajas de estudio para Active Recall.
-* `POST /api/ai/quiz` - Cuestionarios interactivos de autoevaluación con alternativas y retroalimentación explicativa.
-* `POST /api/ai/explicar` - Explicación pedagógica de fragmentos de texto seleccionados (simplificar, ejemplificar, desglose paso a paso, conversión a LaTeX).
-
-
+**Endpoints (Go / Fiber):**
+* `POST /api/ai/chat` - Consulta al copiloto fundamentada en el contexto de un material PDF.
+* `POST /api/ai/chat/stream` - Chat conversacional en tiempo real con streaming Server-Sent Events (SSE).
+* `POST /api/ai/resumir` - Generación de resúmenes estructurados JSON (conceptos clave, fórmulas KaTeX y tips).
+* `POST /api/ai/flashcards` - Generador automático de tarjetas de memoria por nivel de dificultad.
+* `POST /api/ai/quiz` - Cuestionario de opción múltiple con respuestas y retroalimentación pedagógica.
+* `POST /api/ai/explicar-seleccion` - Explicación paso a paso de fragmentos de texto seleccionados.
+* `POST /api/ai/validate-key` - Validación de conectividad y validez de la API Key de Gemini.
+* `POST /api/ai/parse-study-plan` - Extracción con IA de planes de estudio a partir de PDFs o texto, estructurando asignaturas, regímenes y correlatividades para la malla curricular.

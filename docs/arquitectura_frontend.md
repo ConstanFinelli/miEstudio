@@ -1,43 +1,78 @@
-# Arquitectura Frontend: React + TypeScript (Feature-Driven)
+# Arquitectura Frontend: React 19 + TypeScript (Feature-Driven)
 
-En el frontend aplicaremos un enfoque similar al Vertical Slicing. En lugar de agrupar todos los componentes por tipo (todos los hooks juntos, todas las vistas juntas), agruparemos por **módulo o funcionalidad** (Feature-Driven Architecture).
+En el frontend se implementa una arquitectura **Feature-Driven** (guiada por características o casos de uso), logrando alta cohesión y bajo acoplamiento. En lugar de organizar el código por capas técnicas abstractas, cada módulo agrupa sus propias vistas, subcomponentes, estilos y lógica contextual.
 
-### Estructura de Directorios (React + Vite)
+---
+
+### Estructura de Directorios (`frontend/src/`)
 
 ```text
 src/
-  components/           # Componentes UI compartidos y modales del sistema
-    auth/               # ProtectedRoute
-    layout/             # AppLayout (Sidebar, Topbar, Breadcrumbs, Selector de Carreras)
-    modals/             # Modales: MateriaModal, EvaluationModal, NoteModal, CarreraModal, EditUserModal, PdfViewerModal, CleanApprovedPdfsModal
-  context/              # AuthContext (sesión y carrera activa), ThemeContext (modo oscuro/claro)
-  data/                 # Datos mockeados y seeds demostrativos
-  features/             # <-- FEATURE-DRIVEN MODULES
-    auth/               # LoginView, RegisterView
-    dashboard/          # DashboardView, KPIs, Evaluaciones pendientes, Gráfico de progreso, Notas recientes
-    materias/           # MateriasView, MateriaDetail, Reglas de acreditación, Materiales, Horarios
-    horarios/           # HorariosView (grilla horaria semanal interactiva)
-    calendario/         # CalendarioView (agenda de exámenes, parciales y eventos)
-    apuntes/            # ApuntesView, FoldersSidebar, NoteEditor, NoteReader, Split PDF Study, AiCopilotPane (Chat, Resumen, Flashcards, Quiz)
-    progreso/           # ProgresoView (Progreso analítico, KPIs, evolución histórica de notas, modalidades de aprobación y timeline de hitos)
-  hooks/                # Custom hooks (useMaterias, useEvaluaciones, useApuntes, useMateriales, useProgresoAcademico, usePerfil, etc.)
-  services/             # Clientes HTTP hacia el backend Go (apiClient, materiasService, apuntesService, aiService, etc.)
-  types/                # Definiciones TypeScript de dominio académico
+  components/               # Componentes transversales y modales del sistema
+    auth/                   # ProtectedRoute (guardia de sesión JWT)
+    layout/                 # AppLayout (Sidebar, Topbar, Breadcrumbs, Selector de Carreras)
+    modals/                 # Modales interactivos:
+      ├── carrera/          # CarreraModal (Creación, edición de total de materias y eliminación segura)
+      ├── evaluation/       # EvaluationModal (Preselección de materia, filtros por año, evaluaciones sin fecha)
+      ├── import/           # ImportStudyPlanModal (Carga de plan con IA, preview y smart upsert)
+      ├── materia/          # MateriaModal (Alta y edición de materias, estados académicos)
+      ├── note/             # NoteModal (Creación rápida y vinculación de apuntes)
+      ├── user/             # EditUserModal (Perfil, clave y configuración de Gemini API Key)
+      └── ...
+  context/                  # Contextos globales de React (AuthContext con persistencia y carrera activa)
+  features/                 # <-- FEATURE-DRIVEN MODULES
+    ├── apuntes/            # ApuntesView, FoldersSidebar jerárquico por año, NoteEditor Markdown, Visor Split-View, Copiloto IA y exportación a PDF
+    ├── auth/               # LoginView y RegisterView
+    ├── calendario/         # CalendarioView, agenda mensual, filtros por carrera activa vs todas
+    ├── dashboard/          # DashboardView, KPIs de la carrera, próximas evaluaciones con navegación inter-carrera y accesos directos
+    ├── horarios/           # HorariosView, grilla semanal interactiva y selector RGB de colores
+    ├── malla/              # MallaCurricularView, árbol de asignaturas por año/cuatrimestre, matriz de correlatividades y gatillo de importación con IA
+    ├── materias/           # MateriasView, ficha detallada, reglas de acreditación, evaluaciones y biblioteca bibliográfica
+    └── progreso/           # ProgresoView, evolución histórica del promedio de aprobadas y distribución de notas
+  hooks/                    # Custom hooks reactivos (useMaterias, useEvaluaciones, useCarreras, useApuntes, useMateriales, etc.)
+  services/                 # Clientes HTTP hacia el backend Go (apiClient, materiasService, aiService, carrerasService, etc.)
+  types/                    # Interfaces y contratos de TypeScript del dominio académico
 ```
 
-### Visualización y Gestión de PDFs en el Frontend
+---
 
-- **Librería del Visor de PDFs:**
-  - `@react-pdf-viewer/core` + `@react-pdf-viewer/default-layout` (Basado en Mozilla PDF.js. Provee de fábrica zoom, miniaturas, barra de navegación, búsqueda de texto y responsive design).
-- **Modo Estudio (Split-View):**
-  - Uso de `react-resizable-panels` para permitir al usuario arrastrar el divisor central y ajustar el ancho del PDF y del editor de apuntes de forma fluida.
+### Módulos Principales y Decisiones Técnicas
 
-### Stack Sugerido y Puntos de Decisión
+#### 1. Malla Curricular (`features/malla/`)
+- Muestra el mapa completo de materias ordenadas por año y cuatrimestre (1C, 2C y Anuales).
+- Identificación visual de estados (*Cursando*, *Regular*, *Aprobada*, *Promocionada*, *Pendiente*).
+- Panel de control de correlatividades (requisitos para cursar y requisitos para rendir final).
+- Integración con `ImportStudyPlanModal`: permite cargar un PDF o texto de plan de estudios y orquestar con el backend la extracción con IA antes de aplicar cambios a la base de datos.
 
-- **Build Tool:** `Vite` + React + TypeScript.
-- **Server State (Peticiones):** `TanStack Query (React Query)`. Fundamental para manejar estados de carga, errores y caché de los CRUDs.
-- **Client State (Estado Global):** `Zustand`. Ligero y fácil, ideal para estados de UI (ej. sidebar abierto, paneles colapsados, zoom del visor).
-- **Estilos y UI:** `CSS Modules` + Variables CSS (`index.css` con el sistema de tokens de `Terminal Scholar`). Sin Tailwind CSS, priorizando estilos puros, modulares y alto control.
-- **Manejo de Formularios:** `React Hook Form` + `Zod` (para validación de esquemas).
-- **Editor de Notas:** Editor Markdown nativo con soporte KaTeX y bloques de código.
-- **Visor PDF:** `@react-pdf-viewer/core` o visor integrado con PDF.js.
+#### 2. Apuntes y Motor de Exportación a PDF (`features/apuntes/`)
+- **Organización jerárquica**: las carpetas en `FoldersSidebar` se agrupan automáticamente por año lectivo (`1° Año`, `2° Año`, etc.) y materia.
+- **Editor Markdown con KaTeX**: renderizado en vivo de fórmulas matemáticas (`$...$` inline y `$$...$$` en bloque).
+- **Exportación limpia a PDF**: genera documentos de alta calidad académica listos para imprimir o compartir, procesando fórmulas matemáticas sin parpadeos ni hojas en blanco innecesarias.
+- **Exportación a Markdown (.md) y archivo ZIP (.zip)**: para respaldos y portabilidad fuera de la plataforma.
+
+#### 3. Modal de Evaluaciones Contextual (`components/modals/evaluation/`)
+- **Preselección inteligente**: cuando el modal se abre desde una materia específica, dicha materia queda preseleccionada automáticamente y los filtros temporales se restablecen para garantizar su visibilidad en el desplegable.
+- **Soporte para evaluaciones sin fecha fija**: habilita registrar exámenes con fecha por definir o antecedentes históricos.
+- **Ponderaciones porcentuales**: cálculo instantáneo del promedio ponderado de la materia.
+
+#### 4. Horarios y Selector Cromático (`features/horarios/`)
+- Grilla semanal con soporte para múltiples modalidades (Presencial, Virtual, Híbrida).
+- Selector de color con paleta predefinida y control interactivo RGB con persistencia inmediata en la entidad de la materia.
+
+#### 5. Gestión Multi-Carrera y Navegación Inteligente
+- Selector de carrera integrado en la barra lateral con sincronización reactiva en todos los módulos.
+- Modal `CarreraModal` para ajustar la duración, materias estimadas del plan o solicitar la eliminación definitiva con confirmación de seguridad en dos pasos.
+- Filtros por carrera en Dashboard y Calendario (vista consolidada multi-carrera vs. vista focalizada en la carrera activa).
+- Navegación inter-carrera automática al hacer clic en "Ver materia" en cualquier evaluación del Dashboard.
+
+---
+
+### Stack Tecnológico del Frontend
+
+- **Framework Core**: React 19 + TypeScript.
+- **Bundler & Dev Server**: Vite (HMR ultrarrápido).
+- **Enrutamiento**: React Router v7.
+- **Estilos y Diseño**: CSS Modules + Tokens CSS puros (`index.css`) con soporte nativo para tema oscuro.
+- **Iconografía**: `lucide-react`.
+- **Matemáticas & Notación**: `KaTeX` para renderizado de fórmulas LaTeX.
+- **Compilador & Linting**: `oxlint` para análisis estático y `tsc` para comprobación estricta de tipos.
