@@ -201,74 +201,74 @@ export const NoteModal: React.FC<NoteModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className={styles.formGrid}>
-          {/* Row 1: Materia e Instancia */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div className={styles.fieldGroup}>
-              <div className={styles.fieldLabelRow}>
-                <span>Materia Vinculada *</span>
-                <span style={{ color: 'var(--text-dim)' }}>Ordenada por año</span>
-              </div>
-              {sortedMaterias.length > 0 ? (
-                <select
-                  className={styles.fieldInput}
-                  value={materiaId || sortedMaterias[0]?.id}
-                  onChange={(e) => setMateriaId(e.target.value)}
-                >
-                  {aniosDisponibles.map((yr) => {
-                    const matsInYear = sortedMaterias.filter(m => (m.anio || 1) === yr);
-                    if (matsInYear.length === 0) return null;
-                    return (
-                      <optgroup key={yr} label={`${yr}° Año`}>
-                        {matsInYear.map(m => (
-                          <option key={m.id} value={m.id}>
-                            {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  className={styles.fieldInput}
-                  value={customMateria}
-                  onChange={(e) => setCustomMateria(e.target.value)}
-                  placeholder="Nombre de la materia (ej: Algoritmos)"
-                  required
-                />
-              )}
+          {/* Materia Vinculada */}
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldLabelRow}>
+              <span>Materia Vinculada *</span>
+              <span style={{ color: 'var(--text-dim)' }}>Ordenada por año</span>
             </div>
-
-            <div className={styles.fieldGroup}>
-              <div className={styles.fieldLabelRow}>
-                <span>Instancia de Evaluación</span>
-                <span style={{ color: filteredEvaluaciones.length > 0 ? 'var(--primary-glow)' : 'var(--text-dim)' }}>
-                  {filteredEvaluaciones.length > 0
-                    ? `${filteredEvaluaciones.length} disponible${filteredEvaluaciones.length > 1 ? 's' : ''}`
-                    : 'Sin evaluaciones'}
-                </span>
-              </div>
+            {sortedMaterias.length > 0 ? (
               <select
                 className={styles.fieldInput}
-                value={evalId}
-                onChange={(e) => setEvalId(e.target.value)}
+                value={materiaId || sortedMaterias[0]?.id}
+                onChange={(e) => setMateriaId(e.target.value)}
               >
-                <option value="">
-                  {filteredEvaluaciones.length === 0
-                    ? 'General (sin evaluaciones para esta materia)'
-                    : 'General (sin evaluación asociada)'}
-                </option>
-                {filteredEvaluaciones.map(ev => (
-                  <option key={ev.id} value={ev.id}>
-                    {ev.titulo} ({ev.tipo})
-                  </option>
-                ))}
+                {aniosDisponibles.map((yr) => {
+                  const matsInYear = sortedMaterias.filter(m => (m.anio || 1) === yr);
+                  if (matsInYear.length === 0) return null;
+                  return (
+                    <optgroup key={yr} label={`${yr}° Año`}>
+                      {matsInYear.map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.codigo ? `${m.codigo} · ` : ''}{m.nombre} ({m.cuatrimestre})
+                        </option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
               </select>
-            </div>
+            ) : (
+              <input
+                type="text"
+                className={styles.fieldInput}
+                value={customMateria}
+                onChange={(e) => setCustomMateria(e.target.value)}
+                placeholder="Nombre de la materia (ej: Algoritmos)"
+                required
+              />
+            )}
           </div>
 
-          {/* Row 2: Título */}
+          {/* Instancia de Evaluación */}
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldLabelRow}>
+              <span>Instancia de Evaluación</span>
+              <span style={{ color: filteredEvaluaciones.length > 0 ? 'var(--primary-glow)' : 'var(--text-dim)' }}>
+                {filteredEvaluaciones.length > 0
+                  ? `${filteredEvaluaciones.length} disponible${filteredEvaluaciones.length > 1 ? 's' : ''}`
+                  : 'Sin evaluaciones'}
+              </span>
+            </div>
+            <select
+              className={styles.fieldInput}
+              value={evalId}
+              onChange={(e) => setEvalId(e.target.value)}
+            >
+              <option value="">
+                {filteredEvaluaciones.length === 0
+                  ? 'General (sin evaluaciones para esta materia)'
+                  : 'General (sin evaluación asociada)'}
+              </option>
+              {filteredEvaluaciones.map(ev => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.titulo} ({ev.tipo})
+                </option>
+              ))}
+            </select>
+          </div>
+
+
+          {/* Título */}
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabelRow}>
               <span>Título del Documento</span>
