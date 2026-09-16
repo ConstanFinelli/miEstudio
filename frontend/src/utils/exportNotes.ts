@@ -233,15 +233,15 @@ export const NOTE_PRINT_CSS = `
   }
   body, .pdf-export-container {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 11pt;
-    line-height: 1.6;
+    font-size: 10.5pt;
+    line-height: 1.55;
     color: #111827 !important;
     background: #ffffff !important;
     margin: 0;
-    padding: 24px;
+    padding: 0;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    width: 700px;
+    width: 100%;
     box-sizing: border-box;
   }
   .pdf-export-container * {
@@ -377,6 +377,13 @@ export const NOTE_PRINT_CSS = `
     border-collapse: collapse;
     margin: 14px 0;
     font-size: 9.5pt;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tr {
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -543,23 +550,49 @@ export const exportSingleNote = (note: ApunteNota) => {
  */
 export const exportSingleNoteAsPdf = (note: ApunteNota): Promise<void> => {
   return new Promise((resolve) => {
+    const originalTitle = document.title;
+    const cleanTitle = sanitizeFilename(note.titulo) || "apunte";
+    document.title = cleanTitle;
+
     const html = buildPrintableNoteHtml(note);
 
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
+    iframe.style.left = "-9999px";
+    iframe.style.top = "-9999px";
     iframe.style.width = "0";
     iframe.style.height = "0";
     iframe.style.border = "none";
     iframe.style.visibility = "hidden";
+    iframe.style.pointerEvents = "none";
 
     document.body.appendChild(iframe);
 
+    let cleanedUp = false;
+    const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      document.title = originalTitle;
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+      resolve();
+    };
+
+    const triggerPrint = () => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (e) {
+        console.error("Error al invocar impresión de apunte:", e);
+      } finally {
+        setTimeout(cleanup, 1200);
+      }
+    };
+
     const doc = iframe.contentWindow?.document;
     if (!doc) {
-      document.body.removeChild(iframe);
-      resolve();
+      cleanup();
       return;
     }
 
@@ -567,19 +600,7 @@ export const exportSingleNoteAsPdf = (note: ApunteNota): Promise<void> => {
     doc.write(html);
     doc.close();
 
-    iframe.onload = () => {
-      setTimeout(() => {
-        try {
-          iframe.contentWindow?.focus();
-          iframe.contentWindow?.print();
-        } finally {
-          setTimeout(() => {
-            document.body.removeChild(iframe);
-            resolve();
-          }, 1500);
-        }
-      }, 400);
-    };
+    setTimeout(triggerPrint, 350);
   });
 };
 
@@ -609,8 +630,12 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
 
   const container = document.createElement("div");
   container.className = "pdf-export-container";
+  container.style.position = "fixed";
+  container.style.left = "-99999px";
+  container.style.top = "-99999px";
   container.style.width = "700px";
-  container.style.padding = "8px 4px 24px 4px";
+  container.style.opacity = "0";
+  container.style.pointerEvents = "none";
   container.style.background = "#ffffff";
   container.style.color = "#111827";
   container.style.boxSizing = "border-box";
@@ -661,6 +686,9 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
     try {
       doc.html(container, {
         callback: (generatedDoc) => {
+          if (container.parentNode) {
+            container.parentNode.removeChild(container);
+          }
           try {
             resolve(generatedDoc.output("blob"));
           } catch (err) {
@@ -679,20 +707,21 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
         windowWidth: 700,
       });
     } catch (err) {
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
       reject(err);
     }
   });
 };
 
 /**
- * Directly downloads a single note as a .pdf file
+ * Directly downloads a single note as a .pdf file using native vector printing
  */
 export const exportSingleNoteDirectPdf = async (
   note: ApunteNota,
 ): Promise<void> => {
-  const blob = await generateNotePdfBlob(note);
-  const filename = `${sanitizeFilename(note.titulo)}.pdf`;
-  triggerFileDownload(blob, filename);
+  await exportSingleNoteAsPdf(note);
 };
 
 /**
