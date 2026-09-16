@@ -33,7 +33,7 @@ import { useAuth } from "../../context/AuthContext";
 import { materiasService } from "../../services";
 
 interface MateriasViewProps {
-  onOpenEvaluationModal: () => void;
+  onOpenEvaluationModal: (materiaId?: string) => void;
   onEditEvaluation?: (evaluation: InstanciaEvaluacion) => void;
   onOpenNoteModal?: (materiaId?: string) => void;
   onOpenMateriaModal?: () => void;
@@ -388,7 +388,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
 
             <EvaluationsList
               evaluations={materiaEvaluations}
-              onOpenEvaluationModal={onOpenEvaluationModal}
+              onOpenEvaluationModal={() => onOpenEvaluationModal(selectedMateria.id)}
               onEditEvaluation={onEditEvaluation}
               onDeleteEvaluation={handleDeleteEvaluation}
             />

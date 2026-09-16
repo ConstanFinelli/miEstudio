@@ -38,7 +38,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const { materias } = useMaterias();
   const [filterYear, setFilterYear] = useState<number | 'TODOS'>('TODOS');
   const [filterCuatri, setFilterCuatri] = useState<'TODOS' | '1C' | '2C' | 'Anual'>('TODOS');
-  const [materiaId, setMateriaId] = useState('');
+  const [materiaId, setMateriaId] = useState(initialMateriaId || '');
   const [customMateria, setCustomMateria] = useState('');
   const [titulo, setTitulo] = useState('');
   const [tipo, setTipo] = useState<TipoEvaluacion>('PARCIAL');
@@ -62,6 +62,9 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   // Prefill or reset state on open / evaluationToEdit changes
   useEffect(() => {
     if (!isOpen) return;
+
+    setFilterYear('TODOS');
+    setFilterCuatri('TODOS');
 
     if (evaluationToEdit) {
       setMateriaId(evaluationToEdit.materiaId || '');
@@ -89,9 +92,12 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
     } else {
       if (initialMateriaId) {
         setMateriaId(initialMateriaId);
-      } else if (materias.length > 0 && !materiaId) {
+      } else if (materias.length > 0) {
         setMateriaId(materias[0].id);
+      } else {
+        setMateriaId('');
       }
+      setCustomMateria('');
       setTitulo('');
       setTipo('PARCIAL');
       setSinFecha(false);
@@ -109,9 +115,13 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   // Sync initial materiaId when materias load
   useEffect(() => {
     if (materias.length > 0 && !materiaId && !evaluationToEdit) {
-      setMateriaId(materias[0].id);
+      if (initialMateriaId) {
+        setMateriaId(initialMateriaId);
+      } else {
+        setMateriaId(materias[0].id);
+      }
     }
-  }, [materias, materiaId, evaluationToEdit]);
+  }, [materias, materiaId, evaluationToEdit, initialMateriaId]);
 
   // Sync materiaId if current selection is outside filtered subset (only for new evaluations)
   useEffect(() => {

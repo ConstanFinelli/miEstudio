@@ -25,6 +25,9 @@ export const App: React.FC = () => {
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
   const [evaluationToEdit, setEvaluationToEdit] =
     useState<InstanciaEvaluacion | null>(null);
+  const [evaluationInitialMateriaId, setEvaluationInitialMateriaId] = useState<
+    string | undefined
+  >(undefined);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [noteInitialMateriaId, setNoteInitialMateriaId] = useState<
     string | undefined
@@ -50,6 +53,12 @@ export const App: React.FC = () => {
     setIsNoteModalOpen(true);
   };
 
+  const handleOpenEvaluationModal = (materiaId?: string) => {
+    setEvaluationToEdit(null);
+    setEvaluationInitialMateriaId(materiaId);
+    setIsEvaluationModalOpen(true);
+  };
+
   return (
     <Routes>
       {/* Public Auth Routes */}
@@ -62,10 +71,7 @@ export const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <AppLayout
-              onOpenEvaluationModal={() => {
-                setEvaluationToEdit(null);
-                setIsEvaluationModalOpen(true);
-              }}
+              onOpenEvaluationModal={() => handleOpenEvaluationModal()}
               onOpenNoteModal={handleOpenNoteModal}
               onOpenMateriaModal={(estado) => {
                 setMateriaInitialEstado(estado);
@@ -86,10 +92,7 @@ export const App: React.FC = () => {
                   path="/materias"
                   element={
                     <MateriasView
-                      onOpenEvaluationModal={() => {
-                        setEvaluationToEdit(null);
-                        setIsEvaluationModalOpen(true);
-                      }}
+                      onOpenEvaluationModal={handleOpenEvaluationModal}
                       onEditEvaluation={(evaluation) => {
                         setEvaluationToEdit(evaluation);
                         setIsEvaluationModalOpen(true);
@@ -113,10 +116,7 @@ export const App: React.FC = () => {
                   path="/calendario"
                   element={
                     <CalendarioView
-                      onOpenEvaluationModal={() => {
-                        setEvaluationToEdit(null);
-                        setIsEvaluationModalOpen(true);
-                      }}
+                      onOpenEvaluationModal={() => handleOpenEvaluationModal()}
                     />
                   }
                 />
@@ -154,9 +154,11 @@ export const App: React.FC = () => {
               <EvaluationModal
                 isOpen={isEvaluationModalOpen}
                 evaluationToEdit={evaluationToEdit}
+                initialMateriaId={evaluationInitialMateriaId}
                 onClose={() => {
                   setIsEvaluationModalOpen(false);
                   setEvaluationToEdit(null);
+                  setEvaluationInitialMateriaId(undefined);
                 }}
                 onSuccess={(saved) => {
                   const isEdit = !!evaluationToEdit;
