@@ -301,3 +301,45 @@
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.4);
 }
+
+.autoSedeBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  min-height: 38px;
+}
+
+.autoSedeIcon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.autoSedeText {
+  flex: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.autoSedeTag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  background-color: var(--surface-3);
+  color: var(--primary);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-subtle);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+

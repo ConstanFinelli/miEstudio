@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { HorarioCursada, DiaSemana } from "../../../types/academic";
 import { useMaterias } from "../../../hooks";
+import { useAuth } from "../../../context/AuthContext";
 import { horariosService } from "../../../services";
 import { PRESET_COLORS } from "../materia/MateriaColorModal";
 
@@ -55,13 +56,13 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
   defaultDiaSemana = "LUNES",
   defaultMateriaId,
 }) => {
+  const { activeCarrera, carreras } = useAuth();
   const { materias, updateMateria } = useMaterias();
 
   const [materiaId, setMateriaId] = useState("");
   const [diaSemana, setDiaSemana] = useState<DiaSemana>(defaultDiaSemana);
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFin, setHoraFin] = useState("12:00");
-  const [facultadSede, setFacultadSede] = useState("");
   const [aula, setAula] = useState("");
   const [tipoClase, setTipoClase] = useState("Teoría");
   const [modalidad, setModalidad] = useState<
@@ -91,7 +92,6 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       setDiaSemana(horarioToEdit.diaSemana);
       setHoraInicio(horarioToEdit.horaInicio);
       setHoraFin(horarioToEdit.horaFin);
-      setFacultadSede(horarioToEdit.facultadSede || "");
       setAula(horarioToEdit.aula || "");
       setTipoClase(horarioToEdit.tipoClase || "Teoría");
       setModalidad(horarioToEdit.modalidad || "Presencial");
@@ -102,7 +102,6 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       setDiaSemana(defaultDiaSemana);
       setHoraInicio("08:00");
       setHoraFin("12:00");
-      setFacultadSede("");
       setAula("");
       setTipoClase("Teoría");
       setModalidad("Presencial");
@@ -121,6 +120,25 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
   const selectedMateria = useMemo(() => {
     return materias.find((m) => m.id === materiaId);
   }, [materias, materiaId]);
+
+  const assignedCarrera = useMemo(() => {
+    const cId = selectedMateria?.carreraId || selectedMateria?.carrera_id;
+    if (cId) {
+      const found = carreras.find((c) => c.id === cId);
+      if (found) return found;
+    }
+    return activeCarrera;
+  }, [carreras, selectedMateria, activeCarrera]);
+
+  const autoFacultadSede = useMemo(() => {
+    return (
+      assignedCarrera?.facultad_sede ||
+      activeCarrera?.facultad_sede ||
+      horarioToEdit?.facultadSede ||
+      ""
+    );
+  }, [assignedCarrera, activeCarrera, horarioToEdit]);
+
 
   // Compute duration
   const { durationText, isValidTimeRange } = useMemo(() => {
@@ -161,7 +179,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
         diaSemana,
         horaInicio,
         horaFin,
-        facultadSede: facultadSede.trim(),
+        facultadSede: autoFacultadSede,
         aula: aula.trim(),
         tipoClase,
         modalidad,
@@ -231,7 +249,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               : "Agregar Horario de Cursada"}
           </h2>
           <p className={styles.modalSubtitle}>
-            Configurá el día, banda horaria y sede/facultad con total
+            Configurá el día, banda horaria y aula con total
             flexibilidad para tu cronograma.
           </p>
         </div>
@@ -427,22 +445,8 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
             </div>
           </div>
 
-          {/* Facultad / Sede y Aula */}
+          {/* Aula y Sede Asignada */}
           <div className={styles.row}>
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                <Building2 size={13} />
-                Facultad / Sede / Campus
-              </label>
-              <input
-                type="text"
-                value={facultadSede}
-                onChange={(e) => setFacultadSede(e.target.value)}
-                placeholder="Ej: UTN FRRO / UBA FCEyN"
-                className={styles.input}
-              />
-            </div>
-
             <div className={styles.fieldGroup}>
               <label className={styles.label}>
                 <MapPin size={13} />
@@ -455,6 +459,23 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
                 placeholder="Ej: Aula 214, Lab Sistemas, Aula Magna"
                 className={styles.input}
               />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>
+                <Building2 size={13} />
+                Sede / Facultad
+              </label>
+              <div className={styles.autoSedeBox}>
+                <Building2 size={14} className={styles.autoSedeIcon} />
+                <span
+                  className={styles.autoSedeText}
+                  title={autoFacultadSede || "Sin sede definida en la carrera"}
+                >
+                  {autoFacultadSede || "Sin sede definida en la carrera"}
+                </span>
+                <span className={styles.autoSedeTag}>Carrera</span>
+              </div>
             </div>
           </div>
 

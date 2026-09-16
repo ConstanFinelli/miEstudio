@@ -12,6 +12,7 @@ type Repository interface {
 	Create(ctx context.Context, horario *HorarioCursada) error
 	Update(ctx context.Context, horario *HorarioCursada) error
 	Delete(ctx context.Context, id string) error
+	GetFacultadSedeForMateria(ctx context.Context, materiaID string) string
 }
 
 type repository struct {
@@ -61,3 +62,23 @@ func (r *repository) Update(ctx context.Context, horario *HorarioCursada) error 
 func (r *repository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Delete(&HorarioCursada{}, "id = ?", id).Error
 }
+
+func (r *repository) GetFacultadSedeForMateria(ctx context.Context, materiaID string) string {
+	if materiaID == "" {
+		return ""
+	}
+	var res struct {
+		FacultadSede string `gorm:"column:facultad_sede"`
+	}
+	err := r.db.WithContext(ctx).
+		Table("materias").
+		Select("carreras.facultad_sede").
+		Joins("JOIN carreras ON carreras.id = materias.carrera_id").
+		Where("materias.id = ?", materiaID).
+		Scan(&res).Error
+	if err == nil && res.FacultadSede != "" {
+		return res.FacultadSede
+	}
+	return ""
+}
+

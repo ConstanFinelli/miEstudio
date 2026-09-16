@@ -61,6 +61,11 @@ func (s *service) CreateHorario(ctx context.Context, dto CreateHorarioDTO) (*Hor
 		tipoClase = "TEORIA"
 	}
 
+	facultadSede := strings.TrimSpace(dto.FacultadSede)
+	if facultadSede == "" && dto.MateriaID != "" {
+		facultadSede = s.repo.GetFacultadSedeForMateria(ctx, dto.MateriaID)
+	}
+
 	horario := &HorarioCursada{
 		ID:           uuid.New().String(),
 		UsuarioID:    dto.UsuarioID,
@@ -68,7 +73,7 @@ func (s *service) CreateHorario(ctx context.Context, dto CreateHorarioDTO) (*Hor
 		DiaSemana:    dia,
 		HoraInicio:   dto.HoraInicio,
 		HoraFin:      dto.HoraFin,
-		FacultadSede: strings.TrimSpace(dto.FacultadSede),
+		FacultadSede: facultadSede,
 		Aula:         strings.TrimSpace(dto.Aula),
 		TipoClase:    tipoClase,
 		Modalidad:    modalidad,
@@ -89,6 +94,11 @@ func (s *service) UpdateHorario(ctx context.Context, id string, dto UpdateHorari
 
 	if dto.MateriaID != nil {
 		horario.MateriaID = *dto.MateriaID
+		if dto.FacultadSede == nil {
+			if sede := s.repo.GetFacultadSedeForMateria(ctx, horario.MateriaID); sede != "" {
+				horario.FacultadSede = sede
+			}
+		}
 	}
 	if dto.DiaSemana != nil {
 		horario.DiaSemana = strings.ToUpper(strings.TrimSpace(*dto.DiaSemana))
@@ -101,6 +111,9 @@ func (s *service) UpdateHorario(ctx context.Context, id string, dto UpdateHorari
 	}
 	if dto.FacultadSede != nil {
 		horario.FacultadSede = strings.TrimSpace(*dto.FacultadSede)
+	}
+	if horario.FacultadSede == "" && horario.MateriaID != "" {
+		horario.FacultadSede = s.repo.GetFacultadSedeForMateria(ctx, horario.MateriaID)
 	}
 	if dto.Aula != nil {
 		horario.Aula = strings.TrimSpace(*dto.Aula)
