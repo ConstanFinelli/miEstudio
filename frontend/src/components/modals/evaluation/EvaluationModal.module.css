@@ -338,3 +338,105 @@
   color: var(--text-dim);
   pointer-events: none;
 }
+
+.pesoBadge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  background-color: var(--primary-alpha);
+  border: 1px solid var(--primary-border);
+  padding: 1px 7px;
+  border-radius: var(--radius-xs);
+}
+
+.sliderWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 9px 12px;
+  min-height: 58px;
+  justify-content: center;
+}
+
+.sliderInput {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  margin: 4px 0 2px;
+}
+
+.sliderInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.sliderInput::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 8px var(--primary-alpha);
+}
+
+.sliderInput::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.sliderInput::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+
+.sliderPresetRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: space-between;
+}
+
+.presetBtn {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex: 1;
+  text-align: center;
+}
+
+.presetBtn:hover {
+  border-color: var(--primary);
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.presetBtnActive {
+  background: var(--primary-alpha);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+

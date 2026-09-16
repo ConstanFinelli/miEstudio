@@ -47,7 +47,7 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
   const [horario, setHorario] = useState('19:00');
   const [aula, setAula] = useState('');
   const [modalidad, setModalidad] = useState<'Presencial' | 'Virtual'>('Presencial');
-  const [peso, setPeso] = useState<number | string>(100);
+  const [peso, setPeso] = useState<number>(100);
   const [esAprobatorio, setEsAprobatorio] = useState(true);
   const [nota, setNota] = useState('');
   const [temarioText, setTemarioText] = useState('');
@@ -474,20 +474,36 @@ export const EvaluationModal: React.FC<EvaluationModalProps> = ({
           <div className={styles.grid2}>
             <div className={styles.fieldGroup}>
               <div className={styles.fieldLabelRow}>
-                <span>Ponderación / Peso en Nota Final</span>
-                <span style={{ color: 'var(--text-dim)' }}>1 a 100%</span>
+                <span>Ponderación / Peso</span>
+                <span className={styles.pesoBadge}>{peso}%</span>
               </div>
-              <div className={styles.inputWithSuffix}>
+              <div className={styles.sliderWrapper}>
                 <input
-                  type="number"
+                  type="range"
                   min="1"
                   max="100"
-                  className={styles.fieldInput}
+                  step="1"
+                  className={styles.sliderInput}
                   value={peso}
-                  onChange={(e) => setPeso(e.target.value === '' ? '' : e.target.value)}
-                  required
+                  onChange={(e) => setPeso(Number(e.target.value))}
+                  style={{
+                    background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${peso}%, var(--surface-3) ${peso}%, var(--surface-3) 100%)`,
+                  }}
+                  aria-label="Ponderación o peso en nota final"
                 />
-                <span className={styles.inputSuffix}>%</span>
+                <div className={styles.sliderPresetRow}>
+                  {[10, 20, 25, 33, 50, 100].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`${styles.presetBtn} ${peso === val ? styles.presetBtnActive : ''}`}
+                      onClick={() => setPeso(val)}
+                      title={`Fijar peso en ${val}%`}
+                    >
+                      {val}%
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
