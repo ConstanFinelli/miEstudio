@@ -14,9 +14,18 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
 }) => {
   const { proximas } = useEvaluaciones();
   const { materias } = useMaterias();
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
   const pendingProximas = proximas.filter(
-    (ev): ev is typeof ev & { fecha: string } =>
-      (ev.nota === null || ev.nota === undefined) && Boolean(ev.fecha)
+    (ev): ev is typeof ev & { fecha: string } => {
+      if (ev.nota !== null && ev.nota !== undefined) return false;
+      if (!ev.fecha) return false;
+      // Solo mostrar eventos cuya fecha sea igual o posterior al inicio de hoy
+      const evDate = new Date(ev.fecha).getTime();
+      return evDate >= todayStart;
+    }
   );
 
   const formatDate = (dateStr: string, horario?: string) => {
@@ -36,11 +45,15 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
 
   const getDaysRemaining = (dateStr: string) => {
     try {
-      const diff = new Date(dateStr).getTime() - new Date().getTime();
-      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      if (days <= 0) return 'Hoy / Vencido';
-      if (days === 1) return 'En 1 día';
-      return `En ${days} días`;
+      const n = new Date();
+      const tStart = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+      const target = new Date(dateStr);
+      const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+      const diffDays = Math.round((targetDay - tStart) / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 0) return 'Hoy';
+      if (diffDays === 1) return 'Mañana';
+      return `En ${diffDays} días`;
     } catch {
       return 'Próximamente';
     }

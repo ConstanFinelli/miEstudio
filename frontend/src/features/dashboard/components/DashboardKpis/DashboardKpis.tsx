@@ -119,7 +119,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
           <span className={styles.kpiSubValue}>/ 10.0</span>
           {perfil.deltaPromedio !== 0 ? (
             <span className={styles.deltaBadge}>
-              <TrendingUp size={11} />+{perfil.deltaPromedio} vs ciclo anterior
+              <TrendingUp size={11} />+{perfil.deltaPromedio} vs anterior
             </span>
           ) : (
             <span
@@ -129,7 +129,7 @@ export const DashboardKpis: React.FC<DashboardKpisProps> = ({
                 fontFamily: "var(--font-mono)",
               }}
             >
-              {hasPromedio ? "Ciclo actual" : "Sin notas cargadas"}
+              {hasPromedio ? "Promedio general" : "Sin notas cargadas"}
             </span>
           )}
         </div>

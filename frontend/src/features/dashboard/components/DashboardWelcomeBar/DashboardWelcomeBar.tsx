@@ -16,8 +16,6 @@ export const DashboardWelcomeBar: React.FC<DashboardWelcomeBarProps> = ({
   const perfil = propPerfil || hookPerfil;
 
   const rawNombre = user?.nombre || perfil?.nombre || "Estudiante";
-  const rawSemestre =
-    activeCarrera?.semestre_actual || perfil?.semestreActual || "Ciclo Lectivo";
 
   const displayName =
     !rawNombre || rawNombre === "Estudiante"
@@ -28,12 +26,14 @@ export const DashboardWelcomeBar: React.FC<DashboardWelcomeBarProps> = ({
       ? `Bienvenido ${displayName}`
       : `Hola de nuevo, ${displayName}`;
 
+  const pillText = activeCarrera?.nombre || null;
+
   return (
     <div className={styles.welcomeSection}>
       <div className={styles.welcomeLeft}>
         <div className={styles.titleRow}>
           <h1 className={styles.welcomeTitle}>{greeting}</h1>
-          <span className={styles.semesterPill}>{rawSemestre}</span>
+          {pillText && <span className={styles.semesterPill}>{pillText}</span>}
         </div>
       </div>
     </div>

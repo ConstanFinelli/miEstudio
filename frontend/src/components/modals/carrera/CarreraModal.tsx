@@ -246,41 +246,21 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
               </div>
             </div>
 
-            <div className={styles.row}>
-              <div className={styles.fieldGroup}>
-                <label htmlFor="carrera-semestre" className={styles.label}>
-                  Nivel / Semestre Actual
-                </label>
-                <div className={styles.inputWrapper}>
-                  <Calendar size={16} className={styles.inputIcon} />
-                  <input
-                    id="carrera-semestre"
-                    type="text"
-                    className={styles.input}
-                    placeholder="Ej: 3º Año - 1º Cuatrimestre"
-                    value={semestreActual}
-                    onChange={(e) => setSemestreActual(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.fieldGroup}>
-                <label htmlFor="carrera-ciclo" className={styles.label}>
-                  Ciclo Lectivo Activo
-                </label>
-                <div className={styles.inputWrapper}>
-                  <Calendar size={16} className={styles.inputIcon} />
-                  <input
-                    id="carrera-ciclo"
-                    type="text"
-                    className={styles.input}
-                    placeholder="Ej: 1C 2026"
-                    value={cicloActivo}
-                    onChange={(e) => setCicloActivo(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="carrera-semestre" className={styles.label}>
+                Nivel / Año que cursas actualmente
+              </label>
+              <div className={styles.inputWrapper}>
+                <Calendar size={16} className={styles.inputIcon} />
+                <input
+                  id="carrera-semestre"
+                  type="text"
+                  className={styles.input}
+                  placeholder="Ej: 3º Año - 1º Cuatrimestre"
+                  value={semestreActual}
+                  onChange={(e) => setSemestreActual(e.target.value)}
+                  disabled={isLoading}
+                />
               </div>
             </div>
           </div>

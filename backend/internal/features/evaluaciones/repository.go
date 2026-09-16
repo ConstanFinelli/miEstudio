@@ -3,6 +3,7 @@ package evaluaciones
 import (
 	"context"
 	"math"
+	"time"
 
 	"gorm.io/gorm"
 	"miestudio/backend/internal/features/subjects"
@@ -44,7 +45,12 @@ func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materia
 
 func (r *repository) GetProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
-	q := r.db.WithContext(ctx).Preload("Materia").Where("nota IS NULL AND fecha IS NOT NULL").Order("fecha asc")
+	now := time.Now()
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	q := r.db.WithContext(ctx).Preload("Materia").
+		Where("nota IS NULL AND fecha IS NOT NULL AND fecha >= ?", todayStart).
+		Order("fecha asc")
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
 	}

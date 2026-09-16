@@ -82,8 +82,10 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
     return cursando.length > 0 ? cursando : materias;
   }, [materias, horarioToEdit]);
 
-  // Sync state on open / change
+  // Sync state on open / horarioToEdit change
   useEffect(() => {
+    if (!isOpen) return;
+
     if (horarioToEdit) {
       setMateriaId(horarioToEdit.materiaId);
       setDiaSemana(horarioToEdit.diaSemana);
@@ -107,13 +109,14 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
       setObservaciones("");
       setShowDeleteConfirm(false);
     }
-  }, [
-    isOpen,
-    horarioToEdit,
-    defaultDiaSemana,
-    defaultMateriaId,
-    availableMaterias,
-  ]);
+  }, [isOpen, horarioToEdit]);
+
+  // Fallback: assign initial materiaId once materias are available without clearing other fields
+  useEffect(() => {
+    if (isOpen && !materiaId && !horarioToEdit && availableMaterias.length > 0) {
+      setMateriaId(defaultMateriaId || availableMaterias[0]?.id || "");
+    }
+  }, [isOpen, materiaId, horarioToEdit, defaultMateriaId, availableMaterias]);
 
   const selectedMateria = useMemo(() => {
     return materias.find((m) => m.id === materiaId);

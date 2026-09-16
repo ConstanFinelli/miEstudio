@@ -57,9 +57,9 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
   const filteredHorarios = useMemo(() => {
     return horarios.filter((h) => {
       const mat = materias.find((m) => m.id === h.materiaId);
-      // Si la materia existe y no está CURSANDO, se excluye del horario
-      if (mat && mat.estado !== 'CURSANDO') return false;
-      if (filterCuatri !== 'TODOS' && mat && mat.cuatrimestre !== filterCuatri) {
+      // Si la materia no pertenece a la carrera activa o no está CURSANDO, se excluye del horario
+      if (!mat || mat.estado !== 'CURSANDO') return false;
+      if (filterCuatri !== 'TODOS' && mat.cuatrimestre !== filterCuatri) {
         return false;
       }
       return true;

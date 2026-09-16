@@ -492,6 +492,7 @@ export const MateriaModal: React.FC<MateriaModalProps> = ({
                   }
                 }}
               >
+                <option value="PENDIENTE">Pendiente (A cursar a futuro)</option>
                 <option value="CURSANDO">Cursando actualmente</option>
                 <option value="APROBADA">Aprobada (con Examen Final)</option>
                 <option value="PROMOCIONADA">
