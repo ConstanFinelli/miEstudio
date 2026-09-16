@@ -1,5 +1,6 @@
 import JSZip from "jszip";
 import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import katex from "katex";
 import type { ApunteNota } from "../types/academic";
 
@@ -243,9 +244,6 @@ export const NOTE_PRINT_CSS = `
     print-color-adjust: exact;
     width: 100%;
     box-sizing: border-box;
-  }
-  .pdf-export-container * {
-    color: inherit;
   }
   .print-header {
     border-bottom: 2px solid #e5e7eb;
@@ -608,12 +606,6 @@ export const exportSingleNoteAsPdf = (note: ApunteNota): Promise<void> => {
  * Generates a PDF Blob using jsPDF for direct download and bundling into ZIP
  */
 export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
-  const doc = new jsPDF({
-    unit: "pt",
-    format: "a4",
-    orientation: "portrait",
-  });
-
   const dateFormatted = note.fechaModificacion
     ? new Date(note.fechaModificacion).toLocaleDateString("es-AR", {
         day: "numeric",
@@ -631,16 +623,18 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
   const container = document.createElement("div");
   container.className = "pdf-export-container";
   container.style.position = "fixed";
-  container.style.left = "-99999px";
-  container.style.top = "-99999px";
-  container.style.width = "700px";
-  container.style.opacity = "0";
+  container.style.left = "0px";
+  container.style.top = "0px";
+  container.style.width = "750px";
+  container.style.zIndex = "-99999";
   container.style.pointerEvents = "none";
   container.style.background = "#ffffff";
   container.style.color = "#111827";
   container.style.boxSizing = "border-box";
+  container.style.padding = "24px";
 
   container.innerHTML = `
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" />
     <style>
       ${NOTE_PRINT_CSS}
     </style>
@@ -682,37 +676,124 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
     </div>
   `;
 
-  return new Promise((resolve, reject) => {
-    try {
-      doc.html(container, {
-        callback: (generatedDoc) => {
-          if (container.parentNode) {
-            container.parentNode.removeChild(container);
+  document.body.appendChild(container);
+
+  try {
+    // Gather block elements to compute safe break points between lines/sections
+    const containerRect = container.getBoundingClientRect();
+    const breakPointElements = container.querySelectorAll(
+      ".print-header, h1, h2, h3, p, table, tr, .callout, .code-container, ul, ol, li, .print-footer",
+    );
+    const breakPoints: number[] = [];
+    breakPointElements.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const top = rect.top - containerRect.top;
+      const bottom = rect.bottom - containerRect.top;
+      if (top > 0) breakPoints.push(top);
+      if (bottom > 0) breakPoints.push(bottom);
+    });
+    breakPoints.sort((a, b) => a - b);
+
+    // Render with html2canvas directly to capture exact browser styling, tables, colors, and fonts
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+    });
+
+    const pdf = new jsPDF({
+      unit: "pt",
+      format: "a4",
+      orientation: "portrait",
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 25;
+    const contentWidth = pageWidth - margin * 2;
+    const contentHeight = pageHeight - margin * 2;
+
+    const canvasScale = canvas.width / containerRect.width;
+    const contentScale = contentWidth / canvas.width;
+    const maxPageCanvasHeight = contentHeight / contentScale;
+
+    let currentCanvasY = 0;
+    const totalCanvasHeight = canvas.height;
+
+    while (currentCanvasY < totalCanvasHeight) {
+      let sliceHeight = maxPageCanvasHeight;
+      const remainingHeight = totalCanvasHeight - currentCanvasY;
+
+      if (remainingHeight <= maxPageCanvasHeight) {
+        sliceHeight = remainingHeight;
+      } else {
+        // Look for safe break point so text/elements are not clipped in half
+        const targetCssCut = (currentCanvasY + maxPageCanvasHeight) / canvasScale;
+        const minCssCut = (currentCanvasY + maxPageCanvasHeight * 0.72) / canvasScale;
+
+        let bestCutCss: number | null = null;
+        for (let i = breakPoints.length - 1; i >= 0; i--) {
+          const bp = breakPoints[i];
+          if (bp <= targetCssCut && bp >= minCssCut) {
+            bestCutCss = bp;
+            break;
           }
-          try {
-            resolve(generatedDoc.output("blob"));
-          } catch (err) {
-            reject(err);
-          }
-        },
-        html2canvas: {
-          useCORS: true,
-          logging: false,
-          backgroundColor: "#ffffff",
-          windowWidth: 700,
-        },
-        margin: [25, 25, 25, 25],
-        autoPaging: "text",
-        width: 545,
-        windowWidth: 700,
-      });
-    } catch (err) {
-      if (container.parentNode) {
-        container.parentNode.removeChild(container);
+        }
+
+        if (bestCutCss !== null) {
+          sliceHeight = bestCutCss * canvasScale - currentCanvasY;
+        }
       }
-      reject(err);
+
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = Math.round(sliceHeight);
+      const ctx = pageCanvas.getContext("2d");
+
+      if (ctx) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        ctx.drawImage(
+          canvas,
+          0,
+          Math.round(currentCanvasY),
+          canvas.width,
+          Math.round(sliceHeight),
+          0,
+          0,
+          canvas.width,
+          Math.round(sliceHeight),
+        );
+
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+        const imgHeightInPt = sliceHeight * contentScale;
+
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          margin,
+          margin,
+          contentWidth,
+          imgHeightInPt,
+          undefined,
+          "FAST",
+        );
+      }
+
+      currentCanvasY += sliceHeight;
+
+      if (currentCanvasY < totalCanvasHeight - 5) {
+        pdf.addPage();
+      }
     }
-  });
+
+    return pdf.output("blob");
+  } finally {
+    if (container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+  }
 };
 
 /**
@@ -721,7 +802,15 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
 export const exportSingleNoteDirectPdf = async (
   note: ApunteNota,
 ): Promise<void> => {
-  await exportSingleNoteAsPdf(note);
+  try {
+    const pdfBlob = await generateNotePdfBlob(note);
+    const filename = `${sanitizeFilename(note.titulo)}.pdf`;
+    triggerFileDownload(pdfBlob, filename);
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
+    // Fallback al método de impresión si falla jsPDF
+    await exportSingleNoteAsPdf(note);
+  }
 };
 
 /**
