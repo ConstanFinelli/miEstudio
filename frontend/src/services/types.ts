@@ -29,11 +29,12 @@ export interface ReglasAcreditacionDTO {
 
 export interface MateriaDTO {
   id: string;
+  carrera_id?: string;
   codigo?: string;
   nombre: string;
   anio: number;
   cuatrimestre: "PRIMERO" | "SEGUNDO" | "ANUAL";
-  estado: "CURSANDO" | "REGULAR" | "APROBADA" | "PROMOCIONADA" | "LIBRE";
+  estado: "CURSANDO" | "REGULAR" | "APROBADA" | "PROMOCIONADA" | "LIBRE" | "PENDIENTE";
   color: string;
   comision?: string;
   modalidad?: "Presencial" | "Virtual" | "Híbrida";

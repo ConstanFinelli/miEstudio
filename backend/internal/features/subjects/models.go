@@ -157,3 +157,33 @@ type UpdateMateriaDTO struct {
 	CorrelativasCursar *[]string              `json:"correlativas_cursar"`
 	CorrelativasRendir *[]string              `json:"correlativas_rendir"`
 }
+
+type BatchImportSubjectItem struct {
+	TempID             string   `json:"temp_id"`
+	Codigo             string   `json:"codigo"`
+	Nombre             string   `json:"nombre"`
+	Anio               int      `json:"anio"`
+	Cuatrimestre       string   `json:"cuatrimestre"`
+	Estado             string   `json:"estado"`
+	Color              string   `json:"color"`
+	Modalidad          string   `json:"modalidad"`
+	ProfesorTitular    string   `json:"profesor_titular"`
+	ProfesorJTP        string   `json:"profesor_jtp"`
+	CorrelativasCursar []string `json:"correlativas_cursar"`
+	CorrelativasRendir []string `json:"correlativas_rendir"`
+}
+
+type BatchImportPlanRequest struct {
+	CarreraID     string                   `json:"carrera_id"`
+	ReplacePlan   bool                     `json:"replace_plan"`
+	DuracionAnios int                      `json:"duracion_anios"`
+	Materias      []BatchImportSubjectItem `json:"materias"`
+}
+
+type BatchImportPlanResponse struct {
+	TotalImportadas int       `json:"total_importadas"`
+	DuracionAnios   int       `json:"duracion_anios"`
+	CarreraID       string    `json:"carrera_id"`
+	Materias        []Materia `json:"materias"`
+}
+

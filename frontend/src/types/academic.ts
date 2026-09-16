@@ -3,7 +3,8 @@ export type EstadoMateria =
   | "REGULAR"
   | "APROBADA"
   | "PROMOCIONADA"
-  | "LIBRE";
+  | "LIBRE"
+  | "PENDIENTE";
 export type TipoEvaluacion =
   | "PARCIAL"
   | "RECUPERATORIO"
@@ -27,6 +28,8 @@ export type CategoriaMaterial =
 
 export interface Materia {
   id: string;
+  carreraId?: string;
+  carrera_id?: string;
   codigo: string;
   nombre: string;
   anio: number;
@@ -168,3 +171,43 @@ export interface HorarioCursada {
   modalidad?: "Presencial" | "Virtual" | "Híbrida";
   observaciones?: string;
 }
+
+export interface ParsedSubjectItem {
+  temp_id: string;
+  codigo: string;
+  nombre: string;
+  anio: number;
+  cuatrimestre: string; // "1C" | "2C" | "Anual"
+  modalidad: string;
+  carga_horaria_total?: number;
+  carga_horaria_semanal?: number;
+  correlativas_cursar: string[];
+  correlativas_rendir: string[];
+  estado?: EstadoMateria;
+  color?: string;
+  profesor_titular?: string;
+  profesor_jtp?: string;
+}
+
+export interface ParseStudyPlanResponse {
+  carrera_sugerida?: string;
+  total_materias: number;
+  duracion_anios: number;
+  materias: ParsedSubjectItem[];
+  notas?: string;
+}
+
+export interface BatchImportPlanRequest {
+  carrera_id: string;
+  replace_plan: boolean;
+  duracion_anios: number;
+  materias: ParsedSubjectItem[];
+}
+
+export interface BatchImportPlanResponse {
+  total_importadas: number;
+  duracion_anios: number;
+  carrera_id: string;
+  materias: Materia[];
+}
+

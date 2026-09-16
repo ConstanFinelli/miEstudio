@@ -3,11 +3,21 @@ import type { Materia } from '../../types/academic';
 
 export const materiaMapper = {
   toMateria(dto: MateriaDTO, extra?: Partial<Materia>): Materia {
-    // Mapear cuatrimestre Go enum a formato UI
+    // Mapear cuatrimestre Go enum o variantes a formato UI
     const cuatrimestreMap: Record<string, '1C' | '2C' | 'Anual'> = {
       PRIMERO: '1C',
+      '1C': '1C',
+      '1c': '1C',
+      '1': '1C',
       SEGUNDO: '2C',
-      ANUAL: 'Anual'
+      '2C': '2C',
+      '2c': '2C',
+      '2': '2C',
+      ANUAL: 'Anual',
+      Anual: 'Anual',
+      anual: 'Anual',
+      A: 'Anual',
+      a: 'Anual'
     };
 
     let reglasAcreditacion: Materia['reglasAcreditacion'];
@@ -82,19 +92,25 @@ export const materiaMapper = {
       },
       reglasAcreditacion,
       correlativasCursar: dto.correlativas_cursar ?? extra?.correlativasCursar ?? [],
-      correlativasRendir: dto.correlativas_rendir ?? extra?.correlativasRendir ?? []
+      correlativasRendir: dto.correlativas_rendir ?? extra?.correlativasRendir ?? [],
+      carreraId: dto.carrera_id,
+      carrera_id: dto.carrera_id,
     };
   },
 
   toDTO(materia: Partial<Materia>): Partial<MateriaDTO> {
     const cuatrimestreReverseMap: Record<string, 'PRIMERO' | 'SEGUNDO' | 'ANUAL'> = {
       '1C': 'PRIMERO',
+      PRIMERO: 'PRIMERO',
       '2C': 'SEGUNDO',
-      Anual: 'ANUAL'
+      SEGUNDO: 'SEGUNDO',
+      Anual: 'ANUAL',
+      ANUAL: 'ANUAL'
     };
 
     return {
       id: materia.id,
+      carrera_id: materia.carrera_id || materia.carreraId,
       codigo: materia.codigo,
       nombre: materia.nombre,
       anio: materia.anio,

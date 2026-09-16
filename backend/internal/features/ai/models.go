@@ -85,3 +85,28 @@ type ExplicarResponse struct {
 	Resultado string `json:"resultado"`
 	Accion    string `json:"accion"`
 }
+
+type ValidateKeyRequest struct {
+	APIKey string `json:"api_key"`
+}
+
+type ParsedSubjectItem struct {
+	TempID              string   `json:"temp_id"`
+	Codigo              string   `json:"codigo"`
+	Nombre              string   `json:"nombre"`
+	Anio                int      `json:"anio"`
+	Cuatrimestre        string   `json:"cuatrimestre"` // "1C" | "2C" | "ANUAL"
+	Modalidad           string   `json:"modalidad"`    // "PRESENCIAL" | "VIRTUAL" | "HIBRIDA"
+	CargaHorariaTotal   *int     `json:"carga_horaria_total,omitempty"`
+	CargaHorariaSemanal *int     `json:"carga_horaria_semanal,omitempty"`
+	CorrelativasCursar  []string `json:"correlativas_cursar"`
+	CorrelativasRendir  []string `json:"correlativas_rendir"`
+}
+
+type ParseStudyPlanResponse struct {
+	CarreraSugerida string              `json:"carrera_sugerida,omitempty"`
+	TotalMaterias   int                 `json:"total_materias"`
+	DuracionAnios   int                 `json:"duracion_anios"`
+	Materias        []ParsedSubjectItem `json:"materias"`
+	Notas           string              `json:"notas,omitempty"`
+}

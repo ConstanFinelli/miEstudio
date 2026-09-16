@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import styles from "./MateriasView.module.css";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus, Sparkles } from "lucide-react";
 import type { Materia } from "../../types/academic";
+import { ImportPlanModal } from "../malla/components";
 import {
   useMaterias,
   useEvaluaciones,
@@ -69,6 +70,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   const [isEditMaterialModalOpen, setIsEditMaterialModalOpen] = useState(false);
   const [materialToEdit, setMaterialToEdit] = useState<MaterialEstudio | null>(null);
   const [isEditMateriaModalOpen, setIsEditMateriaModalOpen] = useState(false);
+  const [isImportPlanModalOpen, setIsImportPlanModalOpen] = useState(false);
 
   const {
     materias,
@@ -242,7 +244,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   if (materias.length === 0) {
     return (
       <div className={styles.container}>
-        <MateriasHeader onRegisterMateria={onOpenMateriaModal} />
+        <MateriasHeader
+          onRegisterMateria={onOpenMateriaModal}
+          onImportPlan={() => setIsImportPlanModalOpen(true)}
+        />
         <div className={styles.emptyViewCard}>
           <div className={styles.emptyViewIcon}>
             <BookOpen size={28} />
@@ -252,20 +257,39 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
               No tenés materias registradas todavía
             </h2>
             <p className={styles.emptyViewDesc}>
-              Registrá tus materias del cuatrimestre para comenzar a hacer el
-              seguimiento de notas, fechas de examen, apuntes y bibliografía.
+              Registrá tus materias o importa tu plan de estudio universitario completo automáticamente con Inteligencia Artificial.
             </p>
           </div>
-          {onOpenMateriaModal && (
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
-              className={`${styles.btnPrimary} ${styles.emptyViewBtn}`}
-              onClick={onOpenMateriaModal}
+              className={styles.btnPrimary}
+              style={{
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                border: "none",
+                boxShadow: "0 4px 14px rgba(99, 102, 241, 0.4)",
+              }}
+              onClick={() => setIsImportPlanModalOpen(true)}
             >
-              <Plus size={16} />
-              <span>Registrar Primera Materia</span>
+              <Sparkles size={16} />
+              <span>Importar Plan de Estudio con IA</span>
             </button>
-          )}
+            {onOpenMateriaModal && (
+              <button
+                className={`${styles.btnPrimary} ${styles.emptyViewBtn}`}
+                onClick={onOpenMateriaModal}
+              >
+                <Plus size={16} />
+                <span>Registrar Materia Manualmente</span>
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Modal para importar plan de estudios con IA */}
+        <ImportPlanModal
+          isOpen={isImportPlanModalOpen}
+          onClose={() => setIsImportPlanModalOpen(false)}
+        />
       </div>
     );
   }
@@ -273,7 +297,10 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
   return (
     <div className={styles.container}>
       {/* 1. Header Area */}
-      <MateriasHeader onRegisterMateria={onOpenMateriaModal} />
+      <MateriasHeader
+        onRegisterMateria={onOpenMateriaModal}
+        onImportPlan={() => setIsImportPlanModalOpen(true)}
+      />
 
       {/* 2. Filters Bar con Años 1 a 6 y Cuatrimestres funcionales */}
       <MateriasFilterBar
@@ -417,6 +444,12 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
           }}
         />
       )}
+
+      {/* Modal para importar plan de estudios con IA */}
+      <ImportPlanModal
+        isOpen={isImportPlanModalOpen}
+        onClose={() => setIsImportPlanModalOpen(false)}
+      />
     </div>
   );
 };

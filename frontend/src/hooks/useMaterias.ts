@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Materia } from '../types/academic';
 import { materiasService } from '../services';
+import { useAuth } from '../context';
 
-export const useMaterias = (initialYear?: number, initialStatus?: string) => {
+export const useMaterias = (initialYear?: number, initialStatus?: string, customCarreraId?: string) => {
+  const { activeCarrera } = useAuth();
+  const targetCarreraId = customCarreraId || activeCarrera?.id;
+
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [selectedMateria, setSelectedMateria] = useState<Materia | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,7 +18,8 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
       setError(null);
       const data = await materiasService.getMaterias({
         anio: initialYear,
-        estado: initialStatus
+        estado: initialStatus,
+        carrera_id: targetCarreraId,
       });
       setMaterias(data);
       setSelectedMateria(prev => {
@@ -31,10 +36,19 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
     } finally {
       setIsLoading(false);
     }
-  }, [initialYear, initialStatus]);
+  }, [initialYear, initialStatus, targetCarreraId]);
 
   useEffect(() => {
     fetchMaterias();
+  }, [fetchMaterias]);
+
+  // Reactive listener for career changes across the app
+  useEffect(() => {
+    const handleCarreraChange = () => {
+      fetchMaterias();
+    };
+    window.addEventListener('carrera:selected', handleCarreraChange);
+    return () => window.removeEventListener('carrera:selected', handleCarreraChange);
   }, [fetchMaterias]);
 
   // Reactive listener for updates triggered from MateriaModal or other views
@@ -60,7 +74,11 @@ export const useMaterias = (initialYear?: number, initialStatus?: string) => {
   }, [fetchMaterias]);
 
   const createMateria = async (newMateria: Partial<Materia>) => {
-    const created = await materiasService.createMateria(newMateria);
+    const payload = {
+      ...newMateria,
+      carrera_id: newMateria.carrera_id || targetCarreraId,
+    };
+    const created = await materiasService.createMateria(payload);
     setMaterias(prev => [...prev, created]);
     setSelectedMateria(created);
     window.dispatchEvent(new CustomEvent('materias:updated', { detail: created }));

@@ -1,14 +1,16 @@
 import React from "react";
 import styles from "./MateriasHeader.module.css";
-import { Plus, Network } from "lucide-react";
+import { Plus, Network, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface MateriasHeaderProps {
   onRegisterMateria?: () => void;
+  onImportPlan?: () => void;
 }
 
 export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
   onRegisterMateria,
+  onImportPlan,
 }) => {
   const navigate = useNavigate();
 
@@ -46,6 +48,23 @@ export const MateriasHeader: React.FC<MateriasHeaderProps> = ({
           <Network size={14} />
           <span>Plan de Estudio</span>
         </button>
+
+        {onImportPlan && (
+          <button
+            type="button"
+            className={styles.btnSecondary}
+            style={{
+              background: "linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15))",
+              borderColor: "rgba(168, 85, 247, 0.35)",
+              color: "#c084fc",
+            }}
+            onClick={onImportPlan}
+            title="Importar y digitalizar plan de estudio completo con IA"
+          >
+            <Sparkles size={14} />
+            <span>Importar con IA</span>
+          </button>
+        )}
 
         {onRegisterMateria && (
           <button className={styles.btnPrimary} onClick={onRegisterMateria}>

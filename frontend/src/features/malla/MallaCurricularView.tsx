@@ -8,6 +8,7 @@ import {
   MateriaDrawer,
   EditCorrelativasModal,
   MallaReferencias,
+  ImportPlanModal,
 } from "./components";
 
 import {
@@ -43,6 +44,9 @@ export const MallaCurricularView: React.FC = () => {
 
   // Estado para el panel lateral de diagnóstico
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Modal de importación de plan con IA
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Modal de edición de correlativas
   const [editingMateriaId, setEditingMateriaId] = useState<string | null>(null);
@@ -126,6 +130,22 @@ export const MallaCurricularView: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            {/* Import Plan with AI */}
+            <button
+              type="button"
+              className={styles.simSwitchBtn}
+              style={{
+                background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))",
+                borderColor: "rgba(168, 85, 247, 0.4)",
+                color: "#c084fc",
+              }}
+              onClick={() => setIsImportModalOpen(true)}
+              title="Subir programa o plan de estudio oficial para extraerlo con IA"
+            >
+              <Sparkles size={14} />
+              <span>Importar Plan con IA</span>
+            </button>
 
             {/* Simulation mode switch */}
             <button
@@ -243,6 +263,12 @@ export const MallaCurricularView: React.FC = () => {
         allMaterias={materias}
         onClose={() => setEditingMateriaId(null)}
         onSave={handleSaveCorrelativas}
+      />
+
+      {/* Modal de importación de plan con IA */}
+      <ImportPlanModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </div>
   );

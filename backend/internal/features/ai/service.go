@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
+	"miestudio/backend/internal/features/auth"
 	"miestudio/backend/internal/features/materials"
 	"miestudio/backend/internal/storage"
 )
@@ -24,25 +26,61 @@ type Service interface {
 	Resumir(ctx context.Context, userID string, req ResumenRequest) (*ResumenResponse, error)
 	GenerarFlashcards(ctx context.Context, userID string, req FlashcardsRequest) (*FlashcardsResponse, error)
 	GenerarQuiz(ctx context.Context, userID string, req QuizRequest) (*QuizResponse, error)
-	ExplicarSeleccion(ctx context.Context, req ExplicarRequest) (*ExplicarResponse, error)
+	ExplicarSeleccion(ctx context.Context, userID string, req ExplicarRequest) (*ExplicarResponse, error)
+	ValidateKey(ctx context.Context, apiKey string) error
+	ParseStudyPlan(ctx context.Context, userID string, fileBytes []byte, mimeType string, textContent string, customKey ...string) (*ParseStudyPlanResponse, error)
 }
 
 type service struct {
 	client        GeminiClient
 	materialsRepo materials.Repository
 	storage       storage.StorageService
+	authRepo      auth.Repository
 }
 
 func NewService(
 	client GeminiClient,
 	materialsRepo materials.Repository,
 	storage storage.StorageService,
+	authRepo auth.Repository,
 ) Service {
 	return &service{
 		client:        client,
 		materialsRepo: materialsRepo,
 		storage:       storage,
+		authRepo:      authRepo,
 	}
+}
+
+func (s *service) getEffectiveKey(ctx context.Context, userID string, customKey ...string) (string, error) {
+	if len(customKey) > 0 && strings.TrimSpace(customKey[0]) != "" {
+		return strings.TrimSpace(customKey[0]), nil
+	}
+	if userID != "" && s.authRepo != nil {
+		user, err := s.authRepo.FindByID(userID)
+		if err == nil && user != nil && strings.TrimSpace(user.GeminiAPIKey) != "" {
+			return strings.TrimSpace(user.GeminiAPIKey), nil
+		}
+	}
+	return "", fmt.Errorf("GEMINI_KEY_REQUIRED: Debes configurar tu clave de API de Google Gemini en tu perfil para usar el copiloto de IA.")
+}
+
+func (s *service) getEffectiveKeyForPlan(ctx context.Context, userID string, customKey ...string) string {
+	if len(customKey) > 0 && strings.TrimSpace(customKey[0]) != "" {
+		return strings.TrimSpace(customKey[0])
+	}
+	if userID != "" && s.authRepo != nil {
+		user, err := s.authRepo.FindByID(userID)
+		if err == nil && user != nil && strings.TrimSpace(user.GeminiAPIKey) != "" {
+			return strings.TrimSpace(user.GeminiAPIKey)
+		}
+	}
+	// Si el usuario no tiene clave personal, usa automáticamente la del servidor (.env)
+	return ""
+}
+
+func (s *service) ValidateKey(ctx context.Context, apiKey string) error {
+	return s.client.ValidateKey(ctx, apiKey)
 }
 
 func (s *service) prepareContext(ctx context.Context, userID string, materialID *string) ([]Part, error) {
@@ -86,6 +124,11 @@ func (s *service) prepareContext(ctx context.Context, userID string, materialID 
 }
 
 func (s *service) Chat(ctx context.Context, userID string, req ChatRequest) (*ChatResponse, error) {
+	key, err := s.getEffectiveKey(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
@@ -108,7 +151,7 @@ func (s *service) Chat(ctx context.Context, userID string, req ChatRequest) (*Ch
 		Parts: currentParts,
 	})
 
-	answer, tokens, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, false)
+	answer, tokens, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, false, key)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +164,11 @@ func (s *service) Chat(ctx context.Context, userID string, req ChatRequest) (*Ch
 }
 
 func (s *service) StreamChat(ctx context.Context, userID string, req ChatRequest, onChunk func(chunk string) error) error {
+	key, err := s.getEffectiveKey(ctx, userID)
+	if err != nil {
+		return err
+	}
+
 	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return err
@@ -140,11 +188,16 @@ func (s *service) StreamChat(ctx context.Context, userID string, req ChatRequest
 		Parts: currentParts,
 	})
 
-	_, err = s.client.StreamGenerate(ctx, AcademicSystemPrompt, contents, onChunk)
+	_, err = s.client.StreamGenerate(ctx, AcademicSystemPrompt, contents, onChunk, key)
 	return err
 }
 
 func (s *service) Resumir(ctx context.Context, userID string, req ResumenRequest) (*ResumenResponse, error) {
+	key, err := s.getEffectiveKey(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
@@ -174,7 +227,7 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 		},
 	}
 
-	rawJSON, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, true)
+	rawJSON, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, true, key)
 	if err != nil {
 		return nil, err
 	}
@@ -189,6 +242,11 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 }
 
 func (s *service) GenerarFlashcards(ctx context.Context, userID string, req FlashcardsRequest) (*FlashcardsResponse, error) {
+	key, err := s.getEffectiveKey(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
@@ -225,7 +283,7 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 		},
 	}
 
-	rawJSON, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, true)
+	rawJSON, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, true, key)
 	if err != nil {
 		return nil, err
 	}
@@ -245,6 +303,11 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 }
 
 func (s *service) GenerarQuiz(ctx context.Context, userID string, req QuizRequest) (*QuizResponse, error) {
+	key, err := s.getEffectiveKey(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	contextParts, err := s.prepareContext(ctx, userID, req.MaterialID)
 	if err != nil {
 		return nil, err
@@ -280,7 +343,7 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 		},
 	}
 
-	rawJSON, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, true)
+	rawJSON, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, true, key)
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +358,12 @@ Responde ÚNICAMENTE con el siguiente esquema JSON:
 	return &result, nil
 }
 
-func (s *service) ExplicarSeleccion(ctx context.Context, req ExplicarRequest) (*ExplicarResponse, error) {
+func (s *service) ExplicarSeleccion(ctx context.Context, userID string, req ExplicarRequest) (*ExplicarResponse, error) {
+	key, err := s.getEffectiveKey(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	var instruction string
 	switch req.Accion {
 	case "SIMPLIFICAR":
@@ -318,7 +386,7 @@ func (s *service) ExplicarSeleccion(ctx context.Context, req ExplicarRequest) (*
 		},
 	}
 
-	answer, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, false)
+	answer, _, err := s.client.Generate(ctx, AcademicSystemPrompt, contents, false, key)
 	if err != nil {
 		return nil, err
 	}
@@ -327,4 +395,120 @@ func (s *service) ExplicarSeleccion(ctx context.Context, req ExplicarRequest) (*
 		Resultado: answer,
 		Accion:    req.Accion,
 	}, nil
+}
+
+func (s *service) ParseStudyPlan(ctx context.Context, userID string, fileBytes []byte, mimeType string, textContent string, customKey ...string) (*ParseStudyPlanResponse, error) {
+	key := s.getEffectiveKeyForPlan(ctx, userID, customKey...)
+
+	var parts []Part
+	if len(fileBytes) > 0 {
+		if mimeType == "" {
+			mimeType = "application/pdf"
+		}
+		parts = append(parts, Part{
+			InlineData: FileToInlineData(fileBytes, mimeType),
+		})
+		parts = append(parts, Part{
+			Text: "Analiza exhaustivamente el documento adjunto que contiene el plan de estudios / malla curricular oficial de la carrera universitaria.",
+		})
+	}
+
+	if strings.TrimSpace(textContent) != "" {
+		parts = append(parts, Part{
+			Text: fmt.Sprintf("Texto complementario o copiado del plan de estudios:\n%s", strings.TrimSpace(textContent)),
+		})
+	}
+
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("debes proporcionar un archivo (PDF o imagen) o el texto del plan de estudios")
+	}
+
+	prompt := `Eres un experto académico universitario de la plataforma "miEstudio". Tu tarea es extraer con máxima precisión el plan de estudios y la malla curricular completa a partir del documento o texto provisto.
+
+Reglas estrictas de extracción:
+1. Extrae TODAS las materias o asignaturas del plan sin omitir ninguna.
+2. Determina el año académico como número entero (1, 2, 3, 4, 5, etc.).
+3. Identifica el cuatrimestre o régimen de cada materia con mucha atención:
+   - "ANUAL": Asígnalo si la materia dura todo el año lectivo. Busca indicadores en columnas como "Régimen", "Período" o "Duración" marcados como "A", "Anual", "Régimen Anual", o si la materia no está asignada a un cuatrimestre específico pero abarca todo el año académico (materias troncales anuales como Análisis Matemático, Álgebra, Física, etc.).
+   - "1C": Materias del primer cuatrimestre ("1°C", "1º Cuatrimestre", "1").
+   - "2C": Materias del segundo cuatrimestre ("2°C", "2º Cuatrimestre", "2").
+   - IMPORTANTE: No marques todo como "1C" por defecto. Si una materia es anual o abarca ambos períodos, márcala expresamente como "ANUAL".
+4. Asigna un "temp_id" único para cada materia (ej: "m_1", "m_2", "m_3", ...).
+5. Extrae el "codigo" de la materia si figura (ej: "95.01", "CB01"), o si no figura déjalo vacío o usa una abreviatura breve.
+6. Extrae o deduce la modalidad: "PRESENCIAL", "VIRTUAL" o "HIBRIDA" (por defecto "PRESENCIAL").
+7. Cargas horarias: extrae horas totales o semanales en enteros si figuran, o null si no están especificadas.
+8. Correlatividades (MUY IMPORTANTE):
+   - "correlativas_cursar": array con los nombres exactos o códigos de las materias que se deben haber cursado/regularizado antes de cursar esta materia.
+   - "correlativas_rendir": array con los nombres exactos o códigos de las materias aprobadas con final requeridas para rendir el final de esta materia.
+   Si en el plan las correlatividades no distinguen cursar de rendir, coloca los mismos nombres en ambas listas.
+9. "carrera_sugerida": Nombre oficial de la carrera si figura en el documento.
+10. "duracion_anios": Número entero indicando la duración en años del plan (año máximo).
+11. "total_materias": Número total de materias extraídas.
+
+Responde ÚNICAMENTE con JSON estricto con el siguiente esquema:
+{
+  "carrera_sugerida": "Nombre de la Carrera",
+  "total_materias": 40,
+  "duracion_anios": 5,
+  "notas": "Comentarios breves sobre el plan",
+  "materias": [
+    {
+      "temp_id": "m_1",
+      "codigo": "101",
+      "nombre": "Análisis Matemático I",
+      "anio": 1,
+      "cuatrimestre": "ANUAL",
+      "modalidad": "PRESENCIAL",
+      "carga_horaria_total": 160,
+      "carga_horaria_semanal": 5,
+      "correlativas_cursar": [],
+      "correlativas_rendir": []
+    },
+    {
+      "temp_id": "m_2",
+      "codigo": "102",
+      "nombre": "Informática I",
+      "anio": 1,
+      "cuatrimestre": "1C",
+      "modalidad": "PRESENCIAL",
+      "carga_horaria_total": 64,
+      "carga_horaria_semanal": 4,
+      "correlativas_cursar": [],
+      "correlativas_rendir": []
+    }
+  ]
+}`
+
+	contents := []Content{
+		{
+			Role:  "user",
+			Parts: append(parts, Part{Text: prompt}),
+		},
+	}
+
+	rawJSON, _, err := s.client.Generate(ctx, "Eres un extractor de mallas curriculares universitarias.", contents, true, key)
+	if err != nil {
+		return nil, err
+	}
+
+	var result ParseStudyPlanResponse
+	cleaned := CleanJSONResponse(rawJSON)
+	if err := json.Unmarshal([]byte(cleaned), &result); err != nil {
+		return nil, fmt.Errorf("error al decodificar plan de estudio extraído por la IA: %w (raw: %s)", err, rawJSON)
+	}
+
+	if result.TotalMaterias == 0 {
+		result.TotalMaterias = len(result.Materias)
+	}
+	if result.DuracionAnios == 0 {
+		maxAnio := 1
+		for _, m := range result.Materias {
+			if m.Anio > maxAnio {
+				maxAnio = m.Anio
+			}
+		}
+		result.DuracionAnios = maxAnio
+	}
+
+	return &result, nil
 }

@@ -11,3 +11,5 @@ export { HorarioModal } from './schedule/HorarioModal';
 export { CarreraModal } from './carrera';
 export { EditUserModal } from './user';
 export { MateriaColorModal } from './materia/MateriaColorModal';
+export { GeminiApiKeyModal } from './gemini-key/GeminiApiKeyModal';
+

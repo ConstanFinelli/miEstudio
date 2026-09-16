@@ -15,6 +15,7 @@ type Service interface {
 	CreateMateria(ctx context.Context, dto CreateMateriaDTO) (*Materia, error)
 	UpdateMateria(ctx context.Context, id string, dto UpdateMateriaDTO) (*Materia, error)
 	DeleteMateria(ctx context.Context, id string) error
+	BatchImport(ctx context.Context, usuarioID string, req BatchImportPlanRequest) (*BatchImportPlanResponse, error)
 }
 
 type service struct {
@@ -167,3 +168,14 @@ func (s *service) UpdateMateria(ctx context.Context, id string, dto UpdateMateri
 func (s *service) DeleteMateria(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
 }
+
+func (s *service) BatchImport(ctx context.Context, usuarioID string, req BatchImportPlanRequest) (*BatchImportPlanResponse, error) {
+	if req.CarreraID == "" {
+		return nil, errors.New("la carrera es obligatoria para importar el plan de estudio")
+	}
+	if len(req.Materias) == 0 {
+		return nil, errors.New("no hay materias para importar en el plan")
+	}
+	return s.repo.BatchImport(ctx, usuarioID, req)
+}
+

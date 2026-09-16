@@ -20,6 +20,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 	group.Get("/", h.GetAll)
 	group.Get("/:id", h.GetByID)
 	group.Post("/", h.Create)
+	group.Post("/batch-import", h.BatchImport)
 	group.Put("/:id", h.Update)
 	group.Delete("/:id", h.Delete)
 }
@@ -96,3 +97,27 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 	}
 	return common.SendSuccess(c, fiber.Map{"deleted": true, "id": id})
 }
+
+func (h *Handler) BatchImport(c *fiber.Ctx) error {
+	var req BatchImportPlanRequest
+	if err := c.BodyParser(&req); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Datos de importación inválidos", err.Error())
+	}
+
+	userID := common.GetUserID(c)
+	if req.CarreraID == "" {
+		req.CarreraID = common.GetActiveCarreraID(c)
+	}
+
+	if req.CarreraID == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "Debes especificar la carrera para importar el plan")
+	}
+
+	resp, err := h.service.BatchImport(c.Context(), userID, req)
+	if err != nil {
+		return common.SendError(c, fiber.StatusInternalServerError, "Error al importar plan de estudios", err.Error())
+	}
+
+	return common.SendSuccess(c, resp)
+}
+

@@ -5,3 +5,5 @@ export { MallaFocusBar } from './MallaFocusBar';
 export { MallaReferencias } from './MallaReferencias';
 export { MateriaDrawer } from './MateriaDrawer';
 export { MateriaNode } from './MateriaNode';
+export { ImportPlanModal } from './ImportPlanModal/ImportPlanModal';
+

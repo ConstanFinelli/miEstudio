@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient';
+import type { ParseStudyPlanResponse } from '../types/academic';
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -88,28 +89,28 @@ export interface ExplicarResponse {
 
 export const aiService = {
   async chat(req: ChatRequest): Promise<ChatResponse> {
-    const res = await apiClient.post<{ data: ChatResponse }>('/ai/chat', req);
-    return res.data;
+    const res = await apiClient.post<ChatResponse>('/ai/chat', req);
+    return (res as any)?.data ?? res;
   },
 
   async resumir(req: ResumenRequest): Promise<ResumenResponse> {
-    const res = await apiClient.post<{ data: ResumenResponse }>('/ai/resumir', req);
-    return res.data;
+    const res = await apiClient.post<ResumenResponse>('/ai/resumir', req);
+    return (res as any)?.data ?? res;
   },
 
   async generarFlashcards(req: FlashcardsRequest): Promise<FlashcardsResponse> {
-    const res = await apiClient.post<{ data: FlashcardsResponse }>('/ai/flashcards', req);
-    return res.data;
+    const res = await apiClient.post<FlashcardsResponse>('/ai/flashcards', req);
+    return (res as any)?.data ?? res;
   },
 
   async generarQuiz(req: QuizRequest): Promise<QuizResponse> {
-    const res = await apiClient.post<{ data: QuizResponse }>('/ai/quiz', req);
-    return res.data;
+    const res = await apiClient.post<QuizResponse>('/ai/quiz', req);
+    return (res as any)?.data ?? res;
   },
 
   async explicarSeleccion(req: ExplicarRequest): Promise<ExplicarResponse> {
-    const res = await apiClient.post<{ data: ExplicarResponse }>('/ai/explicar-seleccion', req);
-    return res.data;
+    const res = await apiClient.post<ExplicarResponse>('/ai/explicar-seleccion', req);
+    return (res as any)?.data ?? res;
   },
 
   /**
@@ -177,5 +178,28 @@ export const aiService = {
       if (onError) onError(err);
       else throw err;
     }
+  },
+
+  async validateApiKey(apiKey: string): Promise<{ valido: boolean; mensaje: string }> {
+    const res = await apiClient.post<{ valido: boolean; mensaje: string }>('/ai/validate-key', { api_key: apiKey });
+    return (res as any)?.data ?? res;
+  },
+
+  async parseStudyPlan(payload: { file?: File; texto?: string; custom_key?: string }): Promise<ParseStudyPlanResponse> {
+    if (payload.file) {
+      const formData = new FormData();
+      formData.append('file', payload.file);
+      if (payload.texto) formData.append('texto', payload.texto);
+      if (payload.custom_key) formData.append('custom_key', payload.custom_key);
+      const res = await apiClient.post<ParseStudyPlanResponse>('/ai/parse-study-plan', formData);
+      return (res as any)?.data ?? res;
+    } else {
+      const res = await apiClient.post<ParseStudyPlanResponse>('/ai/parse-study-plan', {
+        texto: payload.texto || '',
+        custom_key: payload.custom_key || '',
+      });
+      return (res as any)?.data ?? res;
+    }
   }
 };
+

@@ -1,6 +1,6 @@
 import { apiClient } from './apiClient';
 import type { MateriaDTO } from './types';
-import type { Materia } from '../types/academic';
+import type { Materia, BatchImportPlanRequest, BatchImportPlanResponse } from '../types/academic';
 import { materiaMapper } from './mappers';
 import { mockMaterias } from '../data/mockData';
 import { isMocksEnabled } from '../config/mockConfig';
@@ -9,11 +9,12 @@ import { isMocksEnabled } from '../config/mockConfig';
 let localMaterias: Materia[] = isMocksEnabled() ? [...mockMaterias] : [];
 
 export const materiasService = {
-  async getMaterias(filters?: { anio?: number; estado?: string }): Promise<Materia[]> {
+  async getMaterias(filters?: { anio?: number; estado?: string; carrera_id?: string }): Promise<Materia[]> {
     try {
       const query = new URLSearchParams();
       if (filters?.anio) query.append('anio', String(filters.anio));
       if (filters?.estado) query.append('estado', filters.estado);
+      if (filters?.carrera_id) query.append('carrera_id', filters.carrera_id);
 
       const endpoint = `/materias${query.toString() ? `?${query.toString()}` : ''}`;
       const dtos = await apiClient.get<MateriaDTO[]>(endpoint);
@@ -94,5 +95,11 @@ export const materiasService = {
       // noop
     }
     localMaterias = localMaterias.filter(m => m.id !== id);
+  },
+
+  async batchImportPlan(req: BatchImportPlanRequest): Promise<BatchImportPlanResponse> {
+    const res = await apiClient.post<BatchImportPlanResponse>('/materias/batch-import', req);
+    return res;
   }
 };
+
