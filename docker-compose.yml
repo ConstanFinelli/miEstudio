@@ -33,6 +33,7 @@ services:
       DB_PORT: "3306"
       DB_NAME: "miestudio"
       STORAGE_DIR: "/app/uploads"
+      TZ: "${TZ:-America/Argentina/Buenos_Aires}"
       CORS_ORIGINS: "http://localhost:5173,http://localhost:80,http://127.0.0.1:5173,http://localhost,http://192.168.0.196:5173,http://192.168.0.196:8080"
       GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
       GEMINI_MODEL: "${GEMINI_MODEL:-gemini-3.8-flash}"

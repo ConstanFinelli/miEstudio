@@ -4,6 +4,8 @@ import { CalendarClock, ArrowRight, GraduationCap } from 'lucide-react';
 import { useEvaluaciones, useMaterias } from '../../../../hooks';
 import { useAuth } from '../../../../context/AuthContext';
 
+import { parseLocalDate, getDaysRemaining, formatEvaluationDate } from '../../../../utils';
+
 interface UpcomingEvaluationsProps {
   onGoToMaterias: (materiaId?: string, carreraId?: string) => void;
   onGoToApuntes: () => void;
@@ -38,8 +40,8 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
         if (ev.nota !== null && ev.nota !== undefined) return false;
         if (!ev.fecha) return false;
         // Solo mostrar eventos cuya fecha sea igual o posterior al inicio de hoy
-        const evDate = new Date(ev.fecha).getTime();
-        return evDate >= todayStart;
+        const targetDate = parseLocalDate(ev.fecha);
+        return targetDate ? targetDate.getTime() >= todayStart : false;
       }
     );
   }, [proximas, todayStart]);
@@ -54,37 +56,6 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
       return evCarreraId === activeCarrera.id;
     });
   }, [pendingProximas, carreraFilter, activeCarrera, materias]);
-
-  const formatDate = (dateStr: string, horario?: string) => {
-    try {
-      const date = new Date(dateStr);
-      const formatted = date.toLocaleDateString('es-AR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long'
-      });
-      const cleanHorario = horario ? (horario.endsWith('hs') ? horario : `${horario} hs`) : '19:00 hs';
-      return `${formatted.charAt(0).toUpperCase() + formatted.slice(1)}, ${cleanHorario}`;
-    } catch {
-      return dateStr;
-    }
-  };
-
-  const getDaysRemaining = (dateStr: string) => {
-    try {
-      const n = new Date();
-      const tStart = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
-      const target = new Date(dateStr);
-      const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
-      const diffDays = Math.round((targetDay - tStart) / (1000 * 60 * 60 * 24));
-
-      if (diffDays <= 0) return 'Hoy';
-      if (diffDays === 1) return 'Mañana';
-      return `En ${diffDays} días`;
-    } catch {
-      return 'Próximamente';
-    }
-  };
 
   return (
     <div>
@@ -198,7 +169,7 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
               <div>
                 <h3 className={styles.evalTitle}>{ev.titulo}</h3>
                 <p className={styles.evalSub}>
-                  {formatDate(ev.fecha, ev.horario)} · {ev.aula} ({ev.modalidad})
+                  {formatEvaluationDate(ev.fecha, ev.horario)} · {ev.aula} ({ev.modalidad})
                 </p>
               </div>
 

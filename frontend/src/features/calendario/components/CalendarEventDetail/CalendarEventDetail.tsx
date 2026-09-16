@@ -8,6 +8,7 @@ import {
   Plus,
 } from "lucide-react";
 import type { EventoCalendario } from "../../../../types/academic";
+import { parseLocalDate } from "../../../../utils";
 
 interface CalendarEventDetailProps {
   selectedEvent: EventoCalendario | null;
@@ -87,8 +88,8 @@ export const CalendarEventDetail: React.FC<CalendarEventDetailProps> = ({
 
   const formatEventDate = (dateStr: string) => {
     try {
-      const [year, month, day] = dateStr.split("-").map(Number);
-      const d = new Date(year, month - 1, day);
+      const d = parseLocalDate(dateStr);
+      if (!d) return dateStr;
       return d.toLocaleDateString("es-AR", {
         weekday: "short",
         day: "2-digit",

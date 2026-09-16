@@ -5,6 +5,7 @@
   width: 100%;
   background: var(--surface-0);
   overflow: hidden;
+  padding-bottom: 30px;
 }
 
 .mallaHeader {

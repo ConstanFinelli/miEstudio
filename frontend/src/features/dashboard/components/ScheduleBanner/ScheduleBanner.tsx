@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './ScheduleBanner.module.css';
 import { CalendarClock, ArrowRight } from 'lucide-react';
 import { useEvaluaciones } from '../../../../hooks';
+import { parseLocalDate } from '../../../../utils';
 
 interface ScheduleBannerProps {
   onGoToCalendario: () => void;
@@ -15,7 +16,8 @@ export const ScheduleBanner: React.FC<ScheduleBannerProps> = ({ onGoToCalendario
   const pendingCount = proximas.filter(ev => {
     if (ev.nota !== null && ev.nota !== undefined) return false;
     if (!ev.fecha) return false;
-    return new Date(ev.fecha).getTime() >= todayStart;
+    const targetDate = parseLocalDate(ev.fecha);
+    return targetDate ? targetDate.getTime() >= todayStart : false;
   }).length;
 
   const label = pendingCount > 0

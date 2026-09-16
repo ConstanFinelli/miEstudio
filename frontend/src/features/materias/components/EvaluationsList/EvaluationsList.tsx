@@ -3,6 +3,8 @@ import styles from "./EvaluationsList.module.css";
 import { FileText, Plus, Edit2, Trash2 } from "lucide-react";
 import type { InstanciaEvaluacion } from "../../../../types/academic";
 
+import { parseLocalDate } from "../../../../utils";
+
 interface EvaluationsListProps {
   evaluations: InstanciaEvaluacion[];
   onOpenEvaluationModal: () => void;
@@ -71,7 +73,7 @@ export const EvaluationsList: React.FC<EvaluationsListProps> = ({
                 <span>
                   Fecha:{" "}
                   {evalItem.fecha ? (
-                    new Date(evalItem.fecha).toLocaleDateString("es-AR", {
+                    parseLocalDate(evalItem.fecha)?.toLocaleDateString("es-AR", {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",

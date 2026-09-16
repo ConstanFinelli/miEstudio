@@ -46,10 +46,12 @@ func (r *repository) GetByMateria(ctx context.Context, usuarioID string, materia
 func (r *repository) GetProximas(ctx context.Context, usuarioID string, limit int) ([]Evaluacion, error) {
 	var evaluaciones []Evaluacion
 	now := time.Now()
-	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	// Margen de 24 horas hacia atrás para evitar que diferencias de zona horaria
+	// (servidor UTC vs cliente UTC-3) filtren evaluaciones del día actual.
+	cutoff := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Add(-24 * time.Hour)
 
 	q := r.db.WithContext(ctx).Preload("Materia").
-		Where("nota IS NULL AND fecha IS NOT NULL AND fecha >= ?", todayStart).
+		Where("nota IS NULL AND fecha IS NOT NULL AND fecha >= ?", cutoff).
 		Order("fecha asc")
 	if usuarioID != "" {
 		q = q.Where("usuario_id = ? OR usuario_id = '' OR usuario_id IS NULL", usuarioID)
