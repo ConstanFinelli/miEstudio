@@ -18,6 +18,7 @@ export const apunteMapper = {
       id: dto.id,
       materiaId: dto.materia_id,
       materiaNombre: resolvedMateriaNombre,
+      materiaCodigo: dto.materia?.codigo,
       carpeta: dto.carpeta || "General",
       titulo: dto.titulo,
       resumen:

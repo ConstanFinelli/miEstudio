@@ -131,6 +131,16 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
       ?.nombre ||
     undefined;
 
+  const currentMateriaCodigo = useMemo(() => {
+    if (!activeNote) return undefined;
+    const mat = materias.find(
+      (m) =>
+        (activeNote.materiaId && m.id === activeNote.materiaId) ||
+        (activeNote.materiaNombre && m.nombre === activeNote.materiaNombre),
+    );
+    return mat?.codigo || activeNote.materiaCodigo;
+  }, [materias, activeNote]);
+
   const selectedMateriaId = useMemo(() => {
     if (selectedFolder) {
       const mat = materias.find(
@@ -348,6 +358,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         <NoteEditorHeader
           activeNote={activeNote}
           materiaNotes={currentMateriaNotes}
+          materiaCodigo={currentMateriaCodigo}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           showPdfSplit={showPdfSplit}

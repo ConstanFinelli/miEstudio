@@ -25,6 +25,7 @@ import {
 interface NoteEditorHeaderProps {
   activeNote: ApunteNota | null;
   materiaNotes?: ApunteNota[];
+  materiaCodigo?: string;
   viewMode: "render" | "markdown" | "split";
   onViewModeChange: (mode: "render" | "markdown" | "split") => void;
   showPdfSplit: boolean;
@@ -37,6 +38,7 @@ interface NoteEditorHeaderProps {
 export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
   activeNote,
   materiaNotes = [],
+  materiaCodigo,
   viewMode,
   onViewModeChange,
   showPdfSplit,
@@ -71,9 +73,14 @@ export const NoteEditorHeader: React.FC<NoteEditorHeaderProps> = ({
   return (
     <header className={styles.editorTopBar}>
       <div className={styles.editorBreadcrumbs}>
-        <span>WORKSPACE</span>
+        <span>Notas</span>
         <span>/</span>
-        <span>{activeNote?.materiaNombre || "Apuntes"}</span>
+        <span title={activeNote?.materiaNombre || "Apuntes"}>
+          {materiaCodigo ||
+            activeNote?.materiaCodigo ||
+            activeNote?.materiaNombre ||
+            "Apuntes"}
+        </span>
         {activeNote?.evaluacionNombre && (
           <>
             <span>/</span>

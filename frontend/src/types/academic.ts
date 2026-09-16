@@ -89,6 +89,7 @@ export interface ApunteNota {
   id: string;
   materiaId: string;
   materiaNombre: string;
+  materiaCodigo?: string;
   evaluacionId?: string;
   evaluacionNombre?: string;
   carpeta: string;
