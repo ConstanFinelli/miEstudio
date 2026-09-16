@@ -2,6 +2,7 @@ package subjects
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/google/uuid"
@@ -270,7 +271,7 @@ func (r *repository) BatchImport(ctx context.Context, usuarioID string, req Batc
 
 	// PASO 2: Resolver correlatividades mapeando referencias a IDs reales
 	resolveRefs := func(refs []string, currentID string) []string {
-		var resolved []string
+		resolved := []string{}
 		seen := make(map[string]bool)
 		for _, ref := range refs {
 			norm := cleanRefString(ref)
@@ -289,14 +290,22 @@ func (r *repository) BatchImport(ctx context.Context, usuarioID string, req Batc
 		m.CorrelativasCursar = resolveRefs(item.CorrelativasCursar, m.ID)
 		m.CorrelativasRendir = resolveRefs(item.CorrelativasRendir, m.ID)
 
-		if len(m.CorrelativasCursar) > 0 || len(m.CorrelativasRendir) > 0 {
-			if err := tx.Model(&Materia{}).Where("id = ?", m.ID).Updates(map[string]interface{}{
-				"correlativas_cursar": m.CorrelativasCursar,
-				"correlativas_rendir": m.CorrelativasRendir,
-			}).Error; err != nil {
-				tx.Rollback()
-				return nil, err
-			}
+		// Serializar a JSON string explícito para MySQL (evita error 1241 de operandos en GORM Updates con map)
+		cursarJSON, err := json.Marshal(m.CorrelativasCursar)
+		if err != nil {
+			cursarJSON = []byte("[]")
+		}
+		rendirJSON, err := json.Marshal(m.CorrelativasRendir)
+		if err != nil {
+			rendirJSON = []byte("[]")
+		}
+
+		if err := tx.Model(&Materia{}).Where("id = ?", m.ID).Updates(map[string]interface{}{
+			"correlativas_cursar": string(cursarJSON),
+			"correlativas_rendir": string(rendirJSON),
+		}).Error; err != nil {
+			tx.Rollback()
+			return nil, err
 		}
 	}
 
