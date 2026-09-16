@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   selectCarrera: (carreraId: string) => Promise<void>;
+  deleteCarrera: (carreraId: string) => Promise<void>;
   reloadProfile: () => Promise<void>;
   reloadCarreras: () => Promise<void>;
   updateUser: (data: { nombre?: string; email?: string; avatar_url?: string; password?: string; gemini_api_key?: string }) => Promise<User>;
@@ -138,6 +139,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.dispatchEvent(new CustomEvent('evaluaciones:updated'));
   };
 
+  const deleteCarrera = async (carreraId: string) => {
+    await carrerasService.deleteCarrera(carreraId);
+    const updatedList = carreras.filter((c) => c.id !== carreraId);
+    setCarreras(updatedList);
+
+    if (activeCarrera?.id === carreraId) {
+      const nextActive = updatedList.find((c) => c.is_activa) || updatedList[0] || null;
+      setActiveCarrera(nextActive);
+      if (nextActive) {
+        localStorage.setItem('miestudio-active-carrera', nextActive.id);
+        await carrerasService.setActiveCarrera(nextActive.id).catch(() => {});
+        window.dispatchEvent(new CustomEvent('carrera:selected', { detail: nextActive.id }));
+      } else {
+        localStorage.removeItem('miestudio-active-carrera');
+      }
+    }
+
+    await reloadCarreras();
+    window.dispatchEvent(new CustomEvent('carreras:updated'));
+    window.dispatchEvent(new CustomEvent('materias:updated'));
+    window.dispatchEvent(new CustomEvent('horarios:updated'));
+    window.dispatchEvent(new CustomEvent('evaluaciones:updated'));
+  };
+
   const updateUser = async (data: { nombre?: string; email?: string; avatar_url?: string; password?: string; gemini_api_key?: string }) => {
     try {
       const updated = await authService.updateMe(data);
@@ -172,6 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         selectCarrera,
+        deleteCarrera,
         reloadProfile,
         reloadCarreras,
         updateUser,

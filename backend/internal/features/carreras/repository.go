@@ -92,7 +92,31 @@ func (r *repository) SetActive(id string, usuarioID string) error {
 }
 
 func (r *repository) Delete(id string, usuarioID string) error {
-	return r.db.Where("id = ? AND usuario_id = ?", id, usuarioID).Delete(&Carrera{}).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// 1. Eliminar aprobaciones históricas asociadas a la carrera
+		if err := tx.Where("carrera_id = ? AND usuario_id = ?", id, usuarioID).Delete(&AprobacionHistorica{}).Error; err != nil {
+			return err
+		}
+		// 2. Eliminar materias asociadas a la carrera (soft delete en tabla materia)
+		_ = tx.Table("materia").Where("carrera_id = ? AND usuario_id = ?", id, usuarioID).Update("deleted_at", gorm.Expr("NOW()")).Error
+
+		// 3. Eliminar la carrera (soft delete)
+		if err := tx.Where("id = ? AND usuario_id = ?", id, usuarioID).Delete(&Carrera{}).Error; err != nil {
+			return err
+		}
+
+		// 4. Si no quedó ninguna carrera activa para este usuario, activar la primera restante
+		var activeCount int64
+		if err := tx.Model(&Carrera{}).Where("usuario_id = ? AND is_activa = ?", usuarioID, true).Count(&activeCount).Error; err == nil {
+			if activeCount == 0 {
+				var remaining Carrera
+				if err := tx.Where("usuario_id = ?", usuarioID).Order("created_at ASC").First(&remaining).Error; err == nil {
+					_ = tx.Model(&Carrera{}).Where("id = ?", remaining.ID).Update("is_activa", true).Error
+				}
+			}
+		}
+		return nil
+	})
 }
 
 func (r *repository) CreateAprobacion(aprob *AprobacionHistorica) error {

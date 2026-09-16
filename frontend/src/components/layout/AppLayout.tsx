@@ -183,11 +183,26 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                                     : "---"}
                                 </span>
                               </div>
-                              {c.id === activeCarrera?.id && (
-                                <span className={styles.activeBadge}>
-                                  Activa
-                                </span>
-                              )}
+                              <div className={styles.careerOptionActions}>
+                                {c.id === activeCarrera?.id && (
+                                  <span className={styles.activeBadge}>
+                                    Activa
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  className={styles.careerConfigBtn}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsCareerMenuOpen(false);
+                                    setCarreraToEdit(c);
+                                    setIsCarreraModalOpen(true);
+                                  }}
+                                  title={`Configurar ${c.nombre}`}
+                                >
+                                  <Settings size={12} />
+                                </button>
+                              </div>
                             </button>
                           ))
                         ) : (

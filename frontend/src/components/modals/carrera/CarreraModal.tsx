@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, GraduationCap, Building2, Hash, Calendar, BookOpen, Clock, Save, AlertCircle } from 'lucide-react';
+import { X, GraduationCap, Building2, Hash, Calendar, BookOpen, Clock, Save, AlertCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { carrerasService } from '../../../services/carrerasService';
 import type { Carrera } from '../../../types/auth';
@@ -18,7 +18,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
   onSuccess,
   carreraToEdit,
 }) => {
-  const { reloadCarreras, selectCarrera } = useAuth();
+  const { reloadCarreras, selectCarrera, deleteCarrera } = useAuth();
   const isEditing = Boolean(carreraToEdit);
 
   const [nombre, setNombre] = useState('');
@@ -30,6 +30,7 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
   const [totalMateriasPlan, setTotalMateriasPlan] = useState<number | ''>('');
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,9 +55,29 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
       setDuracionAnios(5);
       setTotalMateriasPlan('');
     }
+    setIsDeleting(false);
   }, [isOpen, carreraToEdit]);
 
   if (!isOpen) return null;
+
+  const handleDeleteCarrera = async () => {
+    if (!carreraToEdit) return;
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar la carrera "${carreraToEdit.nombre}"? Esta acción no se puede deshacer y eliminará las materias y registros asociados a la misma.`
+    );
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    setErrorMessage(null);
+
+    try {
+      await deleteCarrera(carreraToEdit.id);
+      onClose();
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Error al eliminar la carrera');
+      setIsDeleting(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -263,6 +284,26 @@ export const CarreraModal: React.FC<CarreraModalProps> = ({
                 />
               </div>
             </div>
+
+            {isEditing && carreraToEdit && (
+              <div className={styles.dangerZone}>
+                <div className={styles.dangerInfo}>
+                  <h4 className={styles.dangerTitle}>Zona de peligro</h4>
+                  <p className={styles.dangerText}>
+                    ¿Creaste esta carrera por accidente o ya no la cursás? Podés eliminarla permanentemente junto con sus materias y registros.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={styles.deleteBtn}
+                  onClick={handleDeleteCarrera}
+                  disabled={isLoading || isDeleting}
+                >
+                  <Trash2 size={15} />
+                  <span>{isDeleting ? 'Eliminando...' : 'Eliminar Carrera'}</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
