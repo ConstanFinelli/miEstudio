@@ -29,6 +29,8 @@ import {
 } from "../../components/modals";
 
 import type { InstanciaEvaluacion, MaterialEstudio } from "../../types/academic";
+import { useAuth } from "../../context/AuthContext";
+import { materiasService } from "../../services";
 
 interface MateriasViewProps {
   onOpenEvaluationModal: () => void;
@@ -57,6 +59,16 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
       ""
     );
   }, [searchParams, location.state]);
+
+  const queryCarreraId = useMemo(() => {
+    return (
+      searchParams.get("carreraId") ||
+      searchParams.get("carrera_id") ||
+      ""
+    );
+  }, [searchParams]);
+
+  const { activeCarrera, selectCarrera } = useAuth();
 
   const [selectedYear, setSelectedYear] = useState<number | "TODOS">("TODOS");
   const [selectedCuatri, setSelectedCuatri] = useState<
@@ -100,6 +112,29 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
     return () =>
       window.removeEventListener("materias:updated", handleMateriaCreatedOrUpdated);
   }, [refreshMaterias, selectedEstado, selectedYear]);
+
+  // Si en la URL viene una carrera específica distinta a la activa, cambiar a esa carrera
+  useEffect(() => {
+    if (queryCarreraId && activeCarrera?.id && queryCarreraId !== activeCarrera.id) {
+      selectCarrera(queryCarreraId);
+    }
+  }, [queryCarreraId, activeCarrera?.id, selectCarrera]);
+
+  // Si viene un materiaId que no pertenece a la carrera actual, buscarla y cambiar automáticamente a su carrera
+  useEffect(() => {
+    if (!queryMateriaId || isMateriasLoading) return;
+    const existsInCurrent = materias.some((m) => m.id === queryMateriaId);
+    if (!existsInCurrent && materias.length > 0) {
+      materiasService.getMateriaById(queryMateriaId).then((fetched) => {
+        if (fetched) {
+          const targetCarrera = fetched.carreraId || fetched.carrera_id;
+          if (targetCarrera && activeCarrera?.id && targetCarrera !== activeCarrera.id) {
+            selectCarrera(targetCarrera);
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [queryMateriaId, isMateriasLoading, materias, activeCarrera?.id, selectCarrera]);
 
   // Sincronizar materia seleccionada si viene por URL query param (?materiaId=...) o router state
   useEffect(() => {

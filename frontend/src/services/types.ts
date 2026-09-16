@@ -51,6 +51,7 @@ export interface MateriaDTO {
 export interface EvaluacionDTO {
   id: string;
   materia_id: string;
+  carrera_id?: string;
   materia_nombre?: string;
   materia_codigo?: string;
   titulo: string;

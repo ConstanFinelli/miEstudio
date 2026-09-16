@@ -42,7 +42,7 @@ func (r *repository) GetAll(ctx context.Context, usuarioID string, carreraID str
 		targetCarreraID = activeCarreraID
 	}
 
-	if targetCarreraID != "" {
+	if targetCarreraID != "" && !strings.EqualFold(targetCarreraID, "all") {
 		q = q.Where("carrera_id = ?", targetCarreraID)
 	}
 	if estado != "" {

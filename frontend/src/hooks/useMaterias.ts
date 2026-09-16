@@ -74,9 +74,10 @@ export const useMaterias = (initialYear?: number, initialStatus?: string, custom
   }, [fetchMaterias]);
 
   const createMateria = async (newMateria: Partial<Materia>) => {
+    const resolvedCarreraId = (targetCarreraId && targetCarreraId !== 'ALL') ? targetCarreraId : activeCarrera?.id;
     const payload = {
       ...newMateria,
-      carrera_id: newMateria.carrera_id || targetCarreraId,
+      carrera_id: newMateria.carrera_id || resolvedCarreraId,
     };
     const created = await materiasService.createMateria(payload);
     setMaterias(prev => [...prev, created]);

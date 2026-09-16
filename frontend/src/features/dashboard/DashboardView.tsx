@@ -41,9 +41,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Left Column: Próximas Evaluaciones + Calendario Banner */}
         <div className={styles.leftColumn}>
           <UpcomingEvaluations
-            onGoToMaterias={(materiaId) =>
-              goTo('materias', materiaId ? `materiaId=${encodeURIComponent(materiaId)}` : undefined)
-            }
+            onGoToMaterias={(materiaId, carreraId) => {
+              const params = new URLSearchParams();
+              if (materiaId) params.set('materiaId', materiaId);
+              if (carreraId) params.set('carreraId', carreraId);
+              goTo('materias', params.toString() || undefined);
+            }}
             onGoToApuntes={() => goTo('apuntes')}
           />
 

@@ -1,9 +1,13 @@
 import React from "react";
 import styles from "./CalendarFiltersBar.module.css";
+import { GraduationCap } from "lucide-react";
 
 interface CalendarFiltersBarProps {
   selectedFilter: string;
   onSelectFilter: (filter: string) => void;
+  carreraFilter?: 'ALL' | 'ACTIVE';
+  onSelectCarreraFilter?: (filter: 'ALL' | 'ACTIVE') => void;
+  activeCarreraNombre?: string;
   selectedYear?: number | "TODOS";
   onSelectYear?: (year: number | "TODOS") => void;
   selectedCuatri?: "TODOS" | "1C" | "2C" | "Anual";
@@ -13,14 +17,52 @@ interface CalendarFiltersBarProps {
 export const CalendarFiltersBar: React.FC<CalendarFiltersBarProps> = ({
   selectedFilter,
   onSelectFilter,
+  carreraFilter = 'ALL',
+  onSelectCarreraFilter,
+  activeCarreraNombre,
 }) => {
   return (
     <div className={styles.filtersRow}>
+      {activeCarreraNombre && onSelectCarreraFilter && (
+        <>
+          <div className={styles.carreraGroup}>
+            <span
+              style={{
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+                marginLeft: "4px",
+              }}
+            >
+              CARRERA:
+            </span>
+            <div className={styles.carreraToggle}>
+              <button
+                type="button"
+                className={`${styles.carreraBtn} ${carreraFilter === 'ALL' ? styles.carreraBtnActive : ''}`}
+                onClick={() => onSelectCarreraFilter('ALL')}
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                className={`${styles.carreraBtn} ${carreraFilter === 'ACTIVE' ? styles.carreraBtnActive : ''}`}
+                onClick={() => onSelectCarreraFilter('ACTIVE')}
+                title={`Filtrar por ${activeCarreraNombre}`}
+              >
+                <GraduationCap size={12} />
+                <span className={styles.carreraName}>{activeCarreraNombre}</span>
+              </button>
+            </div>
+          </div>
+          <div className={styles.filterDivider} />
+        </>
+      )}
+
       <span
         style={{
           fontWeight: 600,
           color: "var(--text-secondary)",
-          marginLeft: "4px",
+          marginLeft: activeCarreraNombre ? "0px" : "4px",
         }}
       >
         TIPO:

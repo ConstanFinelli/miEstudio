@@ -1,6 +1,6 @@
 import { apiClient } from './apiClient';
 import type { EvaluacionDTO } from './types';
-import type { InstanciaEvaluacion } from '../types/academic';
+import type { InstanciaEvaluacion, EstadoEvaluacion, Materia } from '../types/academic';
 import { evaluacionMapper } from './mappers';
 import { mockEvaluaciones } from '../data/mockData';
 import { isMocksEnabled } from '../config/mockConfig';
@@ -8,21 +8,37 @@ import { materiasService } from './materiasService';
 
 let localEvaluaciones: InstanciaEvaluacion[] = isMocksEnabled() ? [...mockEvaluaciones] : [];
 
+async function getMateriasMap(): Promise<Map<string, Materia>> {
+  const map = new Map<string, Materia>();
+  try {
+    const materias = await materiasService.getMaterias();
+    for (const m of materias) {
+      map.set(m.id, m);
+    }
+  } catch {
+    // Si falla o está offline, retornar map vacío
+  }
+  return map;
+}
+
 export const evaluacionesService = {
   async getEvaluaciones(materiaId?: string): Promise<InstanciaEvaluacion[]> {
     try {
       const endpoint = materiaId ? `/evaluaciones?materia_id=${materiaId}` : '/evaluaciones';
       const dtos = await apiClient.get<EvaluacionDTO[]>(endpoint);
-      const materias = await materiasService.getMaterias().catch(() => []);
-      const matMap = new Map(materias.map(m => [m.id, m]));
+      const matMap = await getMateriasMap();
 
       return dtos.map(dto => {
         const mat = matMap.get(dto.materia_id);
-        return evaluacionMapper.toEvaluacion(
+        const ev = evaluacionMapper.toEvaluacion(
           dto,
           dto.materia_nombre || mat?.nombre,
           dto.materia_codigo || mat?.codigo
         );
+        if (!ev.carreraId) {
+          ev.carreraId = dto.carrera_id || mat?.carreraId;
+        }
+        return ev;
       });
     } catch {
       if (materiaId) {
@@ -35,21 +51,26 @@ export const evaluacionesService = {
   async getProximasEvaluaciones(): Promise<InstanciaEvaluacion[]> {
     try {
       const dtos = await apiClient.get<EvaluacionDTO[]>('/evaluaciones/proximas');
-      const materias = await materiasService.getMaterias().catch(() => []);
-      const matMap = new Map(materias.map(m => [m.id, m]));
+      const matMap = await getMateriasMap();
 
       return dtos
         .filter(dto => dto.nota === null || dto.nota === undefined)
         .map(dto => {
           const mat = matMap.get(dto.materia_id);
-          return evaluacionMapper.toEvaluacion(
+          const ev = evaluacionMapper.toEvaluacion(
             dto,
             dto.materia_nombre || mat?.nombre,
             dto.materia_codigo || mat?.codigo
           );
+          if (!ev.carreraId) {
+            ev.carreraId = dto.carrera_id || mat?.carreraId;
+          }
+          return ev;
         });
     } catch {
-      return localEvaluaciones.filter(e => (e.estado === 'PENDIENTE' || e.estado === 'EN_PROGRESO') && (e.nota === null || e.nota === undefined));
+      return localEvaluaciones.filter(
+        e => (e.estado === 'PENDIENTE' || e.estado === 'EN_PROGRESO') && (e.nota === null || e.nota === undefined)
+      );
     }
   },
 
@@ -62,13 +83,19 @@ export const evaluacionesService = {
         createdDTO.materia_nombre || evaluacion.materiaNombre,
         createdDTO.materia_codigo || evaluacion.materiaCodigo
       );
+      if (!created.carreraId && evaluacion.carreraId) {
+        created.carreraId = evaluacion.carreraId;
+      }
       localEvaluaciones.unshift(created);
       window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: created }));
       return created;
     } catch {
+      const estadoInicial: EstadoEvaluacion =
+        evaluacion.nota !== null && evaluacion.nota !== undefined ? 'CALIFICADO' : 'PENDIENTE';
       const newEval: InstanciaEvaluacion = {
         id: `eval-${Date.now()}`,
         materiaId: evaluacion.materiaId || 'mat-1',
+        carreraId: evaluacion.carreraId,
         materiaCodigo: evaluacion.materiaCodigo || 'MAT',
         materiaNombre: evaluacion.materiaNombre || 'Materia',
         titulo: evaluacion.titulo || 'Nueva Evaluación',
@@ -77,7 +104,7 @@ export const evaluacionesService = {
         horario: evaluacion.horario || '09:00',
         peso: evaluacion.peso ?? 100,
         nota: evaluacion.nota ?? null,
-        estado: evaluacion.nota !== null && evaluacion.nota !== undefined ? 'CALIFICADO' : 'PENDIENTE',
+        estado: evaluacion.estado || estadoInicial,
         aula: evaluacion.aula || 'A confirmar',
         modalidad: evaluacion.modalidad || 'Presencial',
         temario: evaluacion.temario || [],
@@ -103,6 +130,9 @@ export const evaluacionesService = {
         updatedDTO.materia_nombre || updates.materiaNombre,
         updatedDTO.materia_codigo || updates.materiaCodigo
       );
+      if (!updated.carreraId && updates.carreraId) {
+        updated.carreraId = updates.carreraId;
+      }
       localEvaluaciones = localEvaluaciones.map(e => (e.id === id ? { ...e, ...updated } : e));
       window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: updated }));
       return updated;
@@ -110,11 +140,13 @@ export const evaluacionesService = {
       localEvaluaciones = localEvaluaciones.map(e => {
         if (e.id !== id) return e;
         const newNota = updates.nota !== undefined ? updates.nota : e.nota;
+        const nuevoEstado: EstadoEvaluacion =
+          newNota !== null && newNota !== undefined ? 'CALIFICADO' : 'PENDIENTE';
         return {
           ...e,
           ...updates,
           nota: newNota,
-          estado: newNota !== null && newNota !== undefined ? 'CALIFICADO' : 'PENDIENTE'
+          estado: updates.estado || nuevoEstado
         };
       });
       const found = localEvaluaciones.find(e => e.id === id);
@@ -132,8 +164,9 @@ export const evaluacionesService = {
       window.dispatchEvent(new CustomEvent('evaluaciones:updated', { detail: updated }));
       return updated;
     } catch {
+      const estadoCalificado: EstadoEvaluacion = 'CALIFICADO';
       localEvaluaciones = localEvaluaciones.map(e =>
-        e.id === id ? { ...e, nota, estado: 'CALIFICADO' } : e
+        e.id === id ? { ...e, nota, estado: estadoCalificado } : e
       );
       const found = localEvaluaciones.find(e => e.id === id);
       if (!found) throw new Error(`Evaluación con ID ${id} no encontrada`);

@@ -68,6 +68,7 @@ export interface Materia {
 export interface InstanciaEvaluacion {
   id: string;
   materiaId: string;
+  carreraId?: string;
   materiaCodigo: string;
   materiaNombre: string;
   titulo: string;
@@ -105,6 +106,7 @@ export interface EventoCalendario {
   id: string;
   titulo: string;
   materiaId?: string;
+  carreraId?: string;
   materiaCodigo?: string;
   materiaNombre?: string;
   tipo: TipoEvento;

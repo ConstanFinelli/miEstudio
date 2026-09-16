@@ -26,6 +26,7 @@ export const evaluacionMapper = {
     return {
       id: dto.id,
       materiaId: dto.materia_id,
+      carreraId: dto.carrera_id,
       materiaCodigo: dto.materia_codigo || materiaCodigo || 'MAT',
       materiaNombre: dto.materia_nombre || materiaNombre || 'Materia',
       titulo: dto.titulo,
@@ -46,6 +47,7 @@ export const evaluacionMapper = {
     return {
       id: evaluacion.id,
       materia_id: evaluacion.materiaId,
+      carrera_id: evaluacion.carreraId,
       titulo: evaluacion.titulo,
       tipo: evaluacion.tipo,
       fecha: evaluacion.fecha !== undefined ? evaluacion.fecha : null,

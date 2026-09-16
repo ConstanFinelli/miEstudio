@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import styles from './UpcomingEvaluations.module.css';
-import { CalendarClock, ArrowRight } from 'lucide-react';
+import { CalendarClock, ArrowRight, GraduationCap } from 'lucide-react';
 import { useEvaluaciones, useMaterias } from '../../../../hooks';
+import { useAuth } from '../../../../context/AuthContext';
 
 interface UpcomingEvaluationsProps {
-  onGoToMaterias: (materiaId?: string) => void;
+  onGoToMaterias: (materiaId?: string, carreraId?: string) => void;
   onGoToApuntes: () => void;
 }
 
@@ -13,20 +14,46 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
   onGoToApuntes: _onGoToApuntes
 }) => {
   const { proximas } = useEvaluaciones();
-  const { materias } = useMaterias();
+  const { materias } = useMaterias(undefined, undefined, 'ALL');
+  const { activeCarrera, carreras, selectCarrera } = useAuth();
+  const [carreraFilter, setCarreraFilter] = useState<'ALL' | 'ACTIVE'>('ALL');
+
+  const handleGoToMateria = async (materiaId: string, carreraId?: string) => {
+    if (carreraId && activeCarrera?.id !== carreraId) {
+      try {
+        await selectCarrera(carreraId);
+      } catch (err) {
+        console.error('Error al cambiar de carrera:', err);
+      }
+    }
+    onGoToMaterias(materiaId, carreraId);
+  };
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-  const pendingProximas = proximas.filter(
-    (ev): ev is typeof ev & { fecha: string } => {
-      if (ev.nota !== null && ev.nota !== undefined) return false;
-      if (!ev.fecha) return false;
-      // Solo mostrar eventos cuya fecha sea igual o posterior al inicio de hoy
-      const evDate = new Date(ev.fecha).getTime();
-      return evDate >= todayStart;
+  const pendingProximas = useMemo(() => {
+    return proximas.filter(
+      (ev): ev is typeof ev & { fecha: string } => {
+        if (ev.nota !== null && ev.nota !== undefined) return false;
+        if (!ev.fecha) return false;
+        // Solo mostrar eventos cuya fecha sea igual o posterior al inicio de hoy
+        const evDate = new Date(ev.fecha).getTime();
+        return evDate >= todayStart;
+      }
+    );
+  }, [proximas, todayStart]);
+
+  const filteredProximas = useMemo(() => {
+    if (carreraFilter === 'ALL' || !activeCarrera?.id) {
+      return pendingProximas;
     }
-  );
+    return pendingProximas.filter((ev) => {
+      const matchedMateria = materias.find(m => m.id === ev.materiaId);
+      const evCarreraId = ev.carreraId || matchedMateria?.carreraId;
+      return evCarreraId === activeCarrera.id;
+    });
+  }, [pendingProximas, carreraFilter, activeCarrera, materias]);
 
   const formatDate = (dateStr: string, horario?: string) => {
     try {
@@ -66,10 +93,32 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
           <CalendarClock size={18} color="var(--primary)" />
           <span>Próximas Instancias de Evaluación</span>
         </div>
-        <span className={styles.sectionScopeBadge}>Ventana: 30 Días</span>
+        <div className={styles.headerActions}>
+          {activeCarrera && (
+            <div className={styles.carreraFilterToggle}>
+              <button
+                type="button"
+                className={`${styles.filterPill} ${carreraFilter === 'ALL' ? styles.filterPillActive : ''}`}
+                onClick={() => setCarreraFilter('ALL')}
+              >
+                Todas las carreras
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterPill} ${carreraFilter === 'ACTIVE' ? styles.filterPillActive : ''}`}
+                onClick={() => setCarreraFilter('ACTIVE')}
+                title={`Filtrar por ${activeCarrera.nombre}`}
+              >
+                <GraduationCap size={12} />
+                <span>{activeCarrera.nombre}</span>
+              </button>
+            </div>
+          )}
+          <span className={styles.sectionScopeBadge}>Ventana: 30 Días</span>
+        </div>
       </div>
 
-      {pendingProximas.length === 0 ? (
+      {filteredProximas.length === 0 ? (
         <div style={{
           padding: '28px 20px',
           textAlign: 'center',
@@ -80,18 +129,44 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
         }}>
           <CalendarClock size={28} style={{ color: 'var(--emerald)', margin: '0 auto 10px', display: 'block', opacity: 0.8 }} />
           <h4 style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
-            Sin evaluaciones pendientes
+            {carreraFilter === 'ACTIVE' && activeCarrera
+              ? `Sin evaluaciones pendientes para ${activeCarrera.nombre}`
+              : 'Sin evaluaciones pendientes'}
           </h4>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            Estás al día con tus cursadas. Usa el botón superior para registrar un nuevo examen o entrega.
+            {carreraFilter === 'ACTIVE' && pendingProximas.length > 0 ? (
+              <span>
+                Hay {pendingProximas.length} evaluación(es) en otras carreras.{' '}
+                <button
+                  type="button"
+                  onClick={() => setCarreraFilter('ALL')}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary-glow)',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: 0,
+                    fontSize: '12px'
+                  }}
+                >
+                  Ver todas
+                </button>
+              </span>
+            ) : (
+              'Estás al día con tus cursadas. Usa el botón superior para registrar un nuevo examen o entrega.'
+            )}
           </p>
         </div>
       ) : (
-        pendingProximas.slice(0, 3).map((ev, index) => {
+        filteredProximas.slice(0, 3).map((ev, index) => {
           const isUrgent = index === 0;
           const matchedMateria = materias.find(m => m.id === ev.materiaId);
           const codigo = matchedMateria?.codigo || (ev.materiaCodigo !== 'MAT' ? ev.materiaCodigo : '') || 'EXAM';
           const nombre = matchedMateria?.nombre || (ev.materiaNombre !== 'Materia' ? ev.materiaNombre : '') || 'Materia';
+          const evCarreraId = ev.carreraId || matchedMateria?.carreraId;
+          const carreraObj = carreras.find(c => c.id === evCarreraId);
+          const carreraNombre = carreraObj?.nombre;
 
           return (
             <div
@@ -105,6 +180,12 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
                   </span>
                   <span className={styles.badgeTag}>#{ev.tipo}</span>
                   <span className={styles.badgeCode}>Código: {codigo}</span>
+                  {carreraFilter === 'ALL' && carreraNombre && carreras.length > 1 && (
+                    <span className={styles.badgeCarrera} title={carreraNombre}>
+                      <GraduationCap size={10} />
+                      {carreraNombre}
+                    </span>
+                  )}
                 </div>
                 <div className={styles.evalWeightGroup}>
                   <span>Peso: <strong>{ev.peso}%</strong></span>
@@ -136,7 +217,7 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
                 <div className={styles.evalMetrics}>
                   <span
                     style={{ color: 'var(--text-secondary)', fontWeight: 500, cursor: 'pointer' }}
-                    onClick={() => onGoToMaterias(ev.materiaId)}
+                    onClick={() => handleGoToMateria(ev.materiaId, evCarreraId)}
                     title={`Ver materia ${nombre}`}
                   >
                     {nombre}
@@ -153,7 +234,7 @@ export const UpcomingEvaluations: React.FC<UpcomingEvaluationsProps> = ({
                 <button
                   type="button"
                   className={styles.evalActionLink}
-                  onClick={() => onGoToMaterias(ev.materiaId)}
+                  onClick={() => handleGoToMateria(ev.materiaId, evCarreraId)}
                   title={`Ver materia ${nombre}`}
                 >
                   <span>Ver materia</span>

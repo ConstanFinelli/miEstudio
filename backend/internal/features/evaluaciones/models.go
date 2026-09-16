@@ -32,6 +32,7 @@ type EvaluacionResponseDTO struct {
 	ID            string     `json:"id"`
 	UsuarioID     string     `json:"usuario_id"`
 	MateriaID     string     `json:"materia_id"`
+	CarreraID     string     `json:"carrera_id,omitempty"`
 	MateriaNombre string     `json:"materia_nombre,omitempty"`
 	MateriaCodigo string     `json:"materia_codigo,omitempty"`
 	Titulo        string     `json:"titulo"`
@@ -58,14 +59,17 @@ func ToResponseDTO(e Evaluacion) EvaluacionResponseDTO {
 	}
 	materiaNombre := ""
 	materiaCodigo := ""
+	carreraID := ""
 	if e.Materia != nil {
 		materiaNombre = e.Materia.Nombre
 		materiaCodigo = e.Materia.Codigo
+		carreraID = e.Materia.CarreraID
 	}
 	return EvaluacionResponseDTO{
 		ID:            e.ID,
 		UsuarioID:     e.UsuarioID,
 		MateriaID:     e.MateriaID,
+		CarreraID:     carreraID,
 		MateriaNombre: materiaNombre,
 		MateriaCodigo: materiaCodigo,
 		Titulo:        e.Titulo,
