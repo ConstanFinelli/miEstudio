@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import styles from './AiCopilotPane.module.css';
+import React, { useState, useEffect, useCallback } from "react";
+import styles from "./AiCopilotPane.module.css";
 import {
   Sparkles,
   X,
@@ -10,20 +10,20 @@ import {
   AlertCircle,
   BookOpen,
   UploadCloud,
-  Key
-} from 'lucide-react';
-import type { ApunteNota, MaterialEstudio } from '../../../../types/academic';
-import { materialesService } from '../../../../services';
-import { useAuth } from '../../../../context/AuthContext';
-import { GeminiApiKeyModal } from '../../../../components/modals';
+  Key,
+} from "lucide-react";
+import type { ApunteNota, MaterialEstudio } from "../../../../types/academic";
+import { materialesService } from "../../../../services";
+import { useAuth } from "../../../../context/AuthContext";
+import { GeminiApiKeyModal } from "../../../../components/modals";
 import {
   AiChatTab,
   AiSummaryTab,
   AiFlashcardsTab,
-  AiQuizTab
-} from './components';
+  AiQuizTab,
+} from "./components";
 
-export type AiCopilotTabType = 'chat' | 'resumen' | 'flashcards' | 'quiz';
+export type AiCopilotTabType = "chat" | "resumen" | "flashcards" | "quiz";
 
 interface AiCopilotPaneProps {
   isOpen: boolean;
@@ -44,16 +44,17 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
   activeNote,
   activeMateriaId,
   activeMateriaNombre,
-  selectedMaterialId = '',
+  selectedMaterialId = "",
   onSelectMaterialId,
   onInsertMarkdown,
   onOpenUploadModal,
-  initialTab = 'chat'
+  initialTab = "chat",
 }) => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AiCopilotTabType>(initialTab);
   const [materials, setMaterials] = useState<MaterialEstudio[]>([]);
-  const [currentMaterialId, setCurrentMaterialId] = useState<string>(selectedMaterialId);
+  const [currentMaterialId, setCurrentMaterialId] =
+    useState<string>(selectedMaterialId);
   const [isKeyModalOpen, setIsKeyModalOpen] = useState<boolean>(false);
 
   // Sync external selectedMaterialId if changed
@@ -63,39 +64,54 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
     }
   }, [selectedMaterialId]);
 
-  const handleMaterialChange = useCallback((newMatId: string) => {
-    setCurrentMaterialId(newMatId);
-    if (onSelectMaterialId) {
-      onSelectMaterialId(newMatId);
-    }
-  }, [onSelectMaterialId]);
+  const handleMaterialChange = useCallback(
+    (newMatId: string) => {
+      setCurrentMaterialId(newMatId);
+      if (onSelectMaterialId) {
+        onSelectMaterialId(newMatId);
+      }
+    },
+    [onSelectMaterialId],
+  );
 
   // Load materials for the active subject (or all if subject has none)
-  const loadMaterials = useCallback((autoSelectId?: string) => {
-    materialesService
-      .getMateriales(activeMateriaId)
-      .then(docs => {
-        if (docs.length > 0) {
-          setMaterials(docs);
-          if (autoSelectId && docs.some(d => d.id === autoSelectId)) {
-            handleMaterialChange(autoSelectId);
-          } else if (!currentMaterialId || !docs.some(d => d.id === currentMaterialId)) {
-            handleMaterialChange(docs[0].id);
-          }
-        } else {
-          // If no materials for this specific materia, get all materials across all materias
-          materialesService.getMateriales().then(allDocs => {
-            setMaterials(allDocs);
-            if (autoSelectId && allDocs.some(d => d.id === autoSelectId)) {
+  const loadMaterials = useCallback(
+    (autoSelectId?: string) => {
+      materialesService
+        .getMateriales(activeMateriaId)
+        .then((docs) => {
+          if (docs.length > 0) {
+            setMaterials(docs);
+            if (autoSelectId && docs.some((d) => d.id === autoSelectId)) {
               handleMaterialChange(autoSelectId);
-            } else if (allDocs.length > 0 && (!currentMaterialId || !allDocs.some(d => d.id === currentMaterialId))) {
-              handleMaterialChange(allDocs[0].id);
+            } else if (
+              !currentMaterialId ||
+              !docs.some((d) => d.id === currentMaterialId)
+            ) {
+              handleMaterialChange(docs[0].id);
             }
-          });
-        }
-      })
-      .catch(err => console.error('Error cargando materiales en copiloto IA:', err));
-  }, [activeMateriaId, currentMaterialId, handleMaterialChange]);
+          } else {
+            // If no materials for this specific materia, get all materials across all materias
+            materialesService.getMateriales().then((allDocs) => {
+              setMaterials(allDocs);
+              if (autoSelectId && allDocs.some((d) => d.id === autoSelectId)) {
+                handleMaterialChange(autoSelectId);
+              } else if (
+                allDocs.length > 0 &&
+                (!currentMaterialId ||
+                  !allDocs.some((d) => d.id === currentMaterialId))
+              ) {
+                handleMaterialChange(allDocs[0].id);
+              }
+            });
+          }
+        })
+        .catch((err) =>
+          console.error("Error cargando materiales en copiloto IA:", err),
+        );
+    },
+    [activeMateriaId, currentMaterialId, handleMaterialChange],
+  );
 
   useEffect(() => {
     loadMaterials();
@@ -107,22 +123,28 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
       const customEvent = e as CustomEvent<MaterialEstudio>;
       const newDoc = customEvent.detail;
       if (newDoc && newDoc.id) {
-        setMaterials(prev => [newDoc, ...prev.filter(m => m.id !== newDoc.id)]);
+        setMaterials((prev) => [
+          newDoc,
+          ...prev.filter((m) => m.id !== newDoc.id),
+        ]);
         handleMaterialChange(newDoc.id);
       }
       loadMaterials(newDoc?.id);
     };
-    window.addEventListener('materiales:updated', handleMaterialUpdate);
-    return () => window.removeEventListener('materiales:updated', handleMaterialUpdate);
+    window.addEventListener("materiales:updated", handleMaterialUpdate);
+    return () =>
+      window.removeEventListener("materiales:updated", handleMaterialUpdate);
   }, [handleMaterialChange, loadMaterials]);
 
-  const selectedMaterial = materials.find(m => m.id === currentMaterialId);
-  const hasContext = Boolean(currentMaterialId && materials.some(m => m.id === currentMaterialId));
+  const selectedMaterial = materials.find((m) => m.id === currentMaterialId);
+  const hasContext = Boolean(
+    currentMaterialId && materials.some((m) => m.id === currentMaterialId),
+  );
 
   return (
     <aside
       className={styles.copilotPane}
-      style={{ display: isOpen ? 'flex' : 'none' }}
+      style={{ display: isOpen ? "flex" : "none" }}
       aria-label="Panel de Copiloto IA"
     >
       {/* Top Header */}
@@ -149,12 +171,14 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
               onClick={() => setIsKeyModalOpen(true)}
               title={
                 user?.has_gemini_key
-                  ? 'API Key de Gemini configurada (clic para gestionar)'
-                  : 'Debes configurar tu API Key para usar la IA (clic aquí)'
+                  ? "API Key de Gemini configurada (clic para gestionar)"
+                  : "Debes configurar tu API Key para usar la IA (clic aquí)"
               }
             >
               <Key size={11} />
-              <span>{user?.has_gemini_key ? 'Conectado' : 'Configurar Key'}</span>
+              <span>
+                {user?.has_gemini_key ? "Conectado" : "Configurar Key"}
+              </span>
             </button>
             <button
               className={styles.iconBtn}
@@ -174,7 +198,8 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
               <span>Se requiere API Key de Gemini</span>
             </div>
             <p className={styles.keyRequiredText}>
-              Configura tu clave gratuita de Google AI Studio en 1 minuto para activar el Copiloto IA y resolver dudas de cátedra.
+              Configura tu clave gratuita de Google AI Studio en 1 minuto para
+              activar el Copiloto IA y resolver dudas de cátedra.
             </p>
             <button
               type="button"
@@ -182,7 +207,7 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
               onClick={() => setIsKeyModalOpen(true)}
             >
               <Sparkles size={13} />
-              Configurar Clave Gratis
+              Configurar clave
             </button>
           </div>
         )}
@@ -193,13 +218,13 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
           <select
             className={styles.contextSelect}
             value={currentMaterialId}
-            onChange={e => handleMaterialChange(e.target.value)}
+            onChange={(e) => handleMaterialChange(e.target.value)}
             title="Seleccionar material PDF oficial para consultar con la IA"
           >
             {materials.length === 0 ? (
               <option value="">Sin materiales en esta materia</option>
             ) : (
-              materials.map(m => (
+              materials.map((m) => (
                 <option key={m.id} value={m.id}>
                   📄 [{m.categoria}] {m.titulo}
                 </option>
@@ -225,10 +250,12 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
             <BookOpen size={28} />
           </div>
           <h3 className={styles.emptyNoteTitle}>
-            Sin materiales en {activeMateriaNombre || 'esta materia'}
+            Sin materiales en {activeMateriaNombre || "esta materia"}
           </h3>
           <p className={styles.emptyNoteText}>
-            El Copiloto IA responde consultas, genera resúmenes y crea cuestionarios basándose en los documentos y PDFs oficiales de la materia.
+            El Copiloto IA responde consultas, genera resúmenes y crea
+            cuestionarios basándose en los documentos y PDFs oficiales de la
+            materia.
           </p>
           {onOpenUploadModal && (
             <button
@@ -241,7 +268,8 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
             </button>
           )}
           <p className={styles.emptyNoteSubtext}>
-            Sube bibliografía, diapositivas o guías de cátedra para habilitar el asistente.
+            Sube bibliografía, diapositivas o guías de cátedra para habilitar el
+            asistente.
           </p>
         </div>
       ) : (
@@ -250,7 +278,8 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
             <div className={styles.contextWarningBanner}>
               <AlertCircle size={15} />
               <span>
-                Por favor, selecciona un material de estudio en la lista superior para comenzar.
+                Por favor, selecciona un material de estudio en la lista
+                superior para comenzar.
               </span>
             </div>
           )}
@@ -259,9 +288,9 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
           <nav className={styles.tabsStrip} aria-label="Modos de estudio IA">
             <button
               className={`${styles.tabBtn} ${
-                activeTab === 'chat' ? styles.tabBtnActive : ''
+                activeTab === "chat" ? styles.tabBtnActive : ""
               }`}
-              onClick={() => setActiveTab('chat')}
+              onClick={() => setActiveTab("chat")}
             >
               <MessageSquare size={13} />
               <span>Chat</span>
@@ -269,9 +298,9 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
             <button
               className={`${styles.tabBtn} ${
-                activeTab === 'resumen' ? styles.tabBtnActive : ''
+                activeTab === "resumen" ? styles.tabBtnActive : ""
               }`}
-              onClick={() => setActiveTab('resumen')}
+              onClick={() => setActiveTab("resumen")}
             >
               <FileText size={13} />
               <span>Resumen</span>
@@ -279,9 +308,9 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
             <button
               className={`${styles.tabBtn} ${
-                activeTab === 'flashcards' ? styles.tabBtnActive : ''
+                activeTab === "flashcards" ? styles.tabBtnActive : ""
               }`}
-              onClick={() => setActiveTab('flashcards')}
+              onClick={() => setActiveTab("flashcards")}
             >
               <Layers size={13} />
               <span>Flashcards</span>
@@ -289,9 +318,9 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
             <button
               className={`${styles.tabBtn} ${
-                activeTab === 'quiz' ? styles.tabBtnActive : ''
+                activeTab === "quiz" ? styles.tabBtnActive : ""
               }`}
-              onClick={() => setActiveTab('quiz')}
+              onClick={() => setActiveTab("quiz")}
             >
               <HelpCircle size={13} />
               <span>Quiz</span>
@@ -302,7 +331,7 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
           <div className={styles.tabContent}>
             <div
               className={`${styles.tabPanel} ${
-                activeTab === 'chat' ? '' : styles.tabPanelHidden
+                activeTab === "chat" ? "" : styles.tabPanelHidden
               }`}
             >
               <AiChatTab
@@ -316,7 +345,7 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
             <div
               className={`${styles.tabPanel} ${
-                activeTab === 'resumen' ? '' : styles.tabPanelHidden
+                activeTab === "resumen" ? "" : styles.tabPanelHidden
               }`}
             >
               <AiSummaryTab
@@ -328,7 +357,7 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
             <div
               className={`${styles.tabPanel} ${
-                activeTab === 'flashcards' ? '' : styles.tabPanelHidden
+                activeTab === "flashcards" ? "" : styles.tabPanelHidden
               }`}
             >
               <AiFlashcardsTab
@@ -340,7 +369,7 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
             <div
               className={`${styles.tabPanel} ${
-                activeTab === 'quiz' ? '' : styles.tabPanelHidden
+                activeTab === "quiz" ? "" : styles.tabPanelHidden
               }`}
             >
               <AiQuizTab
