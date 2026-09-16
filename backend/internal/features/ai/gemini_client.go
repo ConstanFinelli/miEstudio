@@ -79,8 +79,9 @@ type GeminiResponse struct {
 }
 
 type GeminiClient interface {
-	Generate(ctx context.Context, systemPrompt string, contents []Content, jsonOutput bool) (string, int, error)
-	StreamGenerate(ctx context.Context, systemPrompt string, contents []Content, onChunk func(chunk string) error) (int, error)
+	Generate(ctx context.Context, systemPrompt string, contents []Content, jsonOutput bool, customKey ...string) (string, int, error)
+	StreamGenerate(ctx context.Context, systemPrompt string, contents []Content, onChunk func(chunk string) error, customKey ...string) (int, error)
+	ValidateKey(ctx context.Context, apiKey string) error
 }
 
 type geminiClient struct {
@@ -124,9 +125,13 @@ func isTransient(code int, status string) bool {
 		status == "RESOURCE_EXHAUSTED"
 }
 
-func (c *geminiClient) Generate(ctx context.Context, systemPrompt string, contents []Content, jsonOutput bool) (string, int, error) {
-	if c.apiKey == "" {
-		return "", 0, fmt.Errorf("GEMINI_API_KEY no está configurada")
+func (c *geminiClient) Generate(ctx context.Context, systemPrompt string, contents []Content, jsonOutput bool, customKey ...string) (string, int, error) {
+	effectiveApiKey := c.apiKey
+	if len(customKey) > 0 && strings.TrimSpace(customKey[0]) != "" {
+		effectiveApiKey = strings.TrimSpace(customKey[0])
+	}
+	if effectiveApiKey == "" {
+		return "", 0, fmt.Errorf("GEMINI_KEY_REQUIRED: No se encontró una clave de Gemini configurada. Por favor, configura tu API Key.")
 	}
 
 	reqPayload := GeminiRequest{
@@ -156,7 +161,7 @@ func (c *geminiClient) Generate(ctx context.Context, systemPrompt string, conten
 	var lastErr error
 
 	for i, model := range models {
-		url := fmt.Sprintf("%s/%s:generateContent?key=%s", GeminiAPIBaseURL, model, c.apiKey)
+		url := fmt.Sprintf("%s/%s:generateContent?key=%s", GeminiAPIBaseURL, model, effectiveApiKey)
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 		if err != nil {
 			return "", 0, fmt.Errorf("error al crear request HTTP: %w", err)
@@ -221,9 +226,13 @@ func (c *geminiClient) Generate(ctx context.Context, systemPrompt string, conten
 	return "", 0, lastErr
 }
 
-func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, contents []Content, onChunk func(chunk string) error) (int, error) {
-	if c.apiKey == "" {
-		return 0, fmt.Errorf("GEMINI_API_KEY no está configurada")
+func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, contents []Content, onChunk func(chunk string) error, customKey ...string) (int, error) {
+	effectiveApiKey := c.apiKey
+	if len(customKey) > 0 && strings.TrimSpace(customKey[0]) != "" {
+		effectiveApiKey = strings.TrimSpace(customKey[0])
+	}
+	if effectiveApiKey == "" {
+		return 0, fmt.Errorf("GEMINI_KEY_REQUIRED: No se encontró una clave de Gemini configurada. Por favor, configura tu API Key.")
 	}
 
 	reqPayload := GeminiRequest{
@@ -248,7 +257,7 @@ func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, 
 	var lastErr error
 
 	for i, model := range models {
-		url := fmt.Sprintf("%s/%s:streamGenerateContent?key=%s", GeminiAPIBaseURL, model, c.apiKey)
+		url := fmt.Sprintf("%s/%s:streamGenerateContent?key=%s", GeminiAPIBaseURL, model, effectiveApiKey)
 		req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 		if err != nil {
 			return 0, fmt.Errorf("error al crear request HTTP: %w", err)
@@ -388,3 +397,24 @@ func CleanJSONResponse(raw string) string {
 	}
 	return strings.TrimSpace(trimmed)
 }
+
+func (c *geminiClient) ValidateKey(ctx context.Context, apiKey string) error {
+	trimmed := strings.TrimSpace(apiKey)
+	if trimmed == "" {
+		return fmt.Errorf("la API Key no puede estar vacía")
+	}
+
+	contents := []Content{
+		{
+			Role:  "user",
+			Parts: []Part{{Text: "Responde únicamente 'OK'"}},
+		},
+	}
+
+	_, _, err := c.Generate(ctx, "Eres un validador de conexión.", contents, false, trimmed)
+	if err != nil {
+		return fmt.Errorf("API Key inválida o sin acceso al modelo: %w", err)
+	}
+	return nil
+}
+

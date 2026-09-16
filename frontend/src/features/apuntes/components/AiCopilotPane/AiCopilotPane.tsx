@@ -9,10 +9,13 @@ import {
   HelpCircle,
   AlertCircle,
   BookOpen,
-  UploadCloud
+  UploadCloud,
+  Key
 } from 'lucide-react';
 import type { ApunteNota, MaterialEstudio } from '../../../../types/academic';
 import { materialesService } from '../../../../services';
+import { useAuth } from '../../../../context/AuthContext';
+import { GeminiApiKeyModal } from '../../../../components/modals';
 import {
   AiChatTab,
   AiSummaryTab,
@@ -47,9 +50,11 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
   onOpenUploadModal,
   initialTab = 'chat'
 }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<AiCopilotTabType>(initialTab);
   const [materials, setMaterials] = useState<MaterialEstudio[]>([]);
   const [currentMaterialId, setCurrentMaterialId] = useState<string>(selectedMaterialId);
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState<boolean>(false);
 
   // Sync external selectedMaterialId if changed
   useEffect(() => {
@@ -135,6 +140,23 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
 
           <div className={styles.headerActions}>
             <button
+              type="button"
+              className={`${styles.keyStatusBadge} ${
+                user?.has_gemini_key
+                  ? styles.keyStatusConnected
+                  : styles.keyStatusMissing
+              }`}
+              onClick={() => setIsKeyModalOpen(true)}
+              title={
+                user?.has_gemini_key
+                  ? 'API Key de Gemini configurada (clic para gestionar)'
+                  : 'Debes configurar tu API Key para usar la IA (clic aquí)'
+              }
+            >
+              <Key size={11} />
+              <span>{user?.has_gemini_key ? 'Conectado' : 'Configurar Key'}</span>
+            </button>
+            <button
               className={styles.iconBtn}
               onClick={onClose}
               title="Cerrar Copiloto IA"
@@ -144,6 +166,26 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
             </button>
           </div>
         </div>
+
+        {!user?.has_gemini_key && (
+          <div className={styles.keyRequiredBanner}>
+            <div className={styles.keyRequiredTitle}>
+              <Key size={14} />
+              <span>Se requiere API Key de Gemini</span>
+            </div>
+            <p className={styles.keyRequiredText}>
+              Configura tu clave gratuita de Google AI Studio en 1 minuto para activar el Copiloto IA y resolver dudas de cátedra.
+            </p>
+            <button
+              type="button"
+              className={styles.keySetupBtn}
+              onClick={() => setIsKeyModalOpen(true)}
+            >
+              <Sparkles size={13} />
+              Configurar Clave Gratis
+            </button>
+          </div>
+        )}
 
         {/* Material de Estudio Selector */}
         <div className={styles.contextRow}>
@@ -311,6 +353,11 @@ export const AiCopilotPane: React.FC<AiCopilotPaneProps> = ({
           </div>
         </>
       )}
+
+      <GeminiApiKeyModal
+        isOpen={isKeyModalOpen}
+        onClose={() => setIsKeyModalOpen(false)}
+      />
     </aside>
   );
 };

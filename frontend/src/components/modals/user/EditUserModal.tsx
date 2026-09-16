@@ -8,6 +8,8 @@ import {
   Shield,
   UserCog,
   AlertCircle,
+  Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
 import { usePerfil } from "../../../hooks/usePerfil";
@@ -30,6 +32,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   const [email, setEmail] = useState("");
   const [legajo, setLegajo] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -42,6 +45,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       setEmail(user?.email || "");
       setLegajo(activeCarrera?.legajo || perfil?.legajo || "");
       setNewPassword("");
+      setGeminiApiKey(user?.gemini_api_key || "");
       setErrorMessage(null);
       setSuccessMessage(null);
     }
@@ -60,11 +64,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       setIsSaving(true);
       setErrorMessage(null);
 
-      // 1. Actualizar datos de usuario (nombre, email, contraseña si se proveyó)
+      // 1. Actualizar datos de usuario (nombre, email, contraseña y clave Gemini)
       await updateUser({
         nombre: nombre.trim(),
         email: email.trim() || undefined,
         password: newPassword ? newPassword : undefined,
+        gemini_api_key: geminiApiKey.trim(),
       });
 
       // 2. Actualizar legajo en carrera activa si existe
@@ -244,6 +249,47 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               <span className={styles.fieldHelp}>
                 Solo completá este campo si deseás modificar tu clave de acceso.
                 Mínimo 6 caracteres.
+              </span>
+            </div>
+          </div>
+
+          {/* SECCIÓN 4: INTELIGENCIA ARTIFICIAL (GEMINI) */}
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>
+              <Sparkles size={13} color="#a855f7" />
+              <span>Inteligencia Artificial (Google Gemini)</span>
+            </div>
+
+            <div className={styles.field}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className={styles.fieldLabel}>API Key de Gemini</label>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: '11px',
+                    color: '#38bdf8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textDecoration: 'none'
+                  }}
+                >
+                  Obtener clave gratis <ExternalLink size={11} />
+                </a>
+              </div>
+              <input
+                type="password"
+                className={styles.input}
+                value={geminiApiKey}
+                onChange={(e) => setGeminiApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <span className={styles.fieldHelp}>
+                Tu clave personal de Google AI Studio para usar el Copiloto IA y la importación de planes de estudio. 100% gratuita y sin tarjeta.
               </span>
             </div>
           </div>

@@ -15,7 +15,7 @@ interface AuthContextType {
   selectCarrera: (carreraId: string) => Promise<void>;
   reloadProfile: () => Promise<void>;
   reloadCarreras: () => Promise<void>;
-  updateUser: (data: { nombre?: string; email?: string; avatar_url?: string; password?: string }) => Promise<User>;
+  updateUser: (data: { nombre?: string; email?: string; avatar_url?: string; password?: string; gemini_api_key?: string }) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +32,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCarreras(list);
       const active = list.find((c) => c.is_activa) || list[0] || null;
       setActiveCarrera(active);
+      if (active?.id) {
+        localStorage.setItem('miestudio-active-carrera', active.id);
+      } else {
+        localStorage.removeItem('miestudio-active-carrera');
+      }
     } catch {
       // Si falla o no está logueado, mantener estado
     }
@@ -41,6 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!authService.isAuthenticated()) {
       setUser(null);
       setActiveCarrera(null);
+      localStorage.removeItem('miestudio-active-carrera');
       setIsLoading(false);
       return;
     }
@@ -50,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(me);
       if (carrera_activa) {
         setActiveCarrera(carrera_activa);
+        localStorage.setItem('miestudio-active-carrera', carrera_activa.id);
       }
       await reloadCarreras();
     } catch (err) {
@@ -60,12 +67,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(refreshResp.user);
         if (refreshResp.carrera_activa) {
           setActiveCarrera(refreshResp.carrera_activa);
+          localStorage.setItem('miestudio-active-carrera', refreshResp.carrera_activa.id);
         }
         await reloadCarreras();
       } catch {
         await authService.logout();
         setUser(null);
         setActiveCarrera(null);
+        localStorage.removeItem('miestudio-active-carrera');
       }
     } finally {
       setIsLoading(false);
@@ -83,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(resp.user);
       if (resp.carrera_activa) {
         setActiveCarrera(resp.carrera_activa);
+        localStorage.setItem('miestudio-active-carrera', resp.carrera_activa.id);
       }
       await reloadCarreras();
     } finally {
@@ -97,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(resp.user);
       if (resp.carrera_activa) {
         setActiveCarrera(resp.carrera_activa);
+        localStorage.setItem('miestudio-active-carrera', resp.carrera_activa.id);
       }
       await reloadCarreras();
     } finally {
@@ -107,6 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true);
     try {
+      localStorage.removeItem('miestudio-active-carrera');
       await authService.logout();
       setUser(null);
       setActiveCarrera(null);
@@ -117,11 +129,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const selectCarrera = async (carreraId: string) => {
+    localStorage.setItem('miestudio-active-carrera', carreraId);
     await carrerasService.setActiveCarrera(carreraId);
     await reloadCarreras();
+    window.dispatchEvent(new CustomEvent('carrera:selected', { detail: carreraId }));
+    window.dispatchEvent(new CustomEvent('materias:updated'));
+    window.dispatchEvent(new CustomEvent('horarios:updated'));
+    window.dispatchEvent(new CustomEvent('evaluaciones:updated'));
   };
 
-  const updateUser = async (data: { nombre?: string; email?: string; avatar_url?: string; password?: string }) => {
+  const updateUser = async (data: { nombre?: string; email?: string; avatar_url?: string; password?: string; gemini_api_key?: string }) => {
     try {
       const updated = await authService.updateMe(data);
       setUser(updated);
@@ -134,6 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           nombre: data.nombre ?? user.nombre,
           email: data.email ?? user.email,
           avatar_url: data.avatar_url ?? user.avatar_url,
+          has_gemini_key: data.gemini_api_key !== undefined ? !!data.gemini_api_key : user.has_gemini_key,
         };
         setUser(localUpdated);
         return localUpdated;

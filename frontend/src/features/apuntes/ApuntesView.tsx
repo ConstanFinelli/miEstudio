@@ -367,7 +367,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
 
         {/* Main Document Body or Split View */}
         <div
-          style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0, minWidth: 0 }}
+          style={{ flex: 1, display: "flex", width: "100%", overflow: "hidden", minHeight: 0, minWidth: 0 }}
         >
           {/* Note Area */}
           <NoteReaderContent

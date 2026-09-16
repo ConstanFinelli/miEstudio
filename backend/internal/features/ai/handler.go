@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -50,6 +52,8 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 	aiGroup.Post("/flashcards", h.GenerarFlashcards)
 	aiGroup.Post("/quiz", h.GenerarQuiz)
 	aiGroup.Post("/explicar-seleccion", h.ExplicarSeleccion)
+	aiGroup.Post("/validate-key", h.ValidateKey)
+	aiGroup.Post("/parse-study-plan", h.ParseStudyPlan)
 }
 
 func (h *Handler) Chat(c *fiber.Ctx) error {
@@ -65,6 +69,9 @@ func (h *Handler) Chat(c *fiber.Ctx) error {
 
 	resp, err := h.service.Chat(c.UserContext(), userID, req)
 	if err != nil {
+		if strings.Contains(err.Error(), "GEMINI_KEY_REQUIRED") {
+			return common.SendError(c, fiber.StatusUnauthorized, "Clave de Gemini requerida", err.Error())
+		}
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar respuesta de IA", err.Error())
 	}
 
@@ -88,8 +95,6 @@ func (h *Handler) StreamChat(c *fiber.Ctx) error {
 	c.Set("Transfer-Encoding", "chunked")
 
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
-		// Crear contexto independiente para la goroutine de streaming
-		// para evitar nil pointer dereference al reciclar RequestCtx en fasthttp
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 		defer cancel()
 
@@ -125,6 +130,9 @@ func (h *Handler) Resumir(c *fiber.Ctx) error {
 
 	resp, err := h.service.Resumir(c.UserContext(), userID, req)
 	if err != nil {
+		if strings.Contains(err.Error(), "GEMINI_KEY_REQUIRED") {
+			return common.SendError(c, fiber.StatusUnauthorized, "Clave de Gemini requerida", err.Error())
+		}
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar resumen", err.Error())
 	}
 
@@ -140,6 +148,9 @@ func (h *Handler) GenerarFlashcards(c *fiber.Ctx) error {
 
 	resp, err := h.service.GenerarFlashcards(c.UserContext(), userID, req)
 	if err != nil {
+		if strings.Contains(err.Error(), "GEMINI_KEY_REQUIRED") {
+			return common.SendError(c, fiber.StatusUnauthorized, "Clave de Gemini requerida", err.Error())
+		}
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar flashcards", err.Error())
 	}
 
@@ -155,6 +166,9 @@ func (h *Handler) GenerarQuiz(c *fiber.Ctx) error {
 
 	resp, err := h.service.GenerarQuiz(c.UserContext(), userID, req)
 	if err != nil {
+		if strings.Contains(err.Error(), "GEMINI_KEY_REQUIRED") {
+			return common.SendError(c, fiber.StatusUnauthorized, "Clave de Gemini requerida", err.Error())
+		}
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al generar cuestionario", err.Error())
 	}
 
@@ -162,6 +176,7 @@ func (h *Handler) GenerarQuiz(c *fiber.Ctx) error {
 }
 
 func (h *Handler) ExplicarSeleccion(c *fiber.Ctx) error {
+	userID := common.GetUserID(c)
 	var req ExplicarRequest
 	if err := c.BodyParser(&req); err != nil {
 		return common.SendError(c, fiber.StatusBadRequest, "Payload inválido para explicación", err.Error())
@@ -171,9 +186,85 @@ func (h *Handler) ExplicarSeleccion(c *fiber.Ctx) error {
 		return common.SendError(c, fiber.StatusBadRequest, "El texto a explicar es obligatorio")
 	}
 
-	resp, err := h.service.ExplicarSeleccion(c.UserContext(), req)
+	resp, err := h.service.ExplicarSeleccion(c.UserContext(), userID, req)
 	if err != nil {
+		if strings.Contains(err.Error(), "GEMINI_KEY_REQUIRED") {
+			return common.SendError(c, fiber.StatusUnauthorized, "Clave de Gemini requerida", err.Error())
+		}
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al explicar selección", err.Error())
+	}
+
+	return common.SendSuccess(c, resp)
+}
+
+func (h *Handler) ValidateKey(c *fiber.Ctx) error {
+	var req ValidateKeyRequest
+	if err := c.BodyParser(&req); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Payload inválido", err.Error())
+	}
+
+	if req.APIKey == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "La clave de API no puede estar vacía")
+	}
+
+	if err := h.service.ValidateKey(c.UserContext(), req.APIKey); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Clave de API inválida o sin acceso a los modelos de Gemini", err.Error())
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"valido":  true,
+		"mensaje": "API Key validada con éxito",
+	})
+}
+
+func (h *Handler) ParseStudyPlan(c *fiber.Ctx) error {
+	userID := common.GetUserID(c)
+	var fileBytes []byte
+	var mimeType string
+	var textContent string
+	var customKey string
+
+	contentType := c.Get("Content-Type")
+	if strings.Contains(contentType, "multipart/form-data") {
+		fileHeader, err := c.FormFile("file")
+		if err != nil || fileHeader == nil {
+			fileHeader, _ = c.FormFile("archivo")
+		}
+		if fileHeader != nil {
+			mimeType = fileHeader.Header.Get("Content-Type")
+			f, err := fileHeader.Open()
+			if err == nil {
+				defer f.Close()
+				fileBytes, _ = io.ReadAll(f)
+			}
+		}
+		textContent = c.FormValue("texto")
+		customKey = c.FormValue("custom_key")
+	} else {
+		var body struct {
+			Texto     string `json:"texto"`
+			CustomKey string `json:"custom_key"`
+		}
+		_ = c.BodyParser(&body)
+		textContent = body.Texto
+		customKey = body.CustomKey
+	}
+
+	if len(fileBytes) == 0 && strings.TrimSpace(textContent) == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "Debes subir un archivo PDF/imagen o ingresar el texto del plan de estudios")
+	}
+
+	var customKeys []string
+	if customKey != "" {
+		customKeys = append(customKeys, customKey)
+	}
+
+	resp, err := h.service.ParseStudyPlan(c.UserContext(), userID, fileBytes, mimeType, textContent, customKeys...)
+	if err != nil {
+		if strings.Contains(err.Error(), "GEMINI_KEY_REQUIRED") {
+			return common.SendError(c, fiber.StatusUnauthorized, "Clave de Gemini requerida", err.Error())
+		}
+		return common.SendError(c, fiber.StatusInternalServerError, "Error al extraer plan de estudios con IA", err.Error())
 	}
 
 	return common.SendSuccess(c, resp)

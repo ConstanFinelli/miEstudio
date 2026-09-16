@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ type Usuario struct {
 	PasswordHash string         `gorm:"type:varchar(255);not null" json:"-"`
 	Nombre       string         `gorm:"type:varchar(255);not null" json:"nombre"`
 	AvatarURL    string         `gorm:"type:varchar(500)" json:"avatar_url"`
+	GeminiAPIKey string         `gorm:"type:varchar(255);default:''" json:"-"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
@@ -35,20 +37,22 @@ func (RefreshToken) TableName() string {
 }
 
 type UserDTO struct {
-	ID        string    `json:"id"`
-	Email     string    `json:"email"`
-	Nombre    string    `json:"nombre"`
-	AvatarURL string    `json:"avatar_url"`
-	CreatedAt time.Time `json:"created_at"`
+	ID           string    `json:"id"`
+	Email        string    `json:"email"`
+	Nombre       string    `json:"nombre"`
+	AvatarURL    string    `json:"avatar_url"`
+	HasGeminiKey bool      `json:"has_gemini_key"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 func (u *Usuario) ToDTO() UserDTO {
 	return UserDTO{
-		ID:        u.ID,
-		Email:     u.Email,
-		Nombre:    u.Nombre,
-		AvatarURL: u.AvatarURL,
-		CreatedAt: u.CreatedAt,
+		ID:           u.ID,
+		Email:        u.Email,
+		Nombre:       u.Nombre,
+		AvatarURL:    u.AvatarURL,
+		HasGeminiKey: strings.TrimSpace(u.GeminiAPIKey) != "",
+		CreatedAt:    u.CreatedAt,
 	}
 }
 
@@ -79,8 +83,9 @@ type AuthResponse struct {
 }
 
 type UpdateUserRequest struct {
-	Nombre    *string `json:"nombre"`
-	Email     *string `json:"email"`
-	AvatarURL *string `json:"avatar_url"`
-	Password  *string `json:"password,omitempty"`
+	Nombre       *string `json:"nombre"`
+	Email        *string `json:"email"`
+	AvatarURL    *string `json:"avatar_url"`
+	Password     *string `json:"password,omitempty"`
+	GeminiAPIKey *string `json:"gemini_api_key,omitempty"`
 }

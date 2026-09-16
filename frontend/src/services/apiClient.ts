@@ -29,6 +29,12 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // Carrera activa seleccionada para aislar datos académicos
+    const activeCarreraId = localStorage.getItem('miestudio-active-carrera');
+    if (activeCarreraId) {
+      headers['X-Active-Carrera-ID'] = activeCarreraId;
+    }
+
     return headers;
   }
 
@@ -39,14 +45,20 @@ class ApiClient {
 
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const isFormData = options.body instanceof FormData;
+    const requestHeaders: Record<string, string> = {
+      ...(this.getHeaders(isFormData) as Record<string, string>),
+      ...((options.headers as Record<string, string>) || {})
+    };
+
+    if (isFormData) {
+      delete requestHeaders['Content-Type'];
+      delete requestHeaders['content-type'];
+    }
 
     try {
       const response = await fetch(url, {
         ...options,
-        headers: {
-          ...this.getHeaders(isFormData),
-          ...options.headers
-        }
+        headers: requestHeaders
       });
 
       if (!response.ok) {

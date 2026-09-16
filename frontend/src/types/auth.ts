@@ -3,6 +3,8 @@ export interface User {
   email: string;
   nombre: string;
   avatar_url?: string;
+  has_gemini_key?: boolean;
+  gemini_api_key?: string;
   created_at: string;
 }
 

@@ -55,7 +55,7 @@ export const authService = {
     return apiClient.get<{ user: User; carrera_activa?: Carrera }>('/auth/me');
   },
 
-  async updateMe(data: { nombre?: string; email?: string; avatar_url?: string; password?: string }): Promise<User> {
+  async updateMe(data: { nombre?: string; email?: string; avatar_url?: string; password?: string; gemini_api_key?: string }): Promise<User> {
     const res = await apiClient.put<{ user: User }>('/auth/me', data);
     return res.user;
   },

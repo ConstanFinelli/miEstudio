@@ -245,6 +245,10 @@ func (s *service) UpdateMe(userID string, req UpdateUserRequest) (*Usuario, erro
 		user.PasswordHash = hash
 	}
 
+	if req.GeminiAPIKey != nil {
+		user.GeminiAPIKey = strings.TrimSpace(*req.GeminiAPIKey)
+	}
+
 	if err := s.repo.UpdateUser(user); err != nil {
 		return nil, err
 	}
