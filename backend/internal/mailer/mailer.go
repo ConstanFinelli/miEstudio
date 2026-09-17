@@ -547,16 +547,7 @@ func (m *smtpMailer) sendWithTLSFallback(addr string, auth smtp.Auth, toEmail st
 	return w.Close()
 }
 
-// logDevConsole imprime el correo en consola formateado para pruebas locales
+// logDevConsole registra discretamente la simulación de correo cuando no hay SMTP configurado
 func (m *smtpMailer) logDevConsole(toEmail, subject, textBody string) {
-	separator := strings.Repeat("=", 68)
-	fmt.Printf("\n%s\n", separator)
-	fmt.Printf("📬 [MAILER DEV CONSOLE] Simulación de Envío de Correo\n")
-	fmt.Printf("   Destinatario : %s\n", toEmail)
-	fmt.Printf("   Asunto       : %s\n", subject)
-	fmt.Printf("   Remitente    : %s\n", m.from)
-	fmt.Printf("   Timestamp    : %s\n", time.Now().Format("2006-01-02 15:04:05"))
-	fmt.Printf("%s\n", strings.Repeat("-", 68))
-	fmt.Printf("%s\n", strings.TrimSpace(textBody))
-	fmt.Printf("%s\n\n", separator)
+	log.Printf("ℹ️ [MAILER] Simulación dev (sin SMTP configurado): correo para %s | Asunto: '%s'", toEmail, subject)
 }

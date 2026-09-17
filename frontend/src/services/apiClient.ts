@@ -67,7 +67,9 @@ class ApiClient {
           response.status === 413
             ? 'El archivo supera el tamaño máximo permitido (máx. 50 MB)'
             : `Error HTTP ${response.status}: ${response.statusText || 'Error en la solicitud'}`;
-        throw new Error(errorBody.error || errorBody.message || defaultMsg);
+        const baseMsg = errorBody.error || errorBody.message || defaultMsg;
+        const fullMsg = errorBody.details ? `${baseMsg} (${errorBody.details})` : baseMsg;
+        throw new Error(fullMsg);
       }
 
       // Si es 204 No Content
