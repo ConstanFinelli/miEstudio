@@ -54,11 +54,11 @@ func (s *service) Register(req RegisterRequest) (*AuthResponse, error) {
 	req.Nombre = strings.TrimSpace(req.Nombre)
 
 	if req.Email == "" || req.Password == "" || req.Nombre == "" {
-		return nil, errors.New("nombre, email y contraseña son campos obligatorios")
+		return nil, errors.New("Por favor, completá tu nombre, correo electrónico y contraseña")
 	}
 
 	if len(req.Password) < 6 {
-		return nil, errors.New("la contraseña debe contener al menos 6 caracteres")
+		return nil, errors.New("La contraseña debe contener al menos 6 caracteres")
 	}
 
 	existingUser, err := s.repo.FindByEmail(req.Email)
@@ -66,12 +66,12 @@ func (s *service) Register(req RegisterRequest) (*AuthResponse, error) {
 		return nil, err
 	}
 	if existingUser != nil {
-		return nil, errors.New("el correo electrónico ya está registrado")
+		return nil, errors.New("Este correo electrónico ya tiene una cuenta registrada. Podés iniciar sesión directamente")
 	}
 
 	hashedPassword, err := HashPassword(req.Password)
 	if err != nil {
-		return nil, errors.New("error al encriptar la contraseña")
+		return nil, errors.New("Ocurrió un problema de seguridad al procesar la contraseña. Por favor, intentá nuevamente")
 	}
 
 	newUser := &Usuario{
@@ -131,7 +131,7 @@ func (s *service) Register(req RegisterRequest) (*AuthResponse, error) {
 func (s *service) Login(req LoginRequest) (*AuthResponse, error) {
 	req.Email = strings.TrimSpace(strings.ToLower(req.Email))
 	if req.Email == "" || req.Password == "" {
-		return nil, errors.New("email y contraseña son obligatorios")
+		return nil, errors.New("Por favor, ingresá tu correo electrónico y contraseña")
 	}
 
 	user, err := s.repo.FindByEmail(req.Email)
@@ -139,11 +139,11 @@ func (s *service) Login(req LoginRequest) (*AuthResponse, error) {
 		return nil, err
 	}
 	if user == nil {
-		return nil, errors.New("credenciales inválidas")
+		return nil, errors.New("El correo electrónico o la contraseña son incorrectos. Por favor, verificalos e intentá nuevamente")
 	}
 
 	if !CheckPasswordHash(req.Password, user.PasswordHash) {
-		return nil, errors.New("credenciales inválidas")
+		return nil, errors.New("El correo electrónico o la contraseña son incorrectos. Por favor, verificalos e intentá nuevamente")
 	}
 
 	activeID := ""
@@ -163,12 +163,12 @@ func (s *service) RefreshToken(refreshTokenStr string) (*AuthResponse, error) {
 	tokenHash := HashRefreshToken(refreshTokenStr)
 	storedToken, err := s.repo.FindRefreshToken(tokenHash)
 	if err != nil || storedToken == nil {
-		return nil, errors.New("refresh token inválido o expirado")
+		return nil, errors.New("Tu sesión ha expirado. Por favor, iniciá sesión nuevamente")
 	}
 
 	user, err := s.repo.FindByID(storedToken.UsuarioID)
 	if err != nil || user == nil {
-		return nil, errors.New("usuario no encontrado")
+		return nil, errors.New("No se encontró la cuenta de usuario")
 	}
 
 	// Rotación de refresh token: revocar el usado

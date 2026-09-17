@@ -126,11 +126,11 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
     });
 
     if (hasOversized && hasNonPdf) {
-      setErrorMessage('Algunos archivos no eran PDF o superaban el límite de 50 MB.');
+      setErrorMessage('Algunos archivos no son formato PDF o superan el límite máximo de 50 MB.');
     } else if (hasOversized) {
-      setErrorMessage('Algunos archivos superan el límite de 50 MB por archivo.');
+      setErrorMessage('El tamaño de algunos archivos supera el límite máximo de 50 MB por archivo.');
     } else if (hasNonPdf) {
-      setErrorMessage('Algunos archivos no eran formato PDF y fueron omitidos.');
+      setErrorMessage('Solo se admiten documentos en formato PDF. Los demás archivos fueron omitidos.');
     } else {
       setErrorMessage(null);
     }
@@ -177,14 +177,14 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (queuedFiles.length === 0) {
-      setErrorMessage('Debes seleccionar al menos un archivo PDF.');
+      setErrorMessage('Por favor, seleccioná al menos un archivo PDF para continuar.');
       return;
     }
 
     // Validate titles
     const emptyTitle = queuedFiles.find(item => !item.titulo.trim());
     if (emptyTitle) {
-      setErrorMessage('Todos los archivos deben tener un título válido.');
+      setErrorMessage('Por favor, asegurate de que todos los archivos tengan un título asignado.');
       return;
     }
 
@@ -222,7 +222,7 @@ export const UploadMaterialModal: React.FC<UploadMaterialModalProps> = ({
       onClose();
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : 'Error al subir los materiales. Intentalo de nuevo.'
+        err instanceof Error ? err.message : 'No pudimos subir los materiales de estudio. Por favor, intentá nuevamente.'
       );
     } finally {
       setIsUploading(false);

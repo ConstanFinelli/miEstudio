@@ -43,12 +43,12 @@ export const RegisterView: React.FC = () => {
     setErrorMessage(null);
 
     if (password !== confirmPassword) {
-      setErrorMessage("Las contraseñas no coinciden");
+      setErrorMessage("Las contraseñas no coinciden. Por favor, verificá que ambas sean iguales.");
       return;
     }
 
     if (password.length < 6) {
-      setErrorMessage("La contraseña debe tener al menos 6 caracteres");
+      setErrorMessage("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
@@ -67,7 +67,7 @@ export const RegisterView: React.FC = () => {
       setIsSuccess(true);
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Error al registrar usuario";
+        err instanceof Error ? err.message : "No pudimos crear tu cuenta. Por favor, intentá nuevamente.";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);

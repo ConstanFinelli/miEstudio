@@ -63,13 +63,38 @@ class ApiClient {
 
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
+
+        // Registrar detalle técnico en consola para desarrollo sin exponer cadenas crudas al usuario
+        if (errorBody.details) {
+          console.error(`[apiClient ${response.status}] ${url}:`, errorBody.details);
+        }
+
         const defaultMsg =
-          response.status === 413
-            ? 'El archivo supera el tamaño máximo permitido (máx. 50 MB)'
-            : `Error HTTP ${response.status}: ${response.statusText || 'Error en la solicitud'}`;
-        const baseMsg = errorBody.error || errorBody.message || defaultMsg;
-        const fullMsg = errorBody.details ? `${baseMsg} (${errorBody.details})` : baseMsg;
-        throw new Error(fullMsg);
+          response.status === 400
+            ? 'Los datos enviados no son válidos. Por favor, revisá la información ingresada.'
+            : response.status === 401
+            ? 'El correo electrónico o la contraseña son incorrectos, o tu sesión ha expirado.'
+            : response.status === 403
+            ? 'No tenés permisos para realizar esta acción.'
+            : response.status === 404
+            ? 'El recurso solicitado no fue encontrado.'
+            : response.status === 413
+            ? 'El archivo supera el tamaño máximo permitido (máx. 50 MB).'
+            : response.status >= 500
+            ? 'Ocurrió un inconveniente temporal en el servidor. Por favor, intentá nuevamente.'
+            : `Error en la solicitud (${response.status})`;
+
+        let userMsg = errorBody.error || errorBody.message || defaultMsg;
+
+        // Limpieza de mensajes técnicos históricos a redacción empática y natural
+        const lower = userMsg.toLowerCase();
+        if (lower.includes('credenciales') || lower.includes('invalid credentials')) {
+          userMsg = 'El correo electrónico o la contraseña son incorrectos. Por favor, verificalos e intentá nuevamente.';
+        } else if (lower.includes('record not found')) {
+          userMsg = 'No se encontró la información solicitada.';
+        }
+
+        throw new Error(userMsg);
       }
 
       // Si es 204 No Content
@@ -79,11 +104,11 @@ class ApiClient {
 
       return await response.json();
     } catch (err: unknown) {
-      // Registrar log amigable de desarrollo cuando el backend Go no está corriendo
       if (err instanceof TypeError && err.message.includes('fetch')) {
         console.info(
-          `[apiClient] Backend Go en ${this.baseUrl} no detectado. Activando fallback a datos locales en memoria.`
+          `[apiClient] Backend Go en ${this.baseUrl} no detectado o fuera de línea.`
         );
+        throw new Error('No pudimos conectar con el servidor. Por favor, comprobá tu conexión a internet.');
       }
       throw err;
     }

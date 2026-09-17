@@ -22,7 +22,7 @@ export const ForgotPasswordView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) {
-      setErrorMessage('Por favor ingresá tu correo electrónico');
+      setErrorMessage('Por favor, ingresá tu correo electrónico.');
       return;
     }
 
@@ -34,7 +34,7 @@ export const ForgotPasswordView: React.FC = () => {
       setIsSubmitted(true);
       setCooldown(60); // 60 segundos de espera para reintentar
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al solicitar el enlace de recuperación';
+      const msg = err instanceof Error ? err.message : 'No pudimos procesar la solicitud. Por favor, intentá nuevamente.';
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -50,7 +50,7 @@ export const ForgotPasswordView: React.FC = () => {
       await authService.forgotPassword(email.trim());
       setCooldown(60);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al reenviar el correo';
+      const msg = err instanceof Error ? err.message : 'No pudimos reenviar el correo en este momento. Por favor, probá en unos segundos.';
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);

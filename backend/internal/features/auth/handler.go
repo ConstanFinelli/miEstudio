@@ -35,7 +35,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 func (h *Handler) Register(c *fiber.Ctx) error {
 	var req RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
-		return common.SendError(c, fiber.StatusBadRequest, "Datos de registro inválidos")
+		return common.SendError(c, fiber.StatusBadRequest, "Los datos enviados no son válidos. Por favor, revisá el formulario.")
 	}
 
 	resp, err := h.service.Register(req)
@@ -50,7 +50,7 @@ func (h *Handler) Register(c *fiber.Ctx) error {
 func (h *Handler) Login(c *fiber.Ctx) error {
 	var req LoginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return common.SendError(c, fiber.StatusBadRequest, "Datos de login inválidos")
+		return common.SendError(c, fiber.StatusBadRequest, "Por favor, ingresá un correo electrónico y una contraseña válidos.")
 	}
 
 	resp, err := h.service.Login(req)
@@ -71,7 +71,7 @@ func (h *Handler) Refresh(c *fiber.Ctx) error {
 	}
 
 	if refreshToken == "" {
-		return common.SendError(c, fiber.StatusUnauthorized, "Refresh token no provisto")
+		return common.SendError(c, fiber.StatusUnauthorized, "Tu sesión ha expirado. Por favor, iniciá sesión nuevamente.")
 	}
 
 	resp, err := h.service.RefreshToken(refreshToken)

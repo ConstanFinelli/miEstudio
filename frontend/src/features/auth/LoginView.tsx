@@ -30,7 +30,7 @@ export const LoginView: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setErrorMessage("Por favor ingresá tu correo y contraseña");
+      setErrorMessage("Por favor, ingresá tu correo electrónico y tu contraseña.");
       return;
     }
 
@@ -44,7 +44,7 @@ export const LoginView: React.FC = () => {
       const msg =
         err instanceof Error
           ? err.message
-          : "Credenciales inválidas o error de conexión";
+          : "No pudimos iniciar tu sesión. Por favor, verificá tus datos e intentá de nuevo.";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);

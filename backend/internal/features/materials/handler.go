@@ -60,13 +60,13 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 		var err2 error
 		fileHeader, err2 = c.FormFile("archivo")
 		if err2 != nil {
-			return common.SendError(c, fiber.StatusBadRequest, "No se adjuntó ningún archivo (campo 'file' o 'archivo')", err.Error())
+			return common.SendError(c, fiber.StatusBadRequest, "Por favor, seleccioná un archivo PDF para subir.", err.Error())
 		}
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return common.SendError(c, fiber.StatusInternalServerError, "Error al leer archivo", err.Error())
+		return common.SendError(c, fiber.StatusInternalServerError, "No se pudo leer el archivo seleccionado. Por favor, intentá nuevamente.", err.Error())
 	}
 	defer file.Close()
 
@@ -82,7 +82,7 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 	material, err := h.service.UploadMaterial(c.Context(), userID, materiaID, titulo, categoria, unidad, file, fileHeader.Filename, mimeType)
 	if err != nil {
 		log.Printf("❌ [materials.Upload] Error al guardar material: %v", err)
-		return common.SendError(c, fiber.StatusInternalServerError, "Error al guardar material", err.Error())
+		return common.SendError(c, fiber.StatusInternalServerError, "No se pudo guardar el material de estudio. Por favor, verificá el archivo e intentá nuevamente.", err.Error())
 	}
 
 	return common.SendCreated(c, material)

@@ -26,7 +26,7 @@ export const ResetPasswordView: React.FC = () => {
     if (!token) {
       setIsVerifying(false);
       setIsTokenValid(false);
-      setErrorMessage('No se proporcionó un token de recuperación válido.');
+      setErrorMessage('El enlace de recuperación no es válido.');
       return;
     }
 
@@ -38,11 +38,11 @@ export const ResetPasswordView: React.FC = () => {
           if (resp.email) setTokenEmail(resp.email);
         } else {
           setIsTokenValid(false);
-          setErrorMessage('El enlace de recuperación ha expirado o ya fue utilizado.');
+          setErrorMessage('El enlace de recuperación ya expiró o ya fue utilizado.');
         }
       } catch (err: unknown) {
         setIsTokenValid(false);
-        const msg = err instanceof Error ? err.message : 'Enlace de recuperación inválido o expirado';
+        const msg = err instanceof Error ? err.message : 'El enlace de recuperación no es válido o ya ha expirado.';
         setErrorMessage(msg);
       } finally {
         setIsVerifying(false);
@@ -57,12 +57,12 @@ export const ResetPasswordView: React.FC = () => {
     setErrorMessage(null);
 
     if (password.length < 6) {
-      setErrorMessage('La contraseña debe tener al menos 6 caracteres');
+      setErrorMessage('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage('Las contraseñas no coinciden');
+      setErrorMessage('Las contraseñas no coinciden. Por favor, asegurate de ingresarlas iguales.');
       return;
     }
 
@@ -72,7 +72,7 @@ export const ResetPasswordView: React.FC = () => {
       await authService.resetPassword(token, password);
       setIsSuccess(true);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al restablecer la contraseña';
+      const msg = err instanceof Error ? err.message : 'No pudimos restablecer tu contraseña. Por favor, intentá nuevamente.';
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);

@@ -24,7 +24,7 @@ export const VerifyEmailView: React.FC = () => {
     if (!token) {
       setIsLoading(false);
       setIsSuccess(false);
-      setErrorMessage('No se proporcionó un token de confirmación.');
+      setErrorMessage('El enlace de activación no es válido.');
       return;
     }
 
@@ -37,7 +37,7 @@ export const VerifyEmailView: React.FC = () => {
         }
       } catch (err: unknown) {
         setIsSuccess(false);
-        const msg = err instanceof Error ? err.message : 'Enlace de confirmación inválido o expirado';
+        const msg = err instanceof Error ? err.message : 'El enlace de activación no es válido o ya ha expirado.';
         setErrorMessage(msg);
       } finally {
         setIsLoading(false);
@@ -58,7 +58,7 @@ export const VerifyEmailView: React.FC = () => {
       const resp = await authService.resendVerification(resendEmail.trim());
       setResendFeedback(resp.message || 'Se envió un nuevo correo de confirmación.');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al reenviar la confirmación';
+      const msg = err instanceof Error ? err.message : 'No pudimos reenviar el correo de activación. Por favor, intentá nuevamente.';
       setErrorMessage(msg);
     } finally {
       setIsResending(false);
