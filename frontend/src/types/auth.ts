@@ -3,6 +3,7 @@ export interface User {
   email: string;
   nombre: string;
   avatar_url?: string;
+  email_verified?: boolean;
   has_gemini_key?: boolean;
   gemini_api_key?: string;
   created_at: string;
@@ -61,3 +62,22 @@ export interface RegisterData {
   legajo?: string;
   duracion_anios?: number;
 }
+
+export interface ForgotPasswordData {
+  email: string;
+}
+
+export interface ResetPasswordData {
+  token: string;
+  password: string;
+}
+
+export interface VerifyResetTokenResponse {
+  valid: boolean;
+  email?: string;
+}
+
+export interface AuthMessageResponse {
+  message: string;
+}
+

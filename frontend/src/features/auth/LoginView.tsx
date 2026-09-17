@@ -105,6 +105,9 @@ export const LoginView: React.FC = () => {
               <label htmlFor="login-password" className={styles.label}>
                 Contraseña
               </label>
+              <Link to="/forgot-password" className={styles.forgotLink}>
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
             <div className={styles.inputWrapper}>
               <Lock size={16} className={styles.inputIcon} />

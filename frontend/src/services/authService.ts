@@ -1,5 +1,13 @@
 import { apiClient } from './apiClient';
-import type { AuthResponse, LoginCredentials, RegisterData, User, Carrera } from '../types/auth';
+import type {
+  AuthResponse,
+  LoginCredentials,
+  RegisterData,
+  User,
+  Carrera,
+  AuthMessageResponse,
+  VerifyResetTokenResponse,
+} from '../types/auth';
 
 const TOKEN_KEY = 'miestudio-token';
 const REFRESH_KEY = 'miestudio-refresh-token';
@@ -60,6 +68,26 @@ export const authService = {
     return res.user;
   },
 
+  async forgotPassword(email: string): Promise<AuthMessageResponse> {
+    return apiClient.post<AuthMessageResponse>('/auth/forgot-password', { email });
+  },
+
+  async verifyResetToken(token: string): Promise<VerifyResetTokenResponse> {
+    return apiClient.get<VerifyResetTokenResponse>(`/auth/verify-reset-token?token=${encodeURIComponent(token)}`);
+  },
+
+  async resetPassword(token: string, password: string): Promise<AuthMessageResponse> {
+    return apiClient.post<AuthMessageResponse>('/auth/reset-password', { token, password });
+  },
+
+  async verifyEmail(token: string): Promise<AuthMessageResponse> {
+    return apiClient.post<AuthMessageResponse>('/auth/verify-email', { token });
+  },
+
+  async resendVerification(email: string): Promise<AuthMessageResponse> {
+    return apiClient.post<AuthMessageResponse>('/auth/resend-verification', { email });
+  },
+
   getStoredToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
   },
@@ -68,3 +96,4 @@ export const authService = {
     return !!localStorage.getItem(TOKEN_KEY);
   }
 };
+

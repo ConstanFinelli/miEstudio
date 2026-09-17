@@ -11,10 +11,11 @@
 /* Main 2-Panel Split */
 .calendarSplit {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 16px;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 @media (max-width: 1024px) {

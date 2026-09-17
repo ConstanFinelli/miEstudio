@@ -187,10 +187,8 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                   }}
                   title={`${ev.titulo} (${ev.horarioInicio || ''})`}
                 >
-                  <span>{getEventIcon(ev.tipo)}</span>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {ev.titulo}
-                  </span>
+                  <span className={styles.eventBadgeIcon}>{getEventIcon(ev.tipo)}</span>
+                  <span className={styles.eventBadgeText}>{ev.titulo}</span>
                 </div>
               ))}
 

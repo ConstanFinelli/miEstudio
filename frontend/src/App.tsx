@@ -8,7 +8,7 @@ import { HorariosView } from "./features/horarios";
 import { ApuntesView } from "./features/apuntes/ApuntesView";
 import { ProgresoView } from "./features/progreso";
 import { MallaCurricularView } from "./features/malla";
-import { LoginView, RegisterView } from "./features/auth";
+import { LoginView, RegisterView, ForgotPasswordView, ResetPasswordView, VerifyEmailView } from "./features/auth";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 import {
@@ -64,6 +64,9 @@ export const App: React.FC = () => {
       {/* Public Auth Routes */}
       <Route path="/login" element={<LoginView />} />
       <Route path="/register" element={<RegisterView />} />
+      <Route path="/forgot-password" element={<ForgotPasswordView />} />
+      <Route path="/reset-password" element={<ResetPasswordView />} />
+      <Route path="/verify-email" element={<VerifyEmailView />} />
 
       {/* Protected Academic Workspace Routes */}
       <Route

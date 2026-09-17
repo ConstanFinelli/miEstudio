@@ -22,6 +22,12 @@ func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handl
 	authGroup.Post("/login", h.Login)
 	authGroup.Post("/refresh", h.Refresh)
 	authGroup.Post("/logout", h.Logout)
+	authGroup.Post("/forgot-password", h.ForgotPassword)
+	authGroup.Get("/verify-reset-token", h.VerifyResetToken)
+	authGroup.Post("/reset-password", h.ResetPassword)
+	authGroup.Get("/verify-email", h.VerifyEmail)
+	authGroup.Post("/verify-email", h.VerifyEmail)
+	authGroup.Post("/resend-verification", h.ResendVerification)
 	authGroup.Get("/me", authMiddleware, h.GetMe)
 	authGroup.Put("/me", authMiddleware, h.UpdateMe)
 }
@@ -148,3 +154,100 @@ func (h *Handler) setRefreshTokenCookie(c *fiber.Ctx, token string) {
 		Path:     "/",
 	})
 }
+
+func (h *Handler) ForgotPassword(c *fiber.Ctx) error {
+	var req ForgotPasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Datos de solicitud inválidos")
+	}
+
+	if req.Email == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "El correo electrónico es obligatorio")
+	}
+
+	if err := h.service.ForgotPassword(req.Email); err != nil {
+		return common.SendError(c, fiber.StatusInternalServerError, "Error al procesar la solicitud")
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"message": "Si el correo está registrado en miEstudio, recibirás un enlace para restablecer tu contraseña.",
+	})
+}
+
+func (h *Handler) VerifyResetToken(c *fiber.Ctx) error {
+	token := c.Query("token")
+	if token == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "Token de recuperación no provisto")
+	}
+
+	valid, email, err := h.service.VerifyResetToken(token)
+	if err != nil || !valid {
+		return common.SendError(c, fiber.StatusBadRequest, "El enlace de recuperación es inválido o ha expirado")
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"valid": true,
+		"email": email,
+	})
+}
+
+func (h *Handler) ResetPassword(c *fiber.Ctx) error {
+	var req ResetPasswordRequest
+	if err := c.BodyParser(&req); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Datos de solicitud inválidos")
+	}
+
+	if req.Token == "" || req.Password == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "El token y la nueva contraseña son obligatorios")
+	}
+
+	if err := h.service.ResetPassword(req.Token, req.Password); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"message": "Tu contraseña ha sido restablecida con éxito. Ya podés iniciar sesión con tu nueva clave.",
+	})
+}
+
+func (h *Handler) VerifyEmail(c *fiber.Ctx) error {
+	token := c.Query("token")
+	if token == "" {
+		var req VerifyEmailRequest
+		_ = c.BodyParser(&req)
+		token = req.Token
+	}
+
+	if token == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "Token de confirmación requerido")
+	}
+
+	if err := h.service.VerifyEmail(token); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"message": "¡Tu cuenta ha sido verificada exitosamente! Ya podés acceder a todas las funciones de miEstudio.",
+	})
+}
+
+func (h *Handler) ResendVerification(c *fiber.Ctx) error {
+	var req ResendVerificationRequest
+	if err := c.BodyParser(&req); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, "Datos de solicitud inválidos")
+	}
+
+	if req.Email == "" {
+		return common.SendError(c, fiber.StatusBadRequest, "El correo electrónico es obligatorio")
+	}
+
+	if err := h.service.ResendVerificationEmail(req.Email); err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	return common.SendSuccess(c, fiber.Map{
+		"message": "Si tu correo requiere confirmación, recibirás un nuevo enlace en tu casilla.",
+	})
+}
+
+

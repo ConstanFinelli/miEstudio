@@ -21,6 +21,12 @@ type Config struct {
 	JWTSecret    string
 	GeminiAPIKey string
 	GeminiModel  string
+	SMTPHost     string
+	SMTPPort     string
+	SMTPUser     string
+	SMTPPassword string
+	SMTPFrom     string
+	FrontendURL  string
 }
 
 func Load() *Config {
@@ -50,6 +56,13 @@ func Load() *Config {
 	geminiAPIKey := getEnv("GEMINI_API_KEY", "")
 	geminiModel := getEnv("GEMINI_MODEL", "gemini-3.8-flash")
 
+	smtpHost := getEnv("SMTP_HOST", "")
+	smtpPort := getEnv("SMTP_PORT", "587")
+	smtpUser := getEnv("SMTP_USER", "")
+	smtpPassword := getEnv("SMTP_PASSWORD", "")
+	smtpFrom := getEnv("SMTP_FROM", "miEstudio <no-reply@miestudio.app>")
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:5173")
+
 	corsStr := getEnv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
 	corsOrigins := strings.Split(corsStr, ",")
 
@@ -66,6 +79,12 @@ func Load() *Config {
 		JWTSecret:    jwtSecret,
 		GeminiAPIKey: geminiAPIKey,
 		GeminiModel:  geminiModel,
+		SMTPHost:     smtpHost,
+		SMTPPort:     smtpPort,
+		SMTPUser:     smtpUser,
+		SMTPPassword: smtpPassword,
+		SMTPFrom:     smtpFrom,
+		FrontendURL:  frontendURL,
 	}
 }
 

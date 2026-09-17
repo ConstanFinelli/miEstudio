@@ -36,6 +36,8 @@ func Init(cfg *config.Config) (*gorm.DB, error) {
 	err = db.AutoMigrate(
 		&auth.Usuario{},
 		&auth.RefreshToken{},
+		&auth.PasswordResetToken{},
+		&auth.EmailVerificationToken{},
 		&carreras.Carrera{},
 		&carreras.AprobacionHistorica{},
 		&subjects.Materia{},

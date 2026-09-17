@@ -16,6 +16,16 @@ type Repository interface {
 	RevokeRefreshToken(id string) error
 	RevokeAllUserTokens(userID string) error
 	UpdateUser(user *Usuario) error
+	SavePasswordResetToken(token *PasswordResetToken) error
+	FindPasswordResetToken(tokenHash string) (*PasswordResetToken, error)
+	MarkPasswordResetTokenUsed(id string) error
+	RevokeAllUserResetTokens(userID string) error
+	UpdatePassword(userID string, passwordHash string) error
+	SaveEmailVerificationToken(token *EmailVerificationToken) error
+	FindEmailVerificationToken(tokenHash string) (*EmailVerificationToken, error)
+	MarkEmailVerificationTokenUsed(id string) error
+	RevokeAllUserVerificationTokens(userID string) error
+	SetUserEmailVerified(userID string, verified bool) error
 }
 
 type repository struct {
@@ -81,3 +91,67 @@ func (r *repository) RevokeAllUserTokens(userID string) error {
 func (r *repository) UpdateUser(user *Usuario) error {
 	return r.db.Save(user).Error
 }
+
+func (r *repository) SavePasswordResetToken(token *PasswordResetToken) error {
+	return r.db.Create(token).Error
+}
+
+func (r *repository) FindPasswordResetToken(tokenHash string) (*PasswordResetToken, error) {
+	var token PasswordResetToken
+	err := r.db.Where("token_hash = ? AND used = ? AND expires_at > ?", tokenHash, false, time.Now()).First(&token).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &token, nil
+}
+
+func (r *repository) MarkPasswordResetTokenUsed(id string) error {
+	return r.db.Model(&PasswordResetToken{}).Where("id = ?", id).Update("used", true).Error
+}
+
+func (r *repository) RevokeAllUserResetTokens(userID string) error {
+	return r.db.Model(&PasswordResetToken{}).Where("usuario_id = ?", userID).Update("used", true).Error
+}
+
+func (r *repository) UpdatePassword(userID string, passwordHash string) error {
+	return r.db.Model(&Usuario{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"password_hash": passwordHash,
+		"updated_at":    time.Now(),
+	}).Error
+}
+
+func (r *repository) SaveEmailVerificationToken(token *EmailVerificationToken) error {
+	return r.db.Create(token).Error
+}
+
+func (r *repository) FindEmailVerificationToken(tokenHash string) (*EmailVerificationToken, error) {
+	var token EmailVerificationToken
+	err := r.db.Where("token_hash = ? AND used = ? AND expires_at > ?", tokenHash, false, time.Now()).First(&token).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &token, nil
+}
+
+func (r *repository) MarkEmailVerificationTokenUsed(id string) error {
+	return r.db.Model(&EmailVerificationToken{}).Where("id = ?", id).Update("used", true).Error
+}
+
+func (r *repository) RevokeAllUserVerificationTokens(userID string) error {
+	return r.db.Model(&EmailVerificationToken{}).Where("usuario_id = ?", userID).Update("used", true).Error
+}
+
+func (r *repository) SetUserEmailVerified(userID string, verified bool) error {
+	return r.db.Model(&Usuario{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"email_verified": verified,
+		"updated_at":     time.Now(),
+	}).Error
+}
+
+

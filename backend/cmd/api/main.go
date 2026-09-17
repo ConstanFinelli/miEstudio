@@ -20,6 +20,7 @@ import (
 	"miestudio/backend/internal/features/profile"
 	"miestudio/backend/internal/features/schedules"
 	"miestudio/backend/internal/features/subjects"
+	"miestudio/backend/internal/mailer"
 	"miestudio/backend/internal/storage"
 )
 
@@ -69,7 +70,8 @@ func main() {
 	authRepo := auth.NewRepository(database)
 	carrerasRepo := carreras.NewRepository(database)
 	carreraAdapter := carreras.NewAuthCarreraAdapter(carrerasRepo)
-	authService := auth.NewService(authRepo, carreraAdapter, cfg.JWTSecret)
+	mailService := mailer.NewMailer(cfg)
+	authService := auth.NewService(authRepo, carreraAdapter, cfg.JWTSecret, mailService, cfg.FrontendURL)
 	authHandler := auth.NewHandler(authService)
 	authHandler.RegisterRoutes(api, authMiddleware)
 

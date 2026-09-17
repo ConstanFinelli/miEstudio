@@ -8,15 +8,16 @@ import (
 )
 
 type Usuario struct {
-	ID           string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
-	Email        string         `gorm:"type:varchar(255);not null;uniqueIndex" json:"email"`
-	PasswordHash string         `gorm:"type:varchar(255);not null" json:"-"`
-	Nombre       string         `gorm:"type:varchar(255);not null" json:"nombre"`
-	AvatarURL    string         `gorm:"type:varchar(500)" json:"avatar_url"`
-	GeminiAPIKey string         `gorm:"type:varchar(255);default:''" json:"-"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
+	ID            string         `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	Email         string         `gorm:"type:varchar(255);not null;uniqueIndex" json:"email"`
+	PasswordHash  string         `gorm:"type:varchar(255);not null" json:"-"`
+	Nombre        string         `gorm:"type:varchar(255);not null" json:"nombre"`
+	AvatarURL     string         `gorm:"type:varchar(500)" json:"avatar_url"`
+	GeminiAPIKey  string         `gorm:"type:varchar(255);default:''" json:"-"`
+	EmailVerified bool           `gorm:"default:false" json:"email_verified"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func (Usuario) TableName() string {
@@ -36,23 +37,51 @@ func (RefreshToken) TableName() string {
 	return "refresh_tokens"
 }
 
+type PasswordResetToken struct {
+	ID        string    `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID string    `gorm:"type:varchar(36);not null;index" json:"usuario_id"`
+	TokenHash string    `gorm:"type:varchar(255);not null;index" json:"token_hash"`
+	ExpiresAt time.Time `gorm:"not null" json:"expires_at"`
+	Used      bool      `gorm:"default:false" json:"used"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (PasswordResetToken) TableName() string {
+	return "password_reset_tokens"
+}
+
+type EmailVerificationToken struct {
+	ID        string    `gorm:"primaryKey;type:varchar(36)" json:"id"`
+	UsuarioID string    `gorm:"type:varchar(36);not null;index" json:"usuario_id"`
+	TokenHash string    `gorm:"type:varchar(255);not null;index" json:"token_hash"`
+	ExpiresAt time.Time `gorm:"not null" json:"expires_at"`
+	Used      bool      `gorm:"default:false" json:"used"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (EmailVerificationToken) TableName() string {
+	return "email_verification_tokens"
+}
+
 type UserDTO struct {
-	ID           string    `json:"id"`
-	Email        string    `json:"email"`
-	Nombre       string    `json:"nombre"`
-	AvatarURL    string    `json:"avatar_url"`
-	HasGeminiKey bool      `json:"has_gemini_key"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID            string    `json:"id"`
+	Email         string    `json:"email"`
+	Nombre        string    `json:"nombre"`
+	AvatarURL     string    `json:"avatar_url"`
+	EmailVerified bool      `json:"email_verified"`
+	HasGeminiKey  bool      `json:"has_gemini_key"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 func (u *Usuario) ToDTO() UserDTO {
 	return UserDTO{
-		ID:           u.ID,
-		Email:        u.Email,
-		Nombre:       u.Nombre,
-		AvatarURL:    u.AvatarURL,
-		HasGeminiKey: strings.TrimSpace(u.GeminiAPIKey) != "",
-		CreatedAt:    u.CreatedAt,
+		ID:            u.ID,
+		Email:         u.Email,
+		Nombre:        u.Nombre,
+		AvatarURL:     u.AvatarURL,
+		EmailVerified: u.EmailVerified,
+		HasGeminiKey:  strings.TrimSpace(u.GeminiAPIKey) != "",
+		CreatedAt:     u.CreatedAt,
 	}
 }
 
@@ -75,6 +104,28 @@ type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type ForgotPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+type ResetPasswordRequest struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+}
+
+type VerifyResetTokenResponse struct {
+	Valid bool   `json:"valid"`
+	Email string `json:"email,omitempty"`
+}
+
+type VerifyEmailRequest struct {
+	Token string `json:"token"`
+}
+
+type ResendVerificationRequest struct {
+	Email string `json:"email"`
+}
+
 type AuthResponse struct {
 	AccessToken  string      `json:"access_token"`
 	RefreshToken string      `json:"refresh_token"`
@@ -89,3 +140,4 @@ type UpdateUserRequest struct {
 	Password     *string `json:"password,omitempty"`
 	GeminiAPIKey *string `json:"gemini_api_key,omitempty"`
 }
+
