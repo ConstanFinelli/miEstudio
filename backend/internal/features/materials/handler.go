@@ -2,6 +2,7 @@ package materials
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"miestudio/backend/internal/common"
@@ -80,6 +81,7 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 
 	material, err := h.service.UploadMaterial(c.Context(), userID, materiaID, titulo, categoria, unidad, file, fileHeader.Filename, mimeType)
 	if err != nil {
+		log.Printf("❌ [materials.Upload] Error al guardar material: %v", err)
 		return common.SendError(c, fiber.StatusInternalServerError, "Error al guardar material", err.Error())
 	}
 
@@ -88,7 +90,7 @@ func (h *Handler) Upload(c *fiber.Ctx) error {
 
 func (h *Handler) StreamFile(c *fiber.Ctx) error {
 	id := c.Params("id")
-	filePath, mat, err := h.service.GetFilePath(c.Context(), id)
+	stream, size, mat, err := h.service.GetFileStream(c.Context(), id)
 	if err != nil {
 		return common.SendError(c, fiber.StatusNotFound, "Material no encontrado")
 	}
@@ -98,7 +100,7 @@ func (h *Handler) StreamFile(c *fiber.Ctx) error {
 	c.Set("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", mat.ArchivoNombreOriginal))
 	c.Set("Accept-Ranges", "bytes")
 
-	return c.SendFile(filePath)
+	return c.SendStream(stream, int(size))
 }
 
 func (h *Handler) Update(c *fiber.Ctx) error {

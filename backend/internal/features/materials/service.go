@@ -16,6 +16,7 @@ type Service interface {
 	ListMateriales(ctx context.Context, usuarioID, materiaID, categoria string) ([]Material, error)
 	GetMaterial(ctx context.Context, id string) (*Material, error)
 	GetFilePath(ctx context.Context, id string) (string, *Material, error)
+	GetFileStream(ctx context.Context, id string) (io.ReadSeekCloser, int64, *Material, error)
 	UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria, unidad string, file io.Reader, filename string, mimeType string) (*Material, error)
 	UpdateMaterial(ctx context.Context, id string, dto UpdateMaterialDTO) (*Material, error)
 	DeleteMaterial(ctx context.Context, id string) error
@@ -40,10 +41,12 @@ func (s *service) ListMateriales(ctx context.Context, usuarioID, materiaID, cate
 
 	for i := range materials {
 		if materials[i].CantPaginas == nil && isPDF(materials[i].ArchivoNombreOriginal, materials[i].MimeType) {
-			filePath := s.storage.GetFilePath(materials[i].ArchivoKey)
-			if count, err := CountPDFPages(filePath); err == nil && count > 0 {
-				materials[i].CantPaginas = &count
-				_ = s.repo.Update(ctx, &materials[i])
+			if rc, _, err := s.storage.Get(ctx, materials[i].ArchivoKey); err == nil {
+				if count, err := CountPDFPagesFromReader(rc); err == nil && count > 0 {
+					materials[i].CantPaginas = &count
+					_ = s.repo.Update(ctx, &materials[i])
+				}
+				_ = rc.Close()
 			}
 		}
 	}
@@ -61,10 +64,12 @@ func (s *service) GetMaterial(ctx context.Context, id string) (*Material, error)
 	}
 
 	if mat.CantPaginas == nil && isPDF(mat.ArchivoNombreOriginal, mat.MimeType) {
-		filePath := s.storage.GetFilePath(mat.ArchivoKey)
-		if count, err := CountPDFPages(filePath); err == nil && count > 0 {
-			mat.CantPaginas = &count
-			_ = s.repo.Update(ctx, mat)
+		if rc, _, err := s.storage.Get(ctx, mat.ArchivoKey); err == nil {
+			if count, err := CountPDFPagesFromReader(rc); err == nil && count > 0 {
+				mat.CantPaginas = &count
+				_ = s.repo.Update(ctx, mat)
+			}
+			_ = rc.Close()
 		}
 	}
 
@@ -78,6 +83,18 @@ func (s *service) GetFilePath(ctx context.Context, id string) (string, *Material
 	}
 	filePath := s.storage.GetFilePath(mat.ArchivoKey)
 	return filePath, mat, nil
+}
+
+func (s *service) GetFileStream(ctx context.Context, id string) (io.ReadSeekCloser, int64, *Material, error) {
+	mat, err := s.GetMaterial(ctx, id)
+	if err != nil {
+		return nil, 0, nil, err
+	}
+	rc, size, err := s.storage.Get(ctx, mat.ArchivoKey)
+	if err != nil {
+		return nil, 0, nil, err
+	}
+	return rc, size, mat, nil
 }
 
 func (s *service) UploadMaterial(ctx context.Context, usuarioID, materiaID, titulo, categoria, unidad string, file io.Reader, filename string, mimeType string) (*Material, error) {
@@ -94,16 +111,18 @@ func (s *service) UploadMaterial(ctx context.Context, usuarioID, materiaID, titu
 		mimeType = "application/pdf"
 	}
 
-	key, size, err := s.storage.Save(ctx, file, filename)
+	key, size, err := s.storage.Save(ctx, file, filename, mimeType)
 	if err != nil {
 		return nil, err
 	}
 
 	var cantPaginas *int
 	if isPDF(filename, mimeType) {
-		filePath := s.storage.GetFilePath(key)
-		if count, err := CountPDFPages(filePath); err == nil && count > 0 {
-			cantPaginas = &count
+		if rc, _, err := s.storage.Get(ctx, key); err == nil {
+			if count, err := CountPDFPagesFromReader(rc); err == nil && count > 0 {
+				cantPaginas = &count
+			}
+			_ = rc.Close()
 		}
 	}
 
@@ -186,10 +205,12 @@ func (s *service) SincronizarPaginasMateriales(ctx context.Context) error {
 		if !isPDF(mat.ArchivoNombreOriginal, mat.MimeType) {
 			continue
 		}
-		filePath := s.storage.GetFilePath(mat.ArchivoKey)
-		if count, err := CountPDFPages(filePath); err == nil && count > 0 {
-			mat.CantPaginas = &count
-			_ = s.repo.Update(ctx, mat)
+		if rc, _, err := s.storage.Get(ctx, mat.ArchivoKey); err == nil {
+			if count, err := CountPDFPagesFromReader(rc); err == nil && count > 0 {
+				mat.CantPaginas = &count
+				_ = s.repo.Update(ctx, mat)
+			}
+			_ = rc.Close()
 		}
 	}
 	return nil

@@ -18,28 +18,47 @@ var (
 )
 
 // CountPDFPages determines the number of pages in a PDF file at filePath.
-// It first attempts to use pdfcpu (robust ISO 32000 parser).
-// If that fails (e.g. slight syntax irregularity or encrypted metadata),
-// it falls back to a fast byte scanner.
 func CountPDFPages(filePath string) (int, error) {
-	if f, err := os.Open(filePath); err == nil {
-		defer f.Close()
-		conf := model.NewDefaultConfiguration()
-		conf.ValidationMode = model.ValidationRelaxed
-		count, pErr := api.PageCount(f, conf)
-		if pErr == nil && count > 0 {
-			return count, nil
-		}
+	f, err := os.Open(filePath)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+
+	return CountPDFPagesFromReader(f)
+}
+
+// CountPDFPagesFromReader determines the number of pages in a PDF from an io.ReadSeeker stream.
+// It first attempts to use pdfcpu (robust ISO 32000 parser).
+// If that fails, it rewinds the stream and falls back to a fast byte scanner.
+func CountPDFPagesFromReader(rs io.ReadSeeker) (int, error) {
+	if rs == nil {
+		return 0, io.ErrUnexpectedEOF
 	}
 
-	// Fallback: fast scan of the PDF file
-	fallbackCount, fallbackErr := countPagesFallback(filePath)
+	conf := model.NewDefaultConfiguration()
+	conf.ValidationMode = model.ValidationRelaxed
+	count, pErr := api.PageCount(rs, conf)
+	if pErr == nil && count > 0 {
+		return count, nil
+	}
+
+	// Rewind to start before running regex fallback
+	if _, err := rs.Seek(0, io.SeekStart); err != nil {
+		return count, pErr
+	}
+
+	fallbackCount, fallbackErr := countPagesFallbackFromReader(rs)
 	if fallbackErr == nil && fallbackCount > 0 {
 		return fallbackCount, nil
 	}
 
+	if pErr != nil {
+		return 0, pErr
+	}
 	return fallbackCount, fallbackErr
 }
+
 
 func countPagesFallback(filePath string) (int, error) {
 	f, err := os.Open(filePath)
@@ -48,7 +67,12 @@ func countPagesFallback(filePath string) (int, error) {
 	}
 	defer f.Close()
 
-	reader := bufio.NewReader(f)
+	return countPagesFallbackFromReader(f)
+}
+
+func countPagesFallbackFromReader(r io.Reader) (int, error) {
+	reader := bufio.NewReader(r)
+
 	var maxCount int
 	var pageTypesCount int
 

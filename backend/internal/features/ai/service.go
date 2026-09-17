@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 
 	"miestudio/backend/internal/features/auth"
@@ -102,10 +102,15 @@ func (s *service) prepareContext(ctx context.Context, userID string, materialID 
 		return nil, fmt.Errorf("no tienes permiso para consultar este material de estudio")
 	}
 
-	filePath := s.storage.GetFilePath(mat.ArchivoKey)
-	fileBytes, err := os.ReadFile(filePath)
+	rc, _, err := s.storage.Get(ctx, mat.ArchivoKey)
 	if err != nil {
-		return nil, fmt.Errorf("no se pudo leer el archivo del material: %w", err)
+		return nil, fmt.Errorf("no se pudo obtener el archivo del material: %w", err)
+	}
+	defer rc.Close()
+
+	fileBytes, err := io.ReadAll(rc)
+	if err != nil {
+		return nil, fmt.Errorf("no se pudo leer el contenido del material: %w", err)
 	}
 
 	mimeType := mat.MimeType

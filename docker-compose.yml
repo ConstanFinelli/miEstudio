@@ -22,6 +22,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
     container_name: miestudio_backend
     restart: unless-stopped
     environment:

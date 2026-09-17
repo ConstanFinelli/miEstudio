@@ -16,17 +16,24 @@ type Config struct {
 	DBHost       string
 	DBPort       string
 	DBName       string
-	StorageDir   string
-	CORSOrigins  []string
-	JWTSecret    string
-	GeminiAPIKey string
-	GeminiModel  string
-	SMTPHost     string
-	SMTPPort     string
-	SMTPUser     string
-	SMTPPassword string
-	SMTPFrom     string
-	FrontendURL  string
+	StorageDir        string
+	StorageDriver     string
+	R2AccountID       string
+	R2AccessKeyID     string
+	R2SecretAccessKey string
+	R2BucketName      string
+	R2Endpoint        string
+	R2PublicURL       string
+	CORSOrigins       []string
+	JWTSecret         string
+	GeminiAPIKey      string
+	GeminiModel       string
+	SMTPHost          string
+	SMTPPort          string
+	SMTPUser          string
+	SMTPPassword      string
+	SMTPFrom          string
+	FrontendURL       string
 }
 
 func Load() *Config {
@@ -52,6 +59,17 @@ func Load() *Config {
 	dbPort := getEnv("DB_PORT", "3306")
 	dbName := getEnv("DB_NAME", "miestudio")
 	storageDir := getEnv("STORAGE_DIR", "./uploads")
+	storageDriver := strings.ToLower(getEnv("STORAGE_DRIVER", "local"))
+	r2AccountID := getEnv("R2_ACCOUNT_ID", "")
+	r2AccessKeyID := getEnv("R2_ACCESS_KEY_ID", "")
+	r2SecretAccessKey := getEnv("R2_SECRET_ACCESS_KEY", "")
+	r2BucketName := getEnv("R2_BUCKET_NAME", "miestudio-materiales")
+	r2Endpoint := getEnv("R2_ENDPOINT", "")
+	if r2Endpoint == "" && r2AccountID != "" {
+		r2Endpoint = fmt.Sprintf("https://%s.r2.cloudflarestorage.com", r2AccountID)
+	}
+	r2PublicURL := getEnv("R2_PUBLIC_URL", "")
+
 	jwtSecret := getEnv("JWT_SECRET", "miestudio-super-secret-jwt-key-change-in-production-32bytes")
 	geminiAPIKey := getEnv("GEMINI_API_KEY", "")
 	geminiModel := getEnv("GEMINI_MODEL", "gemini-3.8-flash")
@@ -67,24 +85,31 @@ func Load() *Config {
 	corsOrigins := strings.Split(corsStr, ",")
 
 	return &Config{
-		Port:         port,
-		DBDriver:     dbDriver,
-		DBUser:       dbUser,
-		DBPassword:   dbPassword,
-		DBHost:       dbHost,
-		DBPort:       dbPort,
-		DBName:       dbName,
-		StorageDir:   storageDir,
-		CORSOrigins:  corsOrigins,
-		JWTSecret:    jwtSecret,
-		GeminiAPIKey: geminiAPIKey,
-		GeminiModel:  geminiModel,
-		SMTPHost:     smtpHost,
-		SMTPPort:     smtpPort,
-		SMTPUser:     smtpUser,
-		SMTPPassword: smtpPassword,
-		SMTPFrom:     smtpFrom,
-		FrontendURL:  frontendURL,
+		Port:              port,
+		DBDriver:          dbDriver,
+		DBUser:            dbUser,
+		DBPassword:        dbPassword,
+		DBHost:            dbHost,
+		DBPort:            dbPort,
+		DBName:            dbName,
+		StorageDir:        storageDir,
+		StorageDriver:     storageDriver,
+		R2AccountID:       r2AccountID,
+		R2AccessKeyID:     r2AccessKeyID,
+		R2SecretAccessKey: r2SecretAccessKey,
+		R2BucketName:      r2BucketName,
+		R2Endpoint:        r2Endpoint,
+		R2PublicURL:       r2PublicURL,
+		CORSOrigins:       corsOrigins,
+		JWTSecret:         jwtSecret,
+		GeminiAPIKey:      geminiAPIKey,
+		GeminiModel:       geminiModel,
+		SMTPHost:          smtpHost,
+		SMTPPort:          smtpPort,
+		SMTPUser:          smtpUser,
+		SMTPPassword:      smtpPassword,
+		SMTPFrom:          smtpFrom,
+		FrontendURL:       frontendURL,
 	}
 }
 

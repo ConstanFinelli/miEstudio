@@ -33,10 +33,22 @@ func main() {
 		log.Fatalf("Error crítico al inicializar la base de datos: %v", err)
 	}
 
-	// 2. Inicializar Storage Local para PDFs
-	storageService, err := storage.NewLocalStorage(cfg.StorageDir)
-	if err != nil {
-		log.Fatalf("Error crítico al inicializar el servicio de almacenamiento: %v", err)
+	// 2. Inicializar Servicio de Almacenamiento (Cloudflare R2 o Local)
+	var storageService storage.StorageService
+	if cfg.StorageDriver == "r2" || cfg.StorageDriver == "s3" {
+		r2Storage, err := storage.NewR2Storage(cfg)
+		if err != nil {
+			log.Fatalf("Error crítico al inicializar Cloudflare R2: %v", err)
+		}
+		storageService = r2Storage
+		log.Printf("☁️  Storage inicializado en la nube (Cloudflare R2, bucket: %s)", cfg.R2BucketName)
+	} else {
+		localStorage, err := storage.NewLocalStorage(cfg.StorageDir)
+		if err != nil {
+			log.Fatalf("Error crítico al inicializar LocalStorage: %v", err)
+		}
+		storageService = localStorage
+		log.Printf("📁 Storage inicializado en disco local (%s)", cfg.StorageDir)
 	}
 
 	// 3. Instanciar Servidor Fiber

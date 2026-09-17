@@ -11,9 +11,10 @@ import (
 )
 
 type StorageService interface {
-	Save(ctx context.Context, file io.Reader, originalFilename string) (key string, size int64, err error)
+	Save(ctx context.Context, file io.Reader, originalFilename string, mimeType string) (key string, size int64, err error)
 	Get(ctx context.Context, key string) (io.ReadSeekCloser, int64, error)
 	GetFilePath(key string) string
+	GetURL(ctx context.Context, key string) (string, error)
 	Delete(ctx context.Context, key string) error
 }
 
@@ -28,7 +29,7 @@ func NewLocalStorage(baseDir string) (*LocalStorage, error) {
 	return &LocalStorage{baseDir: baseDir}, nil
 }
 
-func (s *LocalStorage) Save(ctx context.Context, file io.Reader, originalFilename string) (string, int64, error) {
+func (s *LocalStorage) Save(ctx context.Context, file io.Reader, originalFilename string, mimeType string) (string, int64, error) {
 	ext := filepath.Ext(originalFilename)
 	key := fmt.Sprintf("%s%s", uuid.New().String(), ext)
 	dstPath := filepath.Join(s.baseDir, key)
@@ -68,6 +69,10 @@ func (s *LocalStorage) GetFilePath(key string) string {
 	return filepath.Join(s.baseDir, key)
 }
 
+func (s *LocalStorage) GetURL(ctx context.Context, key string) (string, error) {
+	return "", nil
+}
+
 func (s *LocalStorage) Delete(ctx context.Context, key string) error {
 	filePath := s.GetFilePath(key)
 	if err := os.Remove(filePath); err != nil && !os.IsNotExist(err) {
@@ -75,3 +80,32 @@ func (s *LocalStorage) Delete(ctx context.Context, key string) error {
 	}
 	return nil
 }
+
+// ByteReadSeekCloser adapta un buffer en memoria a io.ReadSeekCloser
+type ByteReadSeekCloser struct {
+	*io.SectionReader
+}
+
+func NewByteReadSeekCloser(b []byte) *ByteReadSeekCloser {
+	return &ByteReadSeekCloser{
+		SectionReader: io.NewSectionReader(bytesReader(b), 0, int64(len(b))),
+	}
+}
+
+func (b *ByteReadSeekCloser) Close() error {
+	return nil
+}
+
+type bytesReader []byte
+
+func (b bytesReader) ReadAt(p []byte, off int64) (n int, err error) {
+	if off < 0 || off >= int64(len(b)) {
+		return 0, io.EOF
+	}
+	n = copy(p, b[off:])
+	if n < len(p) {
+		err = io.EOF
+	}
+	return n, err
+}
+
