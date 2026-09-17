@@ -192,6 +192,16 @@ export const ResetPasswordView: React.FC = () => {
               </div>
             </div>
 
+            <div className={styles.tipBox}>
+              <ShieldCheck size={18} className={styles.tipIcon} />
+              <div className={styles.tipContent}>
+                <span className={styles.tipTitle}>Recomendación de seguridad</span>
+                <p className={styles.tipText}>
+                  Usá al menos <strong>6 caracteres</strong> combinando letras y números para proteger tu cuenta.
+                </p>
+              </div>
+            </div>
+
             <button
               type="submit"
               className={styles.submitBtn}

@@ -104,7 +104,13 @@ export const RegisterView: React.FC = () => {
               Tu cuenta ha sido creada exitosamente. Te enviamos un correo de bienvenida a <span className={styles.emailHighlight}>{email}</span> con información útil para tu trayectoria académica.
             </p>
             <div className={styles.successTip}>
-              🎓 <strong>Carrera configurada:</strong> Registramos <em>"{carreraNombre || 'Mi Carrera'}"</em> como tu carrera activa. Ya tenés acceso a tu panel de materias, calendario de evaluaciones y apuntes asistidos por IA.
+              <GraduationCap size={18} className={styles.tipIcon} />
+              <div className={styles.tipContent}>
+                <span className={styles.tipTitle}>Carrera configurada</span>
+                <p className={styles.tipText}>
+                  Registramos <em>"{carreraNombre || 'Mi Carrera'}"</em> como tu carrera activa. Ya tenés acceso a tu panel de materias, calendario de evaluaciones y apuntes asistidos por IA.
+                </p>
+              </div>
             </div>
             <button
               type="button"

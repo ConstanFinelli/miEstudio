@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
+import { Mail, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, KeyRound, Clock } from 'lucide-react';
 import { authService } from '../../services/authService';
 import styles from './ForgotPasswordView.module.css';
 
@@ -134,7 +134,13 @@ export const ForgotPasswordView: React.FC = () => {
             </p>
 
             <div className={styles.tipBox}>
-              ⏱️ <strong>Aviso de seguridad:</strong> El enlace expirará en <strong>60 minutos</strong>. Si no lo ves en tu bandeja de entrada, revisá tu carpeta de <em>spam</em> o <em>correo no deseado</em>.
+              <Clock size={18} className={styles.tipIcon} />
+              <div className={styles.tipContent}>
+                <span className={styles.tipTitle}>Aviso de seguridad</span>
+                <p className={styles.tipText}>
+                  El enlace expirará en <strong>60 minutos</strong>. Si no lo ves en tu bandeja de entrada, revisá tu carpeta de <em>spam</em> o <em>correo no deseado</em>.
+                </p>
+              </div>
             </div>
 
             <div className={styles.resendRow}>

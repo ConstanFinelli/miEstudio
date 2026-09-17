@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Mail } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, ArrowLeft, Mail, Sparkles } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import styles from './VerifyEmailView.module.css';
@@ -93,7 +93,13 @@ export const VerifyEmailView: React.FC = () => {
               Tu dirección de correo electrónico ha sido verificada exitosamente. Tu cuenta está activa y lista para potenciar tu estudio universitario.
             </p>
             <div className={styles.tipBox}>
-              🚀 <strong>Todo listo:</strong> Podés acceder a tu plan de materias, apuntes inteligentes con IA y seguimiento de cursada.
+              <Sparkles size={18} className={styles.tipIcon} />
+              <div className={styles.tipContent}>
+                <span className={styles.tipTitle}>Workspace activado</span>
+                <p className={styles.tipText}>
+                  Ya podés acceder a tu plan de materias, apuntes inteligentes con IA y seguimiento de cursada.
+                </p>
+              </div>
             </div>
             <button
               type="button"
@@ -141,7 +147,8 @@ export const VerifyEmailView: React.FC = () => {
               </button>
               {resendFeedback && (
                 <div className={styles.resendFeedback}>
-                  ✓ {resendFeedback}
+                  <CheckCircle2 size={16} className={styles.resendFeedbackIcon} />
+                  <span>{resendFeedback}</span>
                 </div>
               )}
             </form>
