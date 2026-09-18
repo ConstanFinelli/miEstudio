@@ -94,6 +94,19 @@
   border-radius: var(--radius-md);
 }
 
+.filtersLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.filtersDivider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-subtle);
+}
+
 .filterGroup {
   display: flex;
   align-items: center;

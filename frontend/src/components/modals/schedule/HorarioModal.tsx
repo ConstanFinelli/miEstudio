@@ -57,7 +57,7 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
   defaultMateriaId,
 }) => {
   const { activeCarrera, carreras } = useAuth();
-  const { materias, updateMateria } = useMaterias();
+  const { materias, updateMateria } = useMaterias(undefined, undefined, "ALL");
 
   const [materiaId, setMateriaId] = useState("");
   const [diaSemana, setDiaSemana] = useState<DiaSemana>(defaultDiaSemana);
@@ -270,13 +270,23 @@ export const HorarioModal: React.FC<HorarioModalProps> = ({
               <option value="" disabled>
                 Seleccionar materia...
               </option>
-              {availableMaterias.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.codigo ? `[${m.codigo}] ` : ""}
-                  {m.nombre} ({m.anio}° Año - {m.cuatrimestre})
-                  {m.estado !== "CURSANDO" ? ` - (${m.estado})` : ""}
-                </option>
-              ))}
+              {availableMaterias.map((m) => {
+                const cId = m.carreraId || m.carrera_id;
+                const carreraObj = carreras.find((c) => c.id === cId);
+                const carreraPrefix =
+                  carreras.length > 1 && carreraObj
+                    ? `[${carreraObj.nombre}] `
+                    : "";
+
+                return (
+                  <option key={m.id} value={m.id}>
+                    {carreraPrefix}
+                    {m.codigo ? `[${m.codigo}] ` : ""}
+                    {m.nombre} ({m.anio}° Año - {m.cuatrimestre})
+                    {m.estado !== "CURSANDO" ? ` - (${m.estado})` : ""}
+                  </option>
+                );
+              })}
             </select>
 
             {selectedMateria && (

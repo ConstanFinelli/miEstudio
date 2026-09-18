@@ -14,6 +14,7 @@ export const horarioMapper = {
       materiaNombre: dto.materia?.nombre || materiaNombre || 'Materia',
       materiaCodigo: dto.materia?.codigo || materiaCodigo || 'MAT',
       materiaColor: dto.materia?.color || materiaColor || 'var(--primary)',
+      carreraId: dto.materia?.carrera_id,
       diaSemana: dto.dia_semana as DiaSemana,
       horaInicio: dto.hora_inicio,
       horaFin: dto.hora_fin,

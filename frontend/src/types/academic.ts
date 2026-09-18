@@ -165,6 +165,8 @@ export interface HorarioCursada {
   materiaNombre?: string;
   materiaCodigo?: string;
   materiaColor?: string;
+  carreraId?: string;
+  carreraNombre?: string;
   diaSemana: DiaSemana;
   horaInicio: string; // "08:30"
   horaFin: string; // "12:45"

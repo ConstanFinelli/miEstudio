@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import styles from './WeeklyScheduleGrid.module.css';
-import type { HorarioCursada, DiaSemana } from '../../../../types/academic';
+import type { HorarioCursada, DiaSemana, Materia } from '../../../../types/academic';
 import { useHorarios, useMaterias } from '../../../../hooks';
+import { useAuth } from '../../../../context/AuthContext';
 import { HorarioModal, MateriaColorModal } from '../../../../components/modals';
 import { Palette } from 'lucide-react';
 import type { ScheduleLayoutItem } from '../ScheduleCard';
@@ -28,13 +29,19 @@ const parseTimeToMinutes = (timeStr: string): number => {
 
 interface WeeklyScheduleGridProps {
   filterCuatri?: 'TODOS' | '1C' | '2C' | 'Anual';
+  filterCarreraId?: string;
+  allMaterias?: Materia[];
 }
 
 export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
-  filterCuatri = 'TODOS'
+  filterCuatri = 'TODOS',
+  filterCarreraId = 'TODAS',
+  allMaterias
 }) => {
+  const { carreras } = useAuth();
   const { horarios, deleteHorario, refresh } = useHorarios();
-  const { materias } = useMaterias();
+  const { materias: hookMaterias } = useMaterias(undefined, undefined, 'ALL');
+  const materias = allMaterias && allMaterias.length > 0 ? allMaterias : hookMaterias;
 
   const [showSaturday, setShowSaturday] = useState<boolean>(() => {
     return horarios.some((h) => h.diaSemana === 'SABADO');
@@ -53,18 +60,23 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
   // Check today's day of week (0=Sunday, 1=Monday ... 6=Saturday)
   const currentDayIndex = new Date().getDay();
 
-  // El horario se forma solo con materias con estado 'CURSANDO'
+  // El horario se forma con materias con estado 'CURSANDO' (de todas o de la carrera filtrada)
   const filteredHorarios = useMemo(() => {
     return horarios.filter((h) => {
       const mat = materias.find((m) => m.id === h.materiaId);
-      // Si la materia no pertenece a la carrera activa o no está CURSANDO, se excluye del horario
       if (!mat || mat.estado !== 'CURSANDO') return false;
+
+      if (filterCarreraId && filterCarreraId !== 'TODAS') {
+        const matCarreraId = mat.carreraId || mat.carrera_id;
+        if (matCarreraId !== filterCarreraId) return false;
+      }
+
       if (filterCuatri !== 'TODOS' && mat.cuatrimestre !== filterCuatri) {
         return false;
       }
       return true;
     });
-  }, [horarios, materias, filterCuatri]);
+  }, [horarios, materias, filterCarreraId, filterCuatri]);
 
   // Active days list (Mon-Fri or Mon-Sat)
   const activeDays = useMemo(() => {
@@ -142,7 +154,14 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
 
     if (map.size === 0) {
       materias
-        .filter((m) => m.estado === 'CURSANDO')
+        .filter((m) => {
+          if (m.estado !== 'CURSANDO') return false;
+          if (filterCarreraId && filterCarreraId !== 'TODAS') {
+            const matCarreraId = m.carreraId || m.carrera_id;
+            if (matCarreraId !== filterCarreraId) return false;
+          }
+          return true;
+        })
         .forEach((m) => {
           map.set(m.id, {
             id: m.id,
@@ -154,20 +173,27 @@ export const WeeklyScheduleGrid: React.FC<WeeklyScheduleGridProps> = ({
     }
 
     return Array.from(map.values());
-  }, [filteredHorarios, materias]);
+  }, [filteredHorarios, materias, filterCarreraId]);
 
-  // Enrich horarios with materia details (color, name, code)
+  // Enrich horarios with materia details (color, name, code, carrera)
   const enrichedHorarios = useMemo(() => {
     return filteredHorarios.map((h) => {
       const mat = materias.find((m) => m.id === h.materiaId);
+      const matCarreraId = mat?.carreraId || mat?.carrera_id || h.carreraId;
+      const carreraObj = carreras.find((c) => c.id === matCarreraId);
+      // Mostramos el nombre de la carrera si se visualizan 'TODAS' y el usuario tiene más de 1 carrera
+      const shouldShowCarrera = (filterCarreraId === 'TODAS' && carreras.length > 1) || false;
+
       return {
         ...h,
         materiaNombre: mat?.nombre || h.materiaNombre || 'Materia',
         materiaCodigo: mat?.codigo || h.materiaCodigo || 'MAT',
-        materiaColor: mat?.color || h.materiaColor || '#6366f1'
+        materiaColor: mat?.color || h.materiaColor || '#6366f1',
+        carreraId: matCarreraId,
+        carreraNombre: shouldShowCarrera ? (carreraObj?.nombre || h.carreraNombre) : undefined
       };
     });
-  }, [filteredHorarios, materias]);
+  }, [filteredHorarios, materias, carreras, filterCarreraId]);
 
   // Overlap and layout calculation per day
   const dayLayouts = useMemo(() => {

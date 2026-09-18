@@ -60,6 +60,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
   const fullTooltip = [
     h.materiaNombre,
+    h.carreraNombre ? `[${h.carreraNombre}]` : "",
     `(${h.horaInicio} - ${h.horaFin} hs)`,
     h.tipoClase ? `• ${h.tipoClase}` : "",
     h.facultadSede ? `• Sede: ${h.facultadSede}` : "",
@@ -87,6 +88,15 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
       {item.hasConflict && (
         <div className={styles.conflictBadge}>
           <AlertTriangle size={8} /> Solapamiento
+        </div>
+      )}
+
+      {/* Badge de Carrera si está disponible */}
+      {h.carreraNombre && (
+        <div style={{ display: "flex" }}>
+          <span className={styles.carreraBadge} title={`Carrera: ${h.carreraNombre}`}>
+            {h.carreraNombre}
+          </span>
         </div>
       )}
 
