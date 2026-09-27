@@ -563,7 +563,6 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
         display: 'flex',
         flexDirection: 'column',
         gap: '14px',
-        marginTop: '8px',
         minWidth: 0,
         maxWidth: '100%',
         width: '100%',
@@ -888,11 +887,6 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
               }
             }}
           >
-            <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
-            <div className={styles.docMetaGroup}>
-              <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>
-              <div>Evaluación: <strong>{activeNote.evaluacionNombre || activeNote.carpeta || 'General'}</strong></div>
-            </div>
             {renderBlocksList()}
           </div>
         </div>
