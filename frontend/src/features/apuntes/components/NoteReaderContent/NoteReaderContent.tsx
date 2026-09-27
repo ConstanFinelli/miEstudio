@@ -85,18 +85,23 @@ const renderInline = (text: string): React.ReactNode => {
   return parts;
 };
 
-// Parser to turn raw Markdown lines into styled block nodes
-const parseMarkdownBlocks = (md: string) => {
+export interface MarkdownBlock {
+  type: 'h1' | 'h2' | 'h3' | 'callout' | 'math' | 'code' | 'table' | 'list' | 'image' | 'p';
+  content: string;
+  startLine: number;
+  endLine: number;
+  extra?: any;
+}
+
+// Parser to turn raw Markdown lines into styled block nodes with line metadata
+const parseMarkdownBlocks = (md: string): MarkdownBlock[] => {
   const lines = md.split('\n');
-  const blocks: Array<{
-    type: 'h1' | 'h2' | 'h3' | 'callout' | 'math' | 'code' | 'table' | 'list' | 'image' | 'p';
-    content: string;
-    extra?: any;
-  }> = [];
+  const blocks: MarkdownBlock[] = [];
 
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
+    const startLine = i;
 
     // Code block ```
     if (line.trim().startsWith('```')) {
@@ -111,6 +116,8 @@ const parseMarkdownBlocks = (md: string) => {
       blocks.push({
         type: 'code',
         content: codeLines.join('\n'),
+        startLine,
+        endLine: i - 1,
         extra: { lang: lang || 'código' }
       });
       continue;
@@ -132,7 +139,9 @@ const parseMarkdownBlocks = (md: string) => {
       }
       blocks.push({
         type: 'math',
-        content: mathLines.join('\n')
+        content: mathLines.join('\n'),
+        startLine,
+        endLine: i - 1
       });
       continue;
     }
@@ -146,7 +155,9 @@ const parseMarkdownBlocks = (md: string) => {
       }
       blocks.push({
         type: 'callout',
-        content: quoteLines.join('\n')
+        content: quoteLines.join('\n'),
+        startLine,
+        endLine: i - 1
       });
       continue;
     }
@@ -160,7 +171,9 @@ const parseMarkdownBlocks = (md: string) => {
       }
       blocks.push({
         type: 'table',
-        content: tableLines.join('\n')
+        content: tableLines.join('\n'),
+        startLine,
+        endLine: i - 1
       });
       continue;
     }
@@ -175,6 +188,8 @@ const parseMarkdownBlocks = (md: string) => {
       blocks.push({
         type: 'list',
         content: '',
+        startLine,
+        endLine: i - 1,
         extra: { items: listItems }
       });
       continue;
@@ -186,6 +201,8 @@ const parseMarkdownBlocks = (md: string) => {
       blocks.push({
         type: 'image',
         content: imgMatch[2].trim(),
+        startLine,
+        endLine: startLine,
         extra: { alt: imgMatch[1].trim() }
       });
       i++;
@@ -194,17 +211,17 @@ const parseMarkdownBlocks = (md: string) => {
 
     // Headings
     if (line.startsWith('# ')) {
-      blocks.push({ type: 'h1', content: line.replace(/^#\s+/, '') });
+      blocks.push({ type: 'h1', content: line.replace(/^#\s+/, ''), startLine, endLine: startLine });
       i++;
       continue;
     }
     if (line.startsWith('## ')) {
-      blocks.push({ type: 'h2', content: line.replace(/^##\s+/, '') });
+      blocks.push({ type: 'h2', content: line.replace(/^##\s+/, ''), startLine, endLine: startLine });
       i++;
       continue;
     }
     if (line.startsWith('### ')) {
-      blocks.push({ type: 'h3', content: line.replace(/^###\s+/, '') });
+      blocks.push({ type: 'h3', content: line.replace(/^###\s+/, ''), startLine, endLine: startLine });
       i++;
       continue;
     }
@@ -216,7 +233,7 @@ const parseMarkdownBlocks = (md: string) => {
     }
 
     // Regular paragraph
-    blocks.push({ type: 'p', content: line });
+    blocks.push({ type: 'p', content: line, startLine, endLine: startLine });
     i++;
   }
 
@@ -234,6 +251,161 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
   const [zoomedImage, setZoomedImage] = useState<{ src: string; alt?: string } | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const scrollingSourceRef = useRef<'editor' | 'preview' | null>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Sincronización precisa entre editor y preview basada en bloques de contenido
+  const syncEditorToPreview = () => {
+    const editor = textareaRef.current;
+    const preview = previewRef.current;
+    if (!editor || !preview) return;
+
+    const editorScrollable = editor.scrollHeight - editor.clientHeight;
+    const previewScrollable = preview.scrollHeight - preview.clientHeight;
+
+    if (editorScrollable <= 0 || previewScrollable <= 0) return;
+
+    // Alinear top y bottom con exactitud
+    if (editor.scrollTop <= 2) {
+      preview.scrollTop = 0;
+      return;
+    }
+    if (editor.scrollTop >= editorScrollable - 4) {
+      preview.scrollTop = previewScrollable;
+      return;
+    }
+
+    const elements = preview.querySelectorAll<HTMLElement>('[data-line]');
+    if (elements.length === 0) {
+      const ratio = editor.scrollTop / editorScrollable;
+      preview.scrollTop = ratio * previewScrollable;
+      return;
+    }
+
+    const previewRect = preview.getBoundingClientRect();
+    const anchors: Array<{ line: number; top: number }> = [{ line: 0, top: 0 }];
+
+    elements.forEach(el => {
+      const line = parseInt(el.getAttribute('data-line') || '0', 10);
+      const elRect = el.getBoundingClientRect();
+      const top = elRect.top - previewRect.top + preview.scrollTop;
+      anchors.push({ line, top });
+    });
+
+    const totalLines = Math.max(1, (activeNote?.contenidoMarkdown || '').split('\n').length);
+    anchors.push({ line: totalLines, top: previewScrollable });
+    anchors.sort((a, b) => a.line - b.line);
+
+    const currentLine = (editor.scrollTop / editorScrollable) * totalLines;
+
+    let a0 = anchors[0];
+    let a1 = anchors[anchors.length - 1];
+
+    for (let k = 0; k < anchors.length - 1; k++) {
+      if (anchors[k].line <= currentLine && anchors[k + 1].line >= currentLine) {
+        a0 = anchors[k];
+        a1 = anchors[k + 1];
+        break;
+      }
+    }
+
+    const lineSpan = Math.max(0.001, a1.line - a0.line);
+    const factor = Math.min(1, Math.max(0, (currentLine - a0.line) / lineSpan));
+    const targetTop = a0.top + factor * (a1.top - a0.top);
+
+    preview.scrollTop = Math.min(previewScrollable, Math.max(0, targetTop));
+  };
+
+  const syncPreviewToEditor = () => {
+    const editor = textareaRef.current;
+    const preview = previewRef.current;
+    if (!editor || !preview) return;
+
+    const editorScrollable = editor.scrollHeight - editor.clientHeight;
+    const previewScrollable = preview.scrollHeight - preview.clientHeight;
+
+    if (editorScrollable <= 0 || previewScrollable <= 0) return;
+
+    // Alinear top y bottom con exactitud
+    if (preview.scrollTop <= 2) {
+      editor.scrollTop = 0;
+      return;
+    }
+    if (preview.scrollTop >= previewScrollable - 4) {
+      editor.scrollTop = editorScrollable;
+      return;
+    }
+
+    const elements = preview.querySelectorAll<HTMLElement>('[data-line]');
+    if (elements.length === 0) {
+      const ratio = preview.scrollTop / previewScrollable;
+      editor.scrollTop = ratio * editorScrollable;
+      return;
+    }
+
+    const previewRect = preview.getBoundingClientRect();
+    const anchors: Array<{ line: number; top: number }> = [{ line: 0, top: 0 }];
+
+    elements.forEach(el => {
+      const line = parseInt(el.getAttribute('data-line') || '0', 10);
+      const elRect = el.getBoundingClientRect();
+      const top = elRect.top - previewRect.top + preview.scrollTop;
+      anchors.push({ line, top });
+    });
+
+    const totalLines = Math.max(1, (activeNote?.contenidoMarkdown || '').split('\n').length);
+    anchors.push({ line: totalLines, top: previewScrollable });
+    anchors.sort((a, b) => a.top - b.top);
+
+    const currentTop = preview.scrollTop;
+
+    let a0 = anchors[0];
+    let a1 = anchors[anchors.length - 1];
+
+    for (let k = 0; k < anchors.length - 1; k++) {
+      if (anchors[k].top <= currentTop && anchors[k + 1].top >= currentTop) {
+        a0 = anchors[k];
+        a1 = anchors[k + 1];
+        break;
+      }
+    }
+
+    const topSpan = Math.max(0.001, a1.top - a0.top);
+    const factor = Math.min(1, Math.max(0, (currentTop - a0.top) / topSpan));
+    const targetLine = a0.line + factor * (a1.line - a0.line);
+
+    const targetEditorTop = (targetLine / totalLines) * editorScrollable;
+    editor.scrollTop = Math.min(editorScrollable, Math.max(0, targetEditorTop));
+  };
+
+  const handleEditorScroll = () => {
+    if (scrollingSourceRef.current === 'preview') return;
+    scrollingSourceRef.current = 'editor';
+    syncEditorToPreview();
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      scrollingSourceRef.current = null;
+    }, 60);
+  };
+
+  const handlePreviewScroll = () => {
+    if (scrollingSourceRef.current === 'editor') return;
+    scrollingSourceRef.current = 'preview';
+    syncPreviewToEditor();
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      scrollingSourceRef.current = null;
+    }, 60);
+  };
 
   // Helper to upload and insert image from paste or drop
   const handleImageFileInsertion = async (file: File) => {
@@ -406,6 +578,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             return (
               <h1
                 key={idx}
+                data-line={block.startLine}
                 style={{
                   fontSize: '20px',
                   fontWeight: 700,
@@ -424,6 +597,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             return (
               <h2
                 key={idx}
+                data-line={block.startLine}
                 style={{
                   fontSize: '16px',
                   fontWeight: 600,
@@ -440,6 +614,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             return (
               <h3
                 key={idx}
+                data-line={block.startLine}
                 style={{
                   fontSize: '14px',
                   fontWeight: 600,
@@ -454,7 +629,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             );
           case 'callout':
             return (
-              <div key={idx} className={styles.calloutCritical}>
+              <div key={idx} data-line={block.startLine} className={styles.calloutCritical}>
                 <div className={styles.calloutHeader}>
                   <Flame size={14} />
                   <span>NOTA CLAVE</span>
@@ -475,6 +650,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             return (
               <div
                 key={idx}
+                data-line={block.startLine}
                 style={{
                   margin: '12px 0',
                   padding: '12px',
@@ -490,7 +666,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
           }
           case 'code':
             return (
-              <div key={idx} className={styles.codeBlock}>
+              <div key={idx} data-line={block.startLine} className={styles.codeBlock}>
                 <div className={styles.codeHeader}>
                   <span>{block.extra?.lang || 'código'}</span>
                   <button
@@ -530,7 +706,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                 .map(c => c.trim())
             );
             return (
-              <div key={idx} style={{ overflowX: 'auto', margin: '8px 0' }}>
+              <div key={idx} data-line={block.startLine} style={{ overflowX: 'auto', margin: '8px 0' }}>
                 <table className={styles.markdownTable}>
                   <thead>
                     <tr>
@@ -556,6 +732,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             return (
               <ul
                 key={idx}
+                data-line={block.startLine}
                 style={{
                   paddingLeft: '20px',
                   display: 'flex',
@@ -583,7 +760,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             );
           case 'image':
             return (
-              <figure key={idx} className={styles.imageFigure}>
+              <figure key={idx} data-line={block.startLine} className={styles.imageFigure}>
                 <div className={styles.imageContainer}>
                   <img
                     src={block.content}
@@ -622,6 +799,7 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             return (
               <p
                 key={idx}
+                data-line={block.startLine}
                 style={{
                   lineHeight: 1.6,
                   color: 'var(--text-secondary)',
@@ -652,6 +830,15 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
               onChange={e => onContentChange?.(e.target.value)}
               onPaste={handleTextareaPaste}
               onDrop={handleTextareaDrop}
+              onScroll={handleEditorScroll}
+              onMouseEnter={() => {
+                if (scrollingSourceRef.current !== 'preview') {
+                  scrollingSourceRef.current = 'editor';
+                }
+              }}
+              onFocus={() => {
+                scrollingSourceRef.current = 'editor';
+              }}
               className={styles.markdownTextarea}
               placeholder="Escribe tu apunte en formato Markdown aquí (puedes arrastrar o pegar imágenes)..."
               spellCheck={false}
@@ -691,7 +878,16 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
               </div>
             )}
           </div>
-          <div className={styles.splitPreviewPane}>
+          <div
+            ref={previewRef}
+            className={styles.splitPreviewPane}
+            onScroll={handlePreviewScroll}
+            onMouseEnter={() => {
+              if (scrollingSourceRef.current !== 'editor') {
+                scrollingSourceRef.current = 'preview';
+              }
+            }}
+          >
             <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
             <div className={styles.docMetaGroup}>
               <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>

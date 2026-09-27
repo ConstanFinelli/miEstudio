@@ -208,9 +208,11 @@
 }
 
 .splitPreviewPane {
+  position: relative;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  scroll-behavior: auto;
   padding: 24px 28px;
   background-color: var(--surface-1);
   display: flex;
@@ -231,6 +233,7 @@
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.6;
+  scroll-behavior: auto;
   padding: 20px 24px;
   border: none;
   outline: none;
