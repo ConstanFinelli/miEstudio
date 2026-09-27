@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './NoteReaderContent.module.css';
-import { Flame, Check, Copy, FileText, Plus } from 'lucide-react';
+import { Flame, Check, Copy, FileText, Plus, Maximize2, ImageOff, X } from 'lucide-react';
 import katex from 'katex';
 import type { ApunteNota } from '../../../../types/academic';
+import { apuntesService } from '../../../../services/apuntesService';
 
 interface NoteReaderContentProps {
   activeNote: ApunteNota | null;
@@ -14,14 +15,30 @@ interface NoteReaderContentProps {
   ) => void;
 }
 
-// Helper to render inline formatting: **bold**, `code`, and $katex$
+// Helper to render inline formatting: **bold**, `code`, $katex$, and inline images
 const renderInline = (text: string): React.ReactNode => {
   const parts: React.ReactNode[] = [];
-  const regex = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*)/g;
+  const regex = /(!\[[^\]]*\]\([^)]+\)|\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*)/g;
   const segments = text.split(regex);
 
   segments.forEach((seg, idx) => {
     if (!seg) return;
+    if (seg.startsWith('![') && seg.endsWith(')')) {
+      const imgMatch = seg.match(/^!\[(.*?)\]\((.*?)\)$/);
+      if (imgMatch) {
+        parts.push(
+          <img
+            key={idx}
+            src={imgMatch[2].trim()}
+            alt={imgMatch[1].trim() || 'Imagen'}
+            className={styles.inlineImage}
+            title={imgMatch[1].trim()}
+            loading="lazy"
+          />
+        );
+        return;
+      }
+    }
     if (seg.startsWith('$') && seg.endsWith('$') && seg.length > 2) {
       const formula = seg.slice(1, -1);
       try {
@@ -72,7 +89,7 @@ const renderInline = (text: string): React.ReactNode => {
 const parseMarkdownBlocks = (md: string) => {
   const lines = md.split('\n');
   const blocks: Array<{
-    type: 'h1' | 'h2' | 'h3' | 'callout' | 'math' | 'code' | 'table' | 'list' | 'p';
+    type: 'h1' | 'h2' | 'h3' | 'callout' | 'math' | 'code' | 'table' | 'list' | 'image' | 'p';
     content: string;
     extra?: any;
   }> = [];
@@ -163,6 +180,18 @@ const parseMarkdownBlocks = (md: string) => {
       continue;
     }
 
+    // Standalone image block ![alt](url)
+    const imgMatch = line.trim().match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      blocks.push({
+        type: 'image',
+        content: imgMatch[2].trim(),
+        extra: { alt: imgMatch[1].trim() }
+      });
+      i++;
+      continue;
+    }
+
     // Headings
     if (line.startsWith('# ')) {
       blocks.push({ type: 'h1', content: line.replace(/^#\s+/, '') });
@@ -202,7 +231,56 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
   onRegisterInsert
 }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [zoomedImage, setZoomedImage] = useState<{ src: string; alt?: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Helper to upload and insert image from paste or drop
+  const handleImageFileInsertion = async (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setIsUploadingImage(true);
+    try {
+      const textarea = textareaRef.current;
+      const start = textarea?.selectionStart ?? (activeNote?.contenidoMarkdown || '').length;
+      const end = textarea?.selectionEnd ?? start;
+      const current = activeNote?.contenidoMarkdown || '';
+
+      const placeholder = `\n![Subiendo imagen...]()\n`;
+      const tempText = current.substring(0, start) + placeholder + current.substring(end);
+      onContentChange?.(tempText);
+
+      const uploaded = await apuntesService.uploadImage(file);
+      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Imagen';
+      const finalTag = `\n![${cleanName}](${uploaded.url})\n`;
+
+      const replaced = tempText.replace(placeholder, finalTag);
+      onContentChange?.(replaced);
+    } catch (err) {
+      console.error('Error al insertar imagen pegada:', err);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleTextareaPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+      const file = e.clipboardData.files[0];
+      if (file.type.startsWith('image/')) {
+        e.preventDefault();
+        handleImageFileInsertion(file);
+      }
+    }
+  };
+
+  const handleTextareaDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        e.preventDefault();
+        handleImageFileInsertion(file);
+      }
+    }
+  };
 
   // Register the inserter function so FormattingToolbar can insert into the textarea cursor
   useEffect(() => {
@@ -503,6 +581,42 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
                 ))}
               </ul>
             );
+          case 'image':
+            return (
+              <figure key={idx} className={styles.imageFigure}>
+                <div className={styles.imageContainer}>
+                  <img
+                    src={block.content}
+                    alt={block.extra?.alt || 'Imagen de apunte'}
+                    className={styles.noteImage}
+                    loading="lazy"
+                    onClick={() => setZoomedImage({ src: block.content, alt: block.extra?.alt })}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                      const fallback = e.currentTarget.parentElement?.querySelector(`.${styles.imageErrorFallback}`) as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <div className={styles.imageErrorFallback} style={{ display: 'none' }}>
+                    <ImageOff size={16} />
+                    <span>No se pudo cargar la imagen</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.imageZoomBtn}
+                    onClick={() => setZoomedImage({ src: block.content, alt: block.extra?.alt })}
+                    title="Ver imagen en tamaño completo"
+                  >
+                    <Maximize2 size={13} />
+                  </button>
+                </div>
+                {block.extra?.alt && (
+                  <figcaption className={styles.imageCaption}>
+                    {block.extra.alt}
+                  </figcaption>
+                )}
+              </figure>
+            );
           case 'p':
           default:
             return (
@@ -531,15 +645,51 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
       {viewMode === 'split' ? (
         /* Modo Split: Editor de Markdown a la izquierda + Live Preview Renderizado a la derecha */
         <div className={styles.editorSplitContainer}>
-          <div className={styles.splitEditorPane}>
+          <div className={styles.splitEditorPane} style={{ position: 'relative' }}>
             <textarea
               ref={textareaRef}
               value={activeNote.contenidoMarkdown}
               onChange={e => onContentChange?.(e.target.value)}
+              onPaste={handleTextareaPaste}
+              onDrop={handleTextareaDrop}
               className={styles.markdownTextarea}
-              placeholder="Escribe tu apunte en formato Markdown aquí..."
+              placeholder="Escribe tu apunte en formato Markdown aquí (puedes arrastrar o pegar imágenes)..."
               spellCheck={false}
             />
+            {isUploadingImage && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  right: '16px',
+                  backgroundColor: 'var(--surface-3)',
+                  border: '1px solid var(--primary)',
+                  color: 'var(--primary)',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-xs)',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  zIndex: 10,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    border: '2px solid var(--primary)',
+                    borderTopColor: 'transparent',
+                    animation: 'spin 0.6s linear infinite'
+                  }}
+                />
+                <span>Subiendo imagen adjunta...</span>
+              </div>
+            )}
           </div>
           <div className={styles.splitPreviewPane}>
             <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
@@ -552,21 +702,59 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
         </div>
       ) : viewMode === 'markdown' ? (
         /* Modo Markdown Completo */
-        <div className={styles.editorScrollArea} style={{ flex: 1 }}>
+        <div className={styles.editorScrollArea} style={{ flex: 1, position: 'relative' }}>
           <h1 className={styles.noteDocTitle}># {activeNote.titulo}</h1>
           <div className={styles.docMetaGroup}>
             <div>Materia: <strong>{activeNote.materiaNombre}</strong></div>
             <div>Evaluación: <strong>{activeNote.evaluacionNombre || activeNote.carpeta || 'General'}</strong></div>
           </div>
-          <textarea
-            ref={textareaRef}
-            value={activeNote.contenidoMarkdown}
-            onChange={e => onContentChange?.(e.target.value)}
-            className={styles.markdownTextarea}
-            placeholder="Escribe tu apunte en formato Markdown aquí..."
-            style={{ minHeight: '600px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}
-            spellCheck={false}
-          />
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <textarea
+              ref={textareaRef}
+              value={activeNote.contenidoMarkdown}
+              onChange={e => onContentChange?.(e.target.value)}
+              onPaste={handleTextareaPaste}
+              onDrop={handleTextareaDrop}
+              className={styles.markdownTextarea}
+              placeholder="Escribe tu apunte en formato Markdown aquí (puedes arrastrar o pegar imágenes)..."
+              style={{ minHeight: '600px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xs)' }}
+              spellCheck={false}
+            />
+            {isUploadingImage && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  right: '16px',
+                  backgroundColor: 'var(--surface-3)',
+                  border: '1px solid var(--primary)',
+                  color: 'var(--primary)',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-xs)',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  zIndex: 10,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)'
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    border: '2px solid var(--primary)',
+                    borderTopColor: 'transparent',
+                    animation: 'spin 0.6s linear infinite'
+                  }}
+                />
+                <span>Subiendo imagen adjunta...</span>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         /* Modo Renderizado Completo */
@@ -586,6 +774,30 @@ export const NoteReaderContent: React.FC<NoteReaderContentProps> = ({
             <div>Lectura: ~{activeNote.tiempoLecturaMin || 1} min ({activeNote.palabras || 0} palabras)</div>
           </div>
           {renderBlocksList()}
+        </div>
+      )}
+
+      {/* Lightbox / Zoom modal */}
+      {zoomedImage && (
+        <div className={styles.lightboxOverlay} onClick={() => setZoomedImage(null)}>
+          <div className={styles.lightboxContent} onClick={e => e.stopPropagation()}>
+            <button
+              type="button"
+              className={styles.lightboxCloseBtn}
+              onClick={() => setZoomedImage(null)}
+              title="Cerrar vista ampliada"
+            >
+              <X size={26} />
+            </button>
+            <img
+              src={zoomedImage.src}
+              alt={zoomedImage.alt || 'Vista ampliada'}
+              className={styles.lightboxImg}
+            />
+            {zoomedImage.alt && (
+              <div className={styles.lightboxCaption}>{zoomedImage.alt}</div>
+            )}
+          </div>
         </div>
       )}
     </>

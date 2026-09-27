@@ -11,6 +11,7 @@ import {
   NoteReaderContent,
   SplitPdfViewerPane,
   AiCopilotPane,
+  InsertImageModal,
 } from "./components";
 import {
   UploadMaterialModal,
@@ -47,6 +48,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
   const [isNotesListCollapsed, setIsNotesListCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isUploadPdfModalOpen, setIsUploadPdfModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<{
     id: string;
     titulo: string;
@@ -372,6 +374,7 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
         <FormattingToolbar
           tags={activeNote?.tags || []}
           onInsertMarkdown={handleInsertMarkdown}
+          onOpenImageModal={() => setIsImageModalOpen(true)}
           onAddTag={handleAddTag}
           onRemoveTag={handleRemoveTag}
         />
@@ -465,6 +468,13 @@ export const ApuntesView: React.FC<ApuntesViewProps> = ({
           isDeleting={isDeletingNote}
         />
       )}
+
+      {/* Modal to insert images (upload file or web URL) */}
+      <InsertImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onInsert={(imageMarkdown) => handleInsertMarkdown(imageMarkdown, "", "")}
+      />
     </div>
   );
 };

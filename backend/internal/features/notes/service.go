@@ -4,9 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
+	"miestudio/backend/internal/storage"
 )
 
 type Service interface {
@@ -15,14 +21,20 @@ type Service interface {
 	CreateApunte(ctx context.Context, dto CreateApunteDTO) (*Apunte, error)
 	UpdateApunte(ctx context.Context, id string, dto UpdateApunteDTO) (*Apunte, error)
 	DeleteApunte(ctx context.Context, id string) error
+	UploadImage(ctx context.Context, file io.Reader, filename, mimeType string) (string, error)
+	GetImage(ctx context.Context, key string) (io.ReadSeekCloser, int64, string, error)
 }
 
 type service struct {
-	repo Repository
+	repo    Repository
+	storage storage.StorageService
 }
 
-func NewService(repo Repository) Service {
-	return &service{repo: repo}
+func NewService(repo Repository, storage storage.StorageService) Service {
+	return &service{
+		repo:    repo,
+		storage: storage,
+	}
 }
 
 func (s *service) ListApuntes(ctx context.Context, usuarioID, materiaID, carpeta, search string) ([]Apunte, error) {
@@ -174,4 +186,70 @@ func (s *service) UpdateApunte(ctx context.Context, id string, dto UpdateApunteD
 
 func (s *service) DeleteApunte(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *service) UploadImage(ctx context.Context, file io.Reader, filename, mimeType string) (string, error) {
+	if s.storage == nil {
+		return "", errors.New("servicio de almacenamiento no disponible")
+	}
+
+	// Normalizar tipo MIME si viene genérico o vacío
+	ext := strings.ToLower(filepath.Ext(filename))
+	if mimeType == "" || mimeType == "application/octet-stream" {
+		switch ext {
+		case ".png":
+			mimeType = "image/png"
+		case ".jpg", ".jpeg":
+			mimeType = "image/jpeg"
+		case ".webp":
+			mimeType = "image/webp"
+		case ".gif":
+			mimeType = "image/gif"
+		case ".svg":
+			mimeType = "image/svg+xml"
+		default:
+			mimeType = "image/jpeg"
+		}
+	}
+
+	// Validar que sea un formato de imagen permitido
+	if !strings.HasPrefix(mimeType, "image/") {
+		return "", errors.New("solo se permiten archivos de imagen válidos (PNG, JPG, WEBP, GIF, SVG)")
+	}
+
+	key, _, err := s.storage.Save(ctx, file, filename, mimeType)
+	if err != nil {
+		return "", fmt.Errorf("error al guardar imagen: %w", err)
+	}
+
+	return key, nil
+}
+
+func (s *service) GetImage(ctx context.Context, key string) (io.ReadSeekCloser, int64, string, error) {
+	if s.storage == nil {
+		return nil, 0, "", errors.New("servicio de almacenamiento no disponible")
+	}
+
+	cleanKey := filepath.Base(key)
+	ext := strings.ToLower(filepath.Ext(cleanKey))
+	mimeType := "image/jpeg"
+	switch ext {
+	case ".png":
+		mimeType = "image/png"
+	case ".jpg", ".jpeg":
+		mimeType = "image/jpeg"
+	case ".webp":
+		mimeType = "image/webp"
+	case ".gif":
+		mimeType = "image/gif"
+	case ".svg":
+		mimeType = "image/svg+xml"
+	}
+
+	stream, size, err := s.storage.Get(ctx, cleanKey)
+	if err != nil {
+		return nil, 0, "", fmt.Errorf("imagen no encontrada: %w", err)
+	}
+
+	return stream, size, mimeType, nil
 }

@@ -111,7 +111,7 @@ func main() {
 
 	// Feature: Apuntes (Protegido con authMiddleware)
 	notesRepo := notes.NewRepository(database)
-	notesService := notes.NewService(notesRepo)
+	notesService := notes.NewService(notesRepo, storageService)
 	notesHandler := notes.NewHandler(notesService)
 	notesHandler.RegisterRoutes(api, authMiddleware)
 

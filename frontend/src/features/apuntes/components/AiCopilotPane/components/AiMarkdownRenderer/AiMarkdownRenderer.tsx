@@ -7,14 +7,29 @@ interface AiMarkdownRendererProps {
   className?: string;
 }
 
-// Inline formatting: **bold**, `code`, and $formula$
+// Inline formatting: **bold**, `code`, $formula$, and images
 const renderInline = (text: string): React.ReactNode => {
   const parts: React.ReactNode[] = [];
-  const regex = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*)/g;
+  const regex = /(!\[[^\]]*\]\([^)]+\)|\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*)/g;
   const segments = text.split(regex);
 
   segments.forEach((seg, idx) => {
     if (!seg) return;
+    if (seg.startsWith('![') && seg.endsWith(')')) {
+      const match = seg.match(/^!\[(.*?)\]\((.*?)\)$/);
+      if (match) {
+        parts.push(
+          <img
+            key={idx}
+            src={match[2].trim()}
+            alt={match[1].trim() || 'Imagen'}
+            style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '4px', objectFit: 'contain', verticalAlign: 'middle' }}
+            loading="lazy"
+          />
+        );
+        return;
+      }
+    }
     if (seg.startsWith('$') && seg.endsWith('$') && seg.length > 2) {
       const formula = seg.slice(1, -1);
       try {
@@ -154,6 +169,28 @@ export const AiMarkdownRenderer: React.FC<AiMarkdownRendererProps> = ({
           ))}
         </ul>
       );
+      continue;
+    }
+
+    // Standalone image ![alt](url)
+    const imgMatch = line.trim().match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      blocks.push(
+        <figure key={`img-${i}`} style={{ margin: '8px 0', textAlign: 'center' }}>
+          <img
+            src={imgMatch[2].trim()}
+            alt={imgMatch[1].trim() || 'Imagen'}
+            style={{ maxWidth: '100%', maxHeight: '280px', borderRadius: '6px', border: '1px solid var(--border-subtle)', objectFit: 'contain' }}
+            loading="lazy"
+          />
+          {imgMatch[1].trim() && (
+            <figcaption style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', fontStyle: 'italic' }}>
+              {imgMatch[1].trim()}
+            </figcaption>
+          )}
+        </figure>
+      );
+      i++;
       continue;
     }
 

@@ -29,11 +29,22 @@ const escapeHtml = (str: string): string => {
 // Inline formatting helper: **bold**, *italic*, `code`, and $katex$
 const renderInlineHtml = (text: string): string => {
   const parts: string[] = [];
-  const regex = /(\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
+  const regex = /(!\[[^\]]*\]\([^)]+\)|\$[^$]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
   const segments = text.split(regex);
 
   segments.forEach((seg) => {
     if (!seg) return;
+    if (seg.startsWith("![") && seg.endsWith(")")) {
+      const match = seg.match(/^!\[(.*?)\]\((.*?)\)$/);
+      if (match) {
+        parts.push(
+          `<img src="${escapeHtml(match[2].trim())}" alt="${escapeHtml(
+            match[1].trim(),
+          )}" class="note-inline-image" />`,
+        );
+        return;
+      }
+    }
     if (seg.startsWith("$") && seg.endsWith("$") && seg.length > 2) {
       const formula = seg.slice(1, -1);
       try {
@@ -187,6 +198,22 @@ export const renderMarkdownBodyHtml = (markdown: string): string => {
       });
       listHtml += "</ul>";
       htmlParts.push(listHtml);
+      continue;
+    }
+
+    // Standalone image block ![alt](url)
+    const imgMatch = line.trim().match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      const alt = imgMatch[1].trim();
+      const src = imgMatch[2].trim();
+      htmlParts.push(
+        `<figure class="note-image-figure"><img src="${escapeHtml(
+          src,
+        )}" alt="${escapeHtml(alt)}" />${
+          alt ? `<figcaption>${escapeHtml(alt)}</figcaption>` : ""
+        }</figure>`,
+      );
+      i++;
       continue;
     }
 
@@ -403,6 +430,35 @@ export const NOTE_PRINT_CSS = `
   }
   li {
     margin-bottom: 4px;
+  }
+  .note-image-figure {
+    margin: 16px 0;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .note-image-figure img {
+    max-width: 100%;
+    max-height: 420px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    display: inline-block;
+  }
+  .note-image-figure figcaption {
+    margin-top: 6px;
+    font-size: 8.5pt;
+    color: #6b7280 !important;
+    font-style: italic;
+  }
+  .note-inline-image {
+    max-height: 1.8em;
+    max-width: 120px;
+    vertical-align: middle;
+    object-fit: contain;
+    border-radius: 3px;
+    margin: 0 4px;
   }
   .print-footer {
     margin-top: 30px;
@@ -682,7 +738,7 @@ export const generateNotePdfBlob = async (note: ApunteNota): Promise<Blob> => {
     // Gather block elements to compute safe break points between lines/sections
     const containerRect = container.getBoundingClientRect();
     const breakPointElements = container.querySelectorAll(
-      ".print-header, h1, h2, h3, p, table, tr, .callout, .code-container, ul, ol, li, .print-footer",
+      ".print-header, h1, h2, h3, p, table, tr, .callout, .code-container, ul, ol, li, .print-footer, .note-image-figure",
     );
     const breakPoints: number[] = [];
     breakPointElements.forEach((el) => {

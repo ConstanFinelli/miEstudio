@@ -484,8 +484,15 @@ type RaftNode struct {
 | Estado | Responsabilidad | Transición Si... |
 | :--- | :--- | :--- |
 | **Follower** | Responde RPCs de candidatos y líderes | Expira el election timeout sin heartbeat |
-| **Candidate** | Solicita votos (\`RequestVoteRPC\`) | Obtiene quórum mayoritario ($Q$) o vence timeout |
 | **Leader** | Atiende clientes y replica logs | Recibe RPC con un término mayor ($T > \\text{currentTerm}$) |
+
+---
+
+## 2. Diagrama de Arquitectura de Nodos
+
+![Diagrama esquemático de un clúster de servidores distribuidos](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&auto=format&fit=crop&q=80)
+
+*Los nodos mantienen comunicación bidireccional continua mediante latidos (\`heartbeats\`) periódicos.*
 `
   },
   {

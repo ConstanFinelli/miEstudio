@@ -1,6 +1,8 @@
 package notes
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"miestudio/backend/internal/common"
 )
@@ -14,8 +16,12 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router fiber.Router, authMiddleware fiber.Handler) {
+	// Ruta pública para servir imágenes referenciadas en Markdown y exports
+	router.Get("/apuntes/imagenes/:key", h.StreamImage)
+
 	group := router.Group("/apuntes", authMiddleware)
 	group.Get("/", h.GetAll)
+	group.Post("/imagenes", h.UploadImage)
 	group.Get("/:id", h.GetByID)
 	group.Post("/", h.Create)
 	group.Put("/:id", h.Update)
@@ -83,3 +89,52 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 	}
 	return common.SendSuccess(c, fiber.Map{"deleted": true, "id": id})
 }
+
+func (h *Handler) UploadImage(c *fiber.Ctx) error {
+	fileHeader, err := c.FormFile("image")
+	if err != nil {
+		fileHeader, err = c.FormFile("file")
+		if err != nil {
+			return common.SendError(c, fiber.StatusBadRequest, "Por favor, seleccioná una imagen para subir.", err.Error())
+		}
+	}
+
+	// Limitar a 15MB
+	if fileHeader.Size > 15*1024*1024 {
+		return common.SendError(c, fiber.StatusBadRequest, "La imagen supera el tamaño máximo permitido (15 MB).")
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return common.SendError(c, fiber.StatusInternalServerError, "No se pudo leer la imagen seleccionada.", err.Error())
+	}
+	defer file.Close()
+
+	mimeType := fileHeader.Header.Get("Content-Type")
+	key, err := h.service.UploadImage(c.Context(), file, fileHeader.Filename, mimeType)
+	if err != nil {
+		return common.SendError(c, fiber.StatusBadRequest, err.Error())
+	}
+
+	url := fmt.Sprintf("/api/apuntes/imagenes/%s", key)
+	return common.SendCreated(c, fiber.Map{
+		"url":      url,
+		"key":      key,
+		"filename": fileHeader.Filename,
+	})
+}
+
+func (h *Handler) StreamImage(c *fiber.Ctx) error {
+	key := c.Params("key")
+	stream, size, mimeType, err := h.service.GetImage(c.Context(), key)
+	if err != nil {
+		return common.SendError(c, fiber.StatusNotFound, "Imagen no encontrada", err.Error())
+	}
+
+	c.Set("Content-Type", mimeType)
+	c.Set("Cache-Control", "public, max-age=31536000, immutable")
+	c.Set("Accept-Ranges", "bytes")
+
+	return c.SendStream(stream, int(size))
+}
+

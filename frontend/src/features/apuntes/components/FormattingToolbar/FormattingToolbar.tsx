@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import styles from './FormattingToolbar.module.css';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Image as ImageIcon } from 'lucide-react';
 
 interface FormattingToolbarProps {
   tags: string[];
   onInsertMarkdown?: (prefix: string, suffix?: string, defaultText?: string) => void;
+  onOpenImageModal?: () => void;
   onAddTag?: (tag: string) => void;
   onRemoveTag?: (tag: string) => void;
 }
@@ -12,6 +13,7 @@ interface FormattingToolbarProps {
 export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({
   tags,
   onInsertMarkdown,
+  onOpenImageModal,
   onAddTag,
   onRemoveTag
 }) => {
@@ -140,6 +142,22 @@ export const FormattingToolbar: React.FC<FormattingToolbarProps> = ({
           style={{ color: 'var(--amber)' }}
         >
           ★ Clave
+        </button>
+        <button
+          type="button"
+          className={styles.toolBtn}
+          title="Insertar imagen en apunte (![alt](url))"
+          onClick={() => {
+            if (onOpenImageModal) {
+              onOpenImageModal();
+            } else {
+              handleToolClick('![', '](https://)', 'Descripción de la imagen');
+            }
+          }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+        >
+          <ImageIcon size={13} />
+          <span>Imagen</span>
         </button>
       </div>
 

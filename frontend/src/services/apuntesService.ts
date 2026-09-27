@@ -112,4 +112,42 @@ export const apuntesService = {
     }
     localApuntes = localApuntes.filter((a) => a.id !== id);
   },
+
+  async uploadImage(file: File): Promise<{ url: string; key: string; filename: string }> {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('file', file);
+
+      const res = await apiClient.post<{ data?: { url: string; key: string; filename: string }; url?: string; key?: string; filename?: string }>(
+        '/apuntes/imagenes',
+        formData
+      );
+
+      const data = res.data || res;
+      if (data && data.url) {
+        return {
+          url: data.url,
+          key: data.key || '',
+          filename: data.filename || file.name
+        };
+      }
+      throw new Error('Respuesta inválida del servidor');
+    } catch (err) {
+      console.warn('Subida al servidor fallida o modo sin conexión. Convirtiendo a Data URL local...', err);
+      // Fallback a Data URL en base64 para garantizar que la imagen siempre se inserte
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({
+            url: reader.result as string,
+            key: `local-${Date.now()}`,
+            filename: file.name
+          });
+        };
+        reader.onerror = () => reject(new Error('No se pudo leer el archivo de imagen.'));
+        reader.readAsDataURL(file);
+      });
+    }
+  },
 };
