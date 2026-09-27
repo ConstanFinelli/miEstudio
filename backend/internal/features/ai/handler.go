@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 	"time"
 
@@ -90,12 +91,12 @@ func (h *Handler) StreamChat(c *fiber.Ctx) error {
 	}
 
 	c.Set("Content-Type", "text/event-stream")
-	c.Set("Cache-Control", "no-cache")
+	c.Set("Cache-Control", "no-cache, no-transform")
 	c.Set("Connection", "keep-alive")
-	c.Set("Transfer-Encoding", "chunked")
+	c.Set("X-Accel-Buffering", "no")
 
 	c.Context().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cancel()
 
 		err := h.service.StreamChat(ctx, userID, req, func(chunk string) error {
@@ -108,6 +109,7 @@ func (h *Handler) StreamChat(c *fiber.Ctx) error {
 		})
 
 		if err != nil {
+			log.Printf("⚠️ Error en StreamChat para usuario %s: %v", userID, err)
 			errPayload, _ := json.Marshal(map[string]string{"error": err.Error()})
 			_, _ = fmt.Fprintf(w, "data: %s\n\n", errPayload)
 			_ = w.Flush()

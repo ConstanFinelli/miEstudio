@@ -143,6 +143,27 @@ export const aiService = {
       const decoder = new TextDecoder();
       let buffer = '';
 
+      const processLine = (line: string): boolean => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
+          const dataStr = trimmed.slice(6).trim();
+          if (dataStr === '[DONE]') {
+            return true;
+          }
+          try {
+            const parsed = JSON.parse(dataStr);
+            if (parsed.chunk) {
+              onChunk(parsed.chunk);
+            } else if (parsed.error && onError) {
+              onError(new Error(parsed.error));
+            }
+          } catch {
+            // Ignorar línea no JSON
+          }
+        }
+        return false;
+      };
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -152,24 +173,20 @@ export const aiService = {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data: ')) {
-            const dataStr = trimmed.slice(6);
-            if (dataStr === '[DONE]') {
-              if (onFinish) onFinish();
-              return;
-            }
-            try {
-              const parsed = JSON.parse(dataStr);
-              if (parsed.chunk) {
-                onChunk(parsed.chunk);
-              } else if (parsed.error && onError) {
-                onError(new Error(parsed.error));
-              }
-            } catch {
-              // Ignorar línea no JSON
-            }
+          const isDone = processLine(line);
+          if (isDone) {
+            if (onFinish) onFinish();
+            return;
           }
+        }
+      }
+
+      // Procesar remanente en buffer al cerrar conexión
+      if (buffer.trim()) {
+        const isDone = processLine(buffer);
+        if (isDone) {
+          if (onFinish) onFinish();
+          return;
         }
       }
 

@@ -38,9 +38,15 @@ type SystemInstruction struct {
 	Parts []Part `json:"parts"`
 }
 
+type ThinkingConfig struct {
+	ThinkingLevel string `json:"thinking_level,omitempty"`
+}
+
 type GenerationConfig struct {
-	Temperature      float32 `json:"temperature,omitempty"`
-	ResponseMimeType string  `json:"response_mime_type,omitempty"`
+	Temperature      float32         `json:"temperature,omitempty"`
+	ResponseMimeType string          `json:"response_mime_type,omitempty"`
+	MaxOutputTokens  int             `json:"maxOutputTokens,omitempty"`
+	ThinkingConfig   *ThinkingConfig `json:"thinkingConfig,omitempty"`
 }
 
 type GeminiRequest struct {
@@ -105,7 +111,7 @@ func NewGeminiClient(apiKey string, primaryModel ...string) GeminiClient {
 }
 
 func (c *geminiClient) getCandidateModels() []string {
-	defaults := []string{c.model, "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite"}
+	defaults := []string{c.model, "gemini-3.8-flash", "gemini-3.6-flash", "gemini-flash-latest", "gemini-3.7-flash", "gemini-flash-lite-latest"}
 	seen := make(map[string]bool)
 	var list []string
 	for _, m := range defaults {
@@ -145,7 +151,11 @@ func (c *geminiClient) Generate(ctx context.Context, systemPrompt string, conten
 	}
 
 	genConfig := &GenerationConfig{
-		Temperature: 0.2, // Respuestas certeras y fidedignas al material académico
+		Temperature:     0.2, // Respuestas certeras y fidedignas al material académico
+		MaxOutputTokens: 8192,
+		ThinkingConfig: &ThinkingConfig{
+			ThinkingLevel: "low",
+		},
 	}
 	if jsonOutput {
 		genConfig.ResponseMimeType = "application/json"
@@ -238,7 +248,11 @@ func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, 
 	reqPayload := GeminiRequest{
 		Contents: contents,
 		GenerationConfig: &GenerationConfig{
-			Temperature: 0.3,
+			Temperature:     0.3,
+			MaxOutputTokens: 8192,
+			ThinkingConfig: &ThinkingConfig{
+				ThinkingLevel: "low",
+			},
 		},
 	}
 
@@ -312,10 +326,17 @@ func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, 
 			for decoder.More() {
 				var chunk GeminiResponse
 				if err := decoder.Decode(&chunk); err != nil {
+					log.Printf("⚠️ Error decodificando chunk de stream (%s): %v", model, err)
+					if !hasSentChunk {
+						isStreamError = true
+					} else {
+						lastErr = fmt.Errorf("el stream se interrumpió durante la lectura: %w", err)
+					}
 					break
 				}
 				if chunk.Error != nil {
 					lastErr = fmt.Errorf("error de Gemini (%d %s): %s", chunk.Error.Code, chunk.Error.Status, chunk.Error.Message)
+					log.Printf("⚠️ Error devuelto por Gemini en stream (%s): %v", model, lastErr)
 					if isTransient(chunk.Error.Code, chunk.Error.Status) && !hasSentChunk && i < len(models)-1 {
 						isStreamError = true
 						break
@@ -327,6 +348,9 @@ func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, 
 					totalTokens = chunk.UsageMetadata.TotalTokenCount
 				}
 				for _, cand := range chunk.Candidates {
+					if cand.FinishReason != "" && cand.FinishReason != "STOP" {
+						log.Printf("ℹ️ Gemini stream terminó candidato (%s) con finishReason: %s", model, cand.FinishReason)
+					}
 					for _, part := range cand.Content.Parts {
 						if part.Text != "" {
 							hasSentChunk = true
@@ -369,6 +393,10 @@ func (c *geminiClient) StreamGenerate(ctx context.Context, systemPrompt string, 
 			log.Printf("⚠️ Error transitorio en stream de %s. Reintentando con %s...", model, models[i+1])
 			time.Sleep(300 * time.Millisecond)
 			continue
+		}
+
+		if lastErr != nil && hasSentChunk {
+			return totalTokens, lastErr
 		}
 
 		return totalTokens, nil

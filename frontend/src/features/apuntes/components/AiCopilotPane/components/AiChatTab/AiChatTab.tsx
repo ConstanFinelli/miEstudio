@@ -102,8 +102,12 @@ export const AiChatTab: React.FC<AiChatTabProps> = ({
           setMessages(prev => {
             const copy = [...prev];
             const last = copy[copy.length - 1];
-            if (last && last.role === 'model' && !accumulatedResponse) {
-              last.content = `⚠️ Hubo un error al generar la respuesta: ${err.message || 'Error de conexión'}.`;
+            if (last && last.role === 'model') {
+              if (accumulatedResponse) {
+                last.content = `${accumulatedResponse}\n\n⚠️ *(La respuesta se interrumpió: ${err.message || 'Error de conexión'}. Podés pedirle que continúe).*`;
+              } else {
+                last.content = `⚠️ Hubo un error al generar la respuesta: ${err.message || 'Error de conexión'}. Por favor, volvé a intentar.`;
+              }
             }
             return copy;
           });
