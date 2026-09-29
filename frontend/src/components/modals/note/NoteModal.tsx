@@ -35,9 +35,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({
   const [template, setTemplate] = useState('teorico');
   const [tags, setTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState('');
-  const [syncKatex, setSyncKatex] = useState(true);
-  const [syncPg, setSyncPg] = useState(true);
-  const [syncAnki, setSyncAnki] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Materias ordenadas ascendentemente por año de cursada, cuatrimestre y nombre
@@ -351,52 +348,6 @@ export const NoteModal: React.FC<NoteModalProps> = ({
             </div>
           </div>
 
-          {/* Row 5: Sincronización & Entorno */}
-          <div className={styles.fieldGroup}>
-            <div className={styles.fieldLabelRow}>
-              <span>ENTORNO DE EJECUCIÓN & SINCRONIZACIÓN</span>
-            </div>
-            <div className={styles.syncOptionsRow}>
-              <label className={`${styles.syncBox} ${syncKatex ? styles.syncBoxActive : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={syncKatex}
-                  onChange={(e) => setSyncKatex(e.target.checked)}
-                  style={{ accentColor: 'var(--emerald)' }}
-                />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>KaTeX / LaTeX ($$)</div>
-                  <div style={{ color: 'var(--text-dim)', fontSize: '10px' }}>Renderizado matemático</div>
-                </div>
-              </label>
-
-              <label className={`${styles.syncBox} ${syncPg ? styles.syncBoxActive : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={syncPg}
-                  onChange={(e) => setSyncPg(e.target.checked)}
-                  style={{ accentColor: 'var(--emerald)' }}
-                />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>PostgreSQL Sync</div>
-                  <div style={{ color: 'var(--text-dim)', fontSize: '10px' }}>Markdown en vivo (0 latency)</div>
-                </div>
-              </label>
-
-              <label className={`${styles.syncBox} ${syncAnki ? styles.syncBoxActive : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={syncAnki}
-                  onChange={(e) => setSyncAnki(e.target.checked)}
-                  style={{ accentColor: 'var(--emerald)' }}
-                />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Anki Flashcards</div>
-                  <div style={{ color: 'var(--text-dim)', fontSize: '10px' }}>Extracción de tarjetas</div>
-                </div>
-              </label>
-            </div>
-          </div>
 
           {/* Footer */}
           <div className={styles.modalFooter}>

@@ -193,35 +193,6 @@
   gap: 4px;
 }
 
-/* Sync options checklist */
-.syncOptionsRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-@media (max-width: 600px) {
-  .syncOptionsRow {
-    grid-template-columns: 1fr;
-  }
-}
-
-.syncBox {
-  background-color: var(--surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xs);
-  padding: 8px 10px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.syncBoxActive {
-  border-color: var(--emerald-border);
-  background-color: var(--emerald-alpha);
-}
 
 .modalFooter {
   border-top: 1px solid var(--border-subtle);
