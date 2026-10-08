@@ -3,6 +3,7 @@ import styles from "./CalendarioView.module.css";
 import type { EventoCalendario, TipoEvento, InstanciaEvaluacion } from "../../types/academic";
 import { useCalendario, useEvaluaciones, useMaterias } from "../../hooks";
 import { useAuth } from "../../context/AuthContext";
+import { parseLocalDate } from "../../utils";
 import {
   CalendarTopNav,
   CalendarFiltersBar,
@@ -28,14 +29,27 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
   const [selectedFilter, setSelectedFilter] = useState<string>("ALL");
   const [carreraFilter, setCarreraFilter] = useState<"ALL" | "ACTIVE">("ALL");
 
+  const now = new Date();
+  const todayStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+
   // Auto-focus and jump month when an evaluation is created or updated
   useEffect(() => {
     const handleEvalCreatedOrUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<InstanciaEvaluacion | undefined>;
       const createdOrUpdated = customEvent.detail;
-      if (createdOrUpdated?.id) {
-        setSelectedEventId(createdOrUpdated.id);
-        if (createdOrUpdated.fecha) {
+      if (createdOrUpdated?.id && createdOrUpdated.fecha) {
+        const targetDate = parseLocalDate(createdOrUpdated.fecha);
+        const isPast =
+          (createdOrUpdated.nota !== null && createdOrUpdated.nota !== undefined) ||
+          createdOrUpdated.estado === "CALIFICADO" ||
+          (targetDate ? targetDate.getTime() < todayStart : true);
+
+        if (!isPast) {
+          setSelectedEventId(createdOrUpdated.id);
           const datePart = createdOrUpdated.fecha.includes("T")
             ? createdOrUpdated.fecha.split("T")[0]
             : createdOrUpdated.fecha;
@@ -43,6 +57,8 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
           if (parts.length >= 2 && parts[0] && parts[1]) {
             setCurrentDate(new Date(parts[0], parts[1] - 1, parts[2] || 1));
           }
+        } else if (selectedEventId === createdOrUpdated.id) {
+          setSelectedEventId(null);
         }
       }
     };
@@ -50,9 +66,9 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
     return () =>
       window.removeEventListener(
         "evaluaciones:updated",
-        handleEvalCreatedOrUpdated
+        handleEvalCreatedOrUpdated,
       );
-  }, []);
+  }, [todayStart, selectedEventId]);
 
   const handleDeleteEvent = async (id: string, titulo: string) => {
     const confirmDelete = window.confirm(
@@ -71,10 +87,19 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
     }
   };
 
-  // Merge calendar events with actual academic evaluations
+  // Merge calendar events with actual academic evaluations (excluding evaluations already passed or graded)
   const combinedEvents = useMemo(() => {
     const evalAsEvents: EventoCalendario[] = evaluaciones
-      .filter((ev): ev is typeof ev & { fecha: string } => Boolean(ev.fecha))
+      .filter((ev): ev is typeof ev & { fecha: string } => {
+        if (!ev.fecha) return false;
+        // Si ya tiene nota asignada o está calificada, es una evaluación ya rendida/pasada
+        if (ev.nota !== null && ev.nota !== undefined) return false;
+        if (ev.estado === "CALIFICADO") return false;
+        // Si la fecha es anterior al inicio del día de hoy, la evaluación ya pasó
+        const targetDate = parseLocalDate(ev.fecha);
+        if (!targetDate || targetDate.getTime() < todayStart) return false;
+        return true;
+      })
       .map((ev) => {
         const evDate = ev.fecha.includes("T") ? ev.fecha.split("T")[0] : ev.fecha;
         let tipoEvento: TipoEvento = "EXAMEN";
@@ -114,9 +139,14 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
         };
       });
 
-    const evalIds = new Set(evalAsEvents.map((e) => e.id));
+    const allEvalIds = new Set(evaluaciones.map((e) => e.id));
     const otherEvents = eventos
-      .filter((e) => !evalIds.has(e.id))
+      .filter((e) => !allEvalIds.has(e.id))
+      .filter((e) => {
+        if (!e.fecha) return false;
+        const targetDate = parseLocalDate(e.fecha);
+        return targetDate ? targetDate.getTime() >= todayStart : false;
+      })
       .map((e) => {
         if (!e.carreraId && e.materiaId) {
           const m = materias.find((mat) => mat.id === e.materiaId);
@@ -126,7 +156,7 @@ export const CalendarioView: React.FC<CalendarioViewProps> = ({
       });
 
     return [...evalAsEvents, ...otherEvents];
-  }, [evaluaciones, eventos, materias]);
+  }, [evaluaciones, eventos, materias, todayStart]);
 
   // Filter events based on selected career and type filters
   const filteredEvents = useMemo(() => {

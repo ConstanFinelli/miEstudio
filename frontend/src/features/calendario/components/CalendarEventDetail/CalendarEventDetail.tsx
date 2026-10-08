@@ -33,21 +33,15 @@ export const CalendarEventDetail: React.FC<CalendarEventDetailProps> = ({
     return `${y}-${m}-${d}`;
   }, []);
 
-  // Compute upcoming events from today onward (or next in list)
+  // Compute upcoming events from today onward
   const upcomingEvents = useMemo(() => {
-    const future = allEvents
+    return allEvents
       .filter((e) => e.fecha >= todayStr)
       .sort(
         (a, b) =>
           a.fecha.localeCompare(b.fecha) ||
           a.horarioInicio.localeCompare(b.horarioInicio),
-      );
-
-    if (future.length > 0) return future.slice(0, 4);
-
-    // Fallback: show most recent/upcoming from the whole list
-    return [...allEvents]
-      .sort((a, b) => b.fecha.localeCompare(a.fecha))
+      )
       .slice(0, 4);
   }, [allEvents, todayStr]);
 
