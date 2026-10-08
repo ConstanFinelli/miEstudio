@@ -101,12 +101,30 @@ export const CalendarEventDetail: React.FC<CalendarEventDetailProps> = ({
         <div className={styles.eventDetailBox}>
           <div className={styles.detailTitleRow}>
             <h3 className={styles.detailEventTitle}>{selectedEvent.titulo}</h3>
-            <span
-              className={styles.detailTagExam}
-              style={getTagBadgeStyle(selectedEvent.tipo)}
-            >
-              {selectedEvent.tipo}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {selectedEvent.fecha < todayStr && (
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontFamily: "var(--font-mono)",
+                    padding: "2px 6px",
+                    borderRadius: "2px",
+                    backgroundColor: "var(--surface-3)",
+                    color: "var(--text-muted)",
+                    border: "1px solid var(--border-hover)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Instancia previa
+                </span>
+              )}
+              <span
+                className={styles.detailTagExam}
+                style={getTagBadgeStyle(selectedEvent.tipo)}
+              >
+                {selectedEvent.tipo}
+              </span>
+            </div>
           </div>
 
           <div className={styles.eventInfoGrid}>

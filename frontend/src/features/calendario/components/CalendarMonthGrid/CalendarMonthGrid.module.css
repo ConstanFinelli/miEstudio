@@ -171,3 +171,14 @@
   white-space: nowrap;
 }
 
+.eventBadgePast {
+  opacity: 0.65;
+  filter: grayscale(0.2);
+  transition: opacity 0.15s, filter 0.15s;
+}
+
+.eventBadgePast:hover {
+  opacity: 1;
+  filter: none;
+}
+

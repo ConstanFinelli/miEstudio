@@ -177,20 +177,23 @@ export const CalendarMonthGrid: React.FC<CalendarMonthGridProps> = ({
                 )}
               </div>
 
-              {cell.dayEvents.slice(0, 2).map((ev) => (
-                <div
-                  key={ev.id}
-                  className={getBadgeClass(ev.tipo)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectEventId(ev.id);
-                  }}
-                  title={`${ev.titulo} (${ev.horarioInicio || ''})`}
-                >
-                  <span className={styles.eventBadgeIcon}>{getEventIcon(ev.tipo)}</span>
-                  <span className={styles.eventBadgeText}>{ev.titulo}</span>
-                </div>
-              ))}
+              {cell.dayEvents.slice(0, 2).map((ev) => {
+                const isPast = ev.fecha < todayStr;
+                return (
+                  <div
+                    key={ev.id}
+                    className={`${getBadgeClass(ev.tipo)} ${isPast ? styles.eventBadgePast : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectEventId(ev.id);
+                    }}
+                    title={`${ev.titulo} (${ev.horarioInicio || ''})${isPast ? ' · Instancia previa' : ''}`}
+                  >
+                    <span className={styles.eventBadgeIcon}>{getEventIcon(ev.tipo)}</span>
+                    <span className={styles.eventBadgeText}>{ev.titulo}</span>
+                  </div>
+                );
+              })}
 
               {cell.dayEvents.length > 2 && (
                 <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
